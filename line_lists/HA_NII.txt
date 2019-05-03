@@ -1,0 +1,4 @@
+# Line    lambda_vacuum Doublet_sep type     Tex_name
+  Ha_G    6564.614      0.0         1        "H$\\boldsymbol{\\alpha}$"
+  NII1_G  6585.270      0.0         1        "[N{\\sc ii}]"
+

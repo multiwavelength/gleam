@@ -1,0 +1,6 @@
+__pycache__
+*.png
+*.pyc
+.vscode
+.pytest_cache
+
