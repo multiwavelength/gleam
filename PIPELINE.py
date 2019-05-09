@@ -4,6 +4,7 @@ __version__ = "0.1"
 import os, sys
 import warnings
 import glob
+import numpy as np
 
 from astropy.io import fits
 import click
@@ -30,15 +31,23 @@ def main(inspect, fix_center, constrain_center, bin, head_path, lines_table):
     line_list = rf.read_lol(f'{pipeline}/line_lists/{lines_table}')
     #Define the folder structure such that we run the main line fitting
     #tool in the right place
-    for cluster in glob.glob(f'{data_path}/Tooth*'):
-        for quadrant in glob.glob(f'{cluster}/Q*'):
-            for extension in glob.glob(f'{quadrant}/EXT2*'):
+    clusters = np.genfromtxt(f'{data_path}/clusters_in_my_sample', dtype='U')
+    for cluster in glob.glob(f'{data_path}/A115'):#clusters:
+        #cluster=f'{data_path}/{cluster}'
+        for quadrant in glob.glob(f'{cluster}/Q1*'):
+            for extension in glob.glob(f'{quadrant}/EXT1*'):
                 list_of_targets = (f"{extension}/{os.path.basename(cluster)}_"
                                   f"{os.path.basename(quadrant)}_"
                                   f"{os.path.basename(extension)}_"
                                   f"zinfo.dat")
                 targets = rf.read_lof(list_of_targets)
-                for target in targets[0:1]:#targets[0:1]:
+                for target in targets:#targets[0:1]:
+                    if target['Membership']!='member': continue
+                    #print(target)
+                    #if target["SourceNumber"]!='156': continue
+                    print(os.path.basename(cluster), os.path.basename(quadrant), 
+                            os.path.basename(extension), 
+                            target["SourceNumber"], target["Redshift"], target['Type'], i)
                     lf.run_main(extension, target, line_list, inspect, 
                                 fix_center, constrain_center, bin)
                     # Fix the RA and DEC
@@ -46,7 +55,6 @@ def main(inspect, fix_center, constrain_center, bin, head_path, lines_table):
                     #                          target["SourceNumber"], 
                     #                          target["Mode"], target)
                     #print('miau')
-
                 # Write out correct list of sources with correct RA and DEC    
                 list_of_targets_out = (f"{extension}/{os.path.basename(cluster)}_"
                                   f"{os.path.basename(quadrant)}_"
