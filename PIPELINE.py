@@ -56,4 +56,3 @@ def main(inspect, fix_center, constrain_center, bin, head_path, lines_table):
                 
 if __name__ == '__main__':
     main()
-        
