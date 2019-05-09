@@ -21,7 +21,7 @@ warnings.filterwarnings("ignore")
 @click.option('--bin', default=1)
 @click.option('--head-path', 
        default='/home/andra/Desktop/Keep/Cluster_spectroscopy/ACRes/line_measurements')
-@click.option('--lines-table', default='Main_optical_lines.fits')
+@click.option('--lines-table', default='rsvao.fits')#'Main_optical_lines.fits')
 def main(inspect, fix_center, constrain_center, bin, head_path, lines_table):
     # Relative paths
     pipeline = f'{head_path}/pipeline'
