@@ -9,7 +9,7 @@ from astropy import units as u
 from astropy.cosmology import FlatLambdaCDM
 
 
-
+SN_limit = 3
 
 # Custom units
 # Flux unit
@@ -21,6 +21,9 @@ H0=70
 Om0=0.3
 Tcmb0=2.725
 cosmo = FlatLambdaCDM(H0=H0, Om0=Om0, Tcmb0=Tcmb0)
+
+# Expected line width for undetected lines in units of pixels
+spectral_resolution = 5. # pixels
 
 # Formula for resolution in the observed spectrum, not restframe!!!
 # [a, b], y = a*x+b obtained from MOS_SPECTRAL_RESOLUTION.fits
@@ -43,8 +46,13 @@ w = 3. #Angstrom
 line_width = 20. # Angstrom
 
 # Range used for selecting continuum left and right of the source
-cont_width = 150.#*u.Angstrom
-cont_plot_width = 50
+cont_width = 70.#*u.Angstrom
+cont_plot_width = 70
+
+# Parameters to constrain the width of the lines
+pixel = 1.21 # 1 pixel is 1.21 Angtrom
+fwhm_min = 3*pixel
+fwhm_max = 10*pixel
 
 # Plotting parameters
 # overview plot size
