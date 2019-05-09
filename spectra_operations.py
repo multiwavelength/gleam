@@ -43,6 +43,20 @@ def average_err(x, n):
     return np.sqrt(np.average((x**2).reshape((-1, n)), axis=1)/n)
 
 
+def sigma_to_fwhm(sigma):
+    """
+    Convert from Gaussian sigma to FWHM
+    """
+    return sigma*2.*np.sqrt(2.*np.log(2.))
+
+
+def fwhm_to_sigma(fwhn):
+    """
+    Convert FWHM of 1D Gaussian to sigma
+    """
+    return fwhm/(2.*np.sqrt(2.*np.log(2.)))
+
+
 def bin_spectrum(spectrum, n=2):
     """
     Bin the spectrum by averaging n number of adjacent cells together
