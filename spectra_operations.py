@@ -8,6 +8,7 @@ from typing import List
 
 import numpy as np
 from astropy import units as u
+from astropy import constants as const
 from astropy.table import Table, Column
 from colorama import Fore
 from colorama import init
@@ -97,7 +98,7 @@ def resolution(wl):
     stdev = np.std(diff)
 
     if (stdev/average>10**-3): print(Fore.RED+"Warning: non-constant resolution")
-    return average
+    return average*wl.unit
 
 
 
@@ -119,6 +120,21 @@ def mask_line(wl, wl_ref, w = c.line_width):
 
     return mask
 
+def spectrum_rms(y):
+    rms = np.sqrt(np.mean(y**2))* y.unit
+    return rms
+
+    
+def velocity_resolution(x):
+    """
+    Get the velocity resolution of a piece of spectrum; might be observed or
+    restframe depending on the input spectrum. This is blind to whether the 
+    spectrum has been rest-framed or not
+    """
+    wl_res = resolution(x)
+    wl_av = np.average(x)*x.unit
+    v_res = (wl_res/wl_av * const.c).to(u.km/u.s)
+    return v_res
 
 def restframe_wl(x, z):
     return x/(1.+z)

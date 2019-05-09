@@ -140,6 +140,24 @@ def gauss_function(x, a, x0, sigma):
     return a*np.exp(-(x-x0)**2/(2.*sigma**2.))
 
 
+def upper_limit(y,x):
+    """
+    In the case where we do not get a SN*sigma detection, we define a SN*sigma 
+    upper limit as per the formula:
+        3*sigma_RMS_channel* sqrt( channel_width * line_width )
+    Input:
+        y: spectrum in units of flux or such
+        x: wavelength
+    """
+    # Get width of a pixel in the region of the spectrum probed; in units of 
+    # Angstrom or such. This is pixel width and not resolution
+    pixel = so.resolution(x) 
+    # Resolution is assumed to be a multiple of the pixel size, e.g. 5
+    # Takes SN limit into account
+    upper_limit = ( c.SN_limit * so.spectrum_rms(y) * 
+                    np.sqrt(pixel**2*c.spectral_resolution) )
+    return upper_limit.to(x.unit*y.unit)
+
 
 def fit_gaussian(redshift, x, y, ystd, wl_line, fix_center=False, 
                  constrain_center=False, ctr=0.5, peak_sigma=5., 
