@@ -34,6 +34,10 @@ class RandomVariable(Generic[Qty]):
         return self.error / self.value
 
     @property
+    def SN(self):
+        return self.value / self.error
+
+    @property
     def significance(self):
         return abs(self.value / self.error)
 
