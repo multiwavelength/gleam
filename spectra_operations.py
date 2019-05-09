@@ -50,7 +50,7 @@ def sigma_to_fwhm(sigma):
     return sigma*2.*np.sqrt(2.*np.log(2.))
 
 
-def fwhm_to_sigma(fwhn):
+def fwhm_to_sigma(fwhm):
     """
     Convert FWHM of 1D Gaussian to sigma
     """

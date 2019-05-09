@@ -47,7 +47,7 @@ def main(inspect, fix_center, constrain_center, bin, head_path, lines_table):
                     #if target["SourceNumber"]!='156': continue
                     print(os.path.basename(cluster), os.path.basename(quadrant), 
                             os.path.basename(extension), 
-                            target["SourceNumber"], target["Redshift"], target['Type'], i)
+                            target["SourceNumber"], target["Redshift"], target['Type'])
                     lf.run_main(extension, target, line_list, inspect, 
                                 fix_center, constrain_center, bin)
                     # Fix the RA and DEC
