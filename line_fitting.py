@@ -33,7 +33,6 @@ def run_main(data_path, target, line_list, inspect=False, fix_center=False,
         fits of emission lines and plots for each fitted lines
     """
     # Read spectrum for the current source from outside file
-    print(target["Cluster"], target["SourceNumber"])
     spectrum = rf.read_spectrum(data_path, target["Cluster"],
                                 target["SourceNumber"], target["Mode"])
     if bin1>1: spectrum = so.bin_spectrum(spectrum, bin1)
