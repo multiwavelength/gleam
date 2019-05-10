@@ -3,14 +3,18 @@ __version__ = "0.1"
 
 import os, sys
 import random
-from typing import List
+from typing import List, Union
 from dataclasses import dataclass
 from typing import TypeVar, Generic
 
 import numpy as np
+import astropy
 from astropy import units as u
 from astropy import constants as const
 from astropy.table import Table, Column
+from astropy.units.quantity import Quantity as Qty
+from colorama import Fore
+from colorama import init
 
 import plot_gaussian as pg
 import spectra_operations as so
@@ -18,10 +22,12 @@ import constants as c
 
 import lmfit
 from lmfit.models import GaussianModel, ConstantModel
+from lmfit.model import ModelResult
 
-Qty = TypeVar("Qty")
+
+Qty = astropy.units.quantity.Quantity
 @dataclass
-class RandomVariable(Generic[Qty]):
+class RandomVariable:
     value: Qty
     error: Qty
 
@@ -34,12 +40,8 @@ class RandomVariable(Generic[Qty]):
         return self.error / self.value
 
     @property
-    def SN(self):
-        return self.value / self.error
-
-    @property
     def significance(self):
-        return abs(self.value / self.error)
+        return None if self.error is None else abs(self.value / self.error)
 
     def __mul__(self, other):
         """ self * other """
@@ -118,13 +120,206 @@ class Line:
             v = const.c.to('km/s')*eff_fwhm/self.restwl
             e = const.c.to('km/s')*self.fwhm.error/self.restwl
             return RandomVariable(value=v,error=e)
+
+    def as_fits_table(self, line: Table) -> Table:
+        """ 
+        Writes out the results of all the line fits for a single emission line 
+        (either stand alone or one that was part of a doublet, triplet etc), for
+        a particular source using astropy
+        Input:
+            self: emission line fit parameters
+            line: lab properties of the fitted emission line
+        Return: 
+            Fits table with all the lab and measured properties of a particular
+            emission line
+        """
+        t = Table()
+        # Vacuum/laboratory properties of the line
+        t = add_lab_values(line, t)
+    
+        # Source properties
+        t['z'] = Column([self.z], dtype='f', description='Source redshift, from specpro')
         
+        # Redshift calculated from the line
+        t['zline'] = Column([self.z_line.value.value], dtype='f', 
+                        unit=self.z_line.value.unit, 
+                        description='Redshift calculated from this emission line')
+        t['zline_err'] = Column([self.z_line.error.value], dtype='f', 
+                        unit=self.z_line.error.unit, 
+                        description='Error on the redshift calculated from this emission line')
+        # Redshift offset calculated between the line redshift and the redshift from 
+        # specpro
+        t['zoffset'] = Column([self.z_offset.value.value], dtype='f', 
+                        unit=self.z_offset.value.unit, 
+                        description='Redshift offset between line and specpro redshift')
+        t['zoffset_err'] = Column([self.z_offset.error.value], dtype='f', 
+                        unit=self.z_offset.error.unit, 
+                        description='Error on the redshift offset')
+
+        # Line fits
+        # Continuum around line 
+        t['cont'] =  Column([self.continuum.value.value], dtype='f', 
+                            unit=self.continuum.value.unit, 
+                            description='Continuum around line, Gaussian fit')
+        t['cont_err'] =  Column([self.continuum.error.value], dtype='f', 
+                            unit=self.continuum.error.unit, 
+                            description='Error on continuum around line, Gaussian fit')
+        # Gaussian fit       
+        t['wl'] = Column([self.wavelength.value.value], dtype='f', 
+                        unit=self.wavelength.value.unit, 
+                        description='Restframe wavelength, Gaussian fit')
+        t['wl_err'] = Column([self.wavelength.error.value], dtype='f', 
+                        unit=self.wavelength.error.unit, 
+                        description='Error on restframe wavelength, Gaussian fit')
+        t['height'] = Column([self.height.value.value], dtype='f', 
+                        unit=self.height.value.unit, 
+                        description='Height, Gaussian fit')
+        t['height_err'] = Column([self.height.error.value], dtype='f', 
+                        unit=self.height.error.unit, 
+                        description='Error on height, Gaussian fit')
+        t['sigma'] = Column([self.sigma.value.value], dtype='f', 
+                        unit=self.sigma.value.unit, 
+                        description='Sigma, Gaussian fit')
+        t['sigma_err'] = Column([self.sigma.error.value], dtype='f', 
+                        unit=self.sigma.error.unit, 
+                        description='Error on sigma, Gaussian fit')           
+        t['amplitude'] = Column([self.amplitude.value.value], dtype='f', 
+                        unit=self.amplitude.value.unit, 
+                        description='Amplitude, Gaussian fit')
+        t['amplitude_err'] = Column([self.amplitude.error.value], dtype='f', 
+                        unit=self.amplitude.error.unit, 
+                        description='Error on amplitude, Gaussian fit')           
+        # Flux
+        ff = 10.**-17
+        t['flux'] = Column([self.flux.value.value/ff], dtype='f', 
+                        unit=self.flux.value.unit*ff, 
+                        description='Line flux, Gaussian fit')
+        t['flux_err'] = Column([self.flux.error.value/ff], dtype='f', 
+                        unit=self.flux.error.unit*ff, 
+                        description='Error on line flux, Gaussian fit') 
+        # Luminosity
+        fl = 10.**40
+        t['luminosity'] = Column([self.luminosity.value.value/fl], dtype='f', 
+                        unit=self.luminosity.value.unit*fl, 
+                        description='Line luminosity, Gaussian fit')
+        t['luminosity_err'] = Column([self.luminosity.error.value/fl], dtype='f', 
+                        unit=self.luminosity.error.unit*fl, 
+                        description='Error on line luminosity, Gaussian fit') 
+        # Equivalent width
+        t['EWrest'] = Column([self.ew_rest.value.value], dtype='f', 
+                        unit=self.ew_rest.value.unit, 
+                        description='Restframe line equivalent width, Gaussian fit')
+        t['EWrest_err'] = Column([self.ew_rest.error.value], dtype='f', 
+                        unit=self.ew_rest.error.unit, 
+                        description='Error on the restframe equivalent width, Gaussian fit')
+
+        # FWHM of the line
+        t['FWHM'] = Column([self.fwhm.value.value], dtype='f', 
+                        unit=self.fwhm.value.unit, 
+                        description='Restframe FWHM, not deconvolved')
+        t['FWHM_err'] = Column([self.fwhm.error.value], dtype='f', 
+                        unit=self.fwhm.error.unit, 
+                        description='Error on the restframe FWHM, not deconvolved')
+        # Deconvolved velocity fwhm, calculated if possible
+        t['v'] = Column([self.velocity_fwhm.value.value], dtype='f', 
+                        unit=self.velocity_fwhm.value.unit, 
+                        description='Restframe, deconvolved velocity FWHM; 0 means line is unresolved')
+        t['v_err'] = Column([self.velocity_fwhm.error.value], dtype='f', 
+                        unit=self.velocity_fwhm.error.unit, 
+                        description='Error on the restframe, decolvelved velocity FWHM; 99 means line is unresolved')    
+
+        return t
+        
+@dataclass
+class NonDetection:
+    amplitude: Qty
+    continuum: RandomVariable
+    restwl: float
+    z: float
+
+    @property
+    def flux(self) -> Qty:
+        # Line flux
+        return self.amplitude.to(c.fluxu*u.Angstrom)
+
+    @property
+    def luminosity(self) -> Qty:
+        # Line luminosity
+        ld = c.cosmo.luminosity_distance(self.z).to(u.cm)
+        v = 4.*np.pi*ld**2*self.flux
+        return v
+
+    def as_fits_table(self, line: Table) -> Table:
+        """ 
+        Writes out the results of all the line fits for a single emission line 
+        (either stand alone or one that was part of a doublet, triplet etc), for
+        a particular source using astropy
+        Input:
+            self: emission line fit parameters
+            line: lab properties of the fitted emission line
+        Return: 
+            Fits table with all the lab and measured properties of a particular
+            emission line
+        """
+        t = Table()
+        # Vacuum/laboratory properties of the line
+        t = add_lab_values(line, t)
+
+        t['z'] = Column([self.z], dtype='f', description='Source redshift, from specpro')
+        
+        # Line fits
+        # Continuum around line 
+        t['cont'] =  Column([self.continuum.value.value], dtype='f', 
+                            unit=self.continuum.value.unit, 
+                            description='Continuum around line, Gaussian fit')
+        t['cont_err'] =  Column([self.continuum.error.value], dtype='f', 
+                            unit=self.continuum.error.unit, 
+                            description='Error on continuum around line, Gaussian fit')
+        t['amplitude'] = Column([self.amplitude.value], dtype='f', 
+                        unit=self.amplitude.unit, 
+                        description='Amplitude, Gaussian fit')
+        # Flux
+        ff = 10.**-17
+        t['flux'] = Column([self.flux.value/ff], dtype='f', 
+                        unit=self.flux.unit*ff, 
+                        description='Line flux, Gaussian fit')
+        # Luminosity
+        fl = 10.**40
+        t['luminosity'] = Column([self.luminosity.value/fl], dtype='f', 
+                        unit=self.luminosity.unit*fl, 
+                        description='Line luminosity, Gaussian fit')
+        return t
 
     
 @dataclass
 class Spectrum:
-    lines: List[Line]
+    lines: List[Union[Line, NonDetection]]
     continuum: RandomVariable
+
+
+def add_lab_values(line: Table, t: Table) -> Table:
+    """
+    For writing out the table with the results of the fits, add the lab-measured
+    properties of the emission lines.
+    Input:
+        line: table with properties of the emission line, such as name, 
+              wavelength, type etc.
+        t: table with fit results, for one emission line per source
+    Output:
+        table with added lines
+    """
+    t['line'] = Column([line['line']], dtype='U',
+                        description='Line name, which includes modifier for single or double Gaussian')
+    t['wl_vacuum'] = Column([line['wl_vacuum']], unit=u.Angstrom, dtype='f', 
+                                description='Wavelength in vacuum')
+    t['type'] = Column([line['type']], dtype='d',
+                        description='Single or double Gaussian')
+    t['separation'] = Column(line['separation'], unit=u.Angstrom, dtype='f', 
+                                        description='Separation from the main line, if a doublet')
+    t['latex'] = Column([line['latex']], dtype='U', 
+                                description='Line name written in latex format, useful for plotting purposes')
+    return t
+
 
 def gauss_function(x, a, x0, sigma):
     """
@@ -159,6 +354,37 @@ def upper_limit(y,x):
     return upper_limit.to(x.unit*y.unit)
 
 
+def fit_to_line(wavelength: Qty, height: Qty, sigma: Qty, amplitude: Qty, fwhm: Qty, 
+                z: float, restwl: Qty, continuum: Qty) -> Union[Line, NonDetection]:
+    """
+    Determine whether the measurement is a detection or not and put the result
+    in the relevant Class type: a Line or a NonDetection. A non-detection will
+    only have a measurement of the amplitude (with no error) and it will inherit
+    the redshift of its parent source and the rest wavelength of the fitted
+    emission line. It will also contain the continuum information. A detection
+    will contain all of the parameters of the Gaussian fit.
+    Input: 
+        wavelength: measured wavelength of the emission line
+        height: height of the Gaussian fit to the line
+        sigma: sigma of the Gaussian fit to the line
+        amplitude: sigma of the Gaussian fit to the line
+        fwhm: FWHM of the Gaussian fit to the line
+        z: redshift of the parent source as measured externally
+        restwl: lab restframe wavelength assumed for the fitted emission line
+        continuum: measurement of the continuum around the emission line
+    Output:
+        Line or NonDetection contianing all of the properties that could be 
+        measured
+    """
+    if (amplitude.significance<c.SN_limit):
+        return NonDetection(amplitude=amplitude.value, z=z, restwl=restwl, 
+                            continuum=continuum)
+    else: 
+        return Line(wavelength=wavelength, height=height, sigma=sigma, 
+                    amplitude=amplitude, fwhm=fwhm, z=z, restwl=restwl, 
+                    continuum=continuum)
+
+
 def fit_gaussian(redshift, x, y, ystd, wl_line, fix_center=False, 
                  constrain_center=False, ctr=0.5, peak_sigma=5., 
                  peak_height=1.) -> Spectrum:
@@ -187,41 +413,64 @@ def fit_gaussian(redshift, x, y, ystd, wl_line, fix_center=False,
 
     # fix the center of the Gaussian for sources where the normal fit does not 
     # want to work
-    
     if fix_center==True:
         for i in range(len(wl_line)):
             model.set_param_hint(f'g{i}_center', vary=False)
-    if constrain_center==True:
+    
+    # Constrain the center within a small range around the expected wavelength
+    # of the emission line
+    elif constrain_center==True:
         for i, wl in enumerate(wl_line):
-            model.set_param_hint(f'g{i}_center', value=wl, min=wl-c.w, max=wl+c.w)
+            model.set_param_hint(f'g{i}_center', value=wl, 
+                                                 min=wl-c.w, max=wl+c.w)
+    
+    # If no fixing or constraining is done, then constrain the center to be
+    # within the entire range selected around the line that is used for the 
+    # fitting
+    else:
+        for i, wl in enumerate(wl_line):
+            model.set_param_hint(f'g{i}_center', value=wl, 
+                                                 min=wl-c.cont_width, 
+                                                 max=wl+c.cont_width)
+    # Constain the FWHM and the sigma to values set by the used. I chose 
+    # reasonable values where the minimum is 3*channel width and 10*channel 
+    # width
+    for i, wl in enumerate(wl_line):
+        model.set_param_hint(f'g{i}_fwhm', value=(c.fwhm_min+c.fwhm_max)/2., 
+                             min=c.fwhm_min, max=c.fwhm_max)
+    for i, wl in enumerate(wl_line):
+        model.set_param_hint(f'g{i}_sigma',
+                             value=so.fwhm_to_sigma((c.fwhm_min+c.fwhm_max)/2.),
+                             min=so.fwhm_to_sigma(c.fwhm_min), 
+                             max=so.fwhm_to_sigma(c.fwhm_max))
+    
+    # Set the continuum to the median of the selected range
+    ctr = np.median(y)
     params = model.make_params(c=ctr, **{f'g{i}_center': wl
                                        for i, wl in enumerate(wl_line)})    
+    
     # perform a least squares fit with errors taken into account as i.e. 1/sigma
     try:
-        result = model.fit(y, params, x=x, weights=1.0/ystd)
+        result:ModelResult = model.fit(y, params, x=x, weights=1.0/ystd)
+        print(result.fit_report())
     except:
-        return None
+        print(Fore.RED+"No model")
+        sys.exit("Error!")
     
-    # Return nothing if fit was not possible
-    for param in result.params.values():
-        if RandomVariable.from_param(param).error == None:
-            return None
-        if RandomVariable.from_param(param).badness > 10:
-            return None 
-
-    params = result.params
-    
-    return Spectrum(continuum=RandomVariable.from_param(params['c'])*y.unit,
-                    lines=[Line(wavelength=RandomVariable.from_param(params[f'g{i}_center'])*x.unit,
-                                height=RandomVariable.from_param(params[f'g{i}_height'])*y.unit,
-                                sigma=RandomVariable.from_param(params[f'g{i}_sigma'])*x.unit,
-                                amplitude=RandomVariable.from_param(params[f'g{i}_amplitude'])*x.unit*y.unit,
-                                fwhm=RandomVariable.from_param(params[f'g{i}_fwhm'])*x.unit,
-                                z=redshift,
-                                restwl=wl_line[i]*wl_line.unit, 
-                                continuum=RandomVariable.from_param(params['c'])*y.unit)
-                           for i in range(len(wl_line))])
-
+    fitparams = result.params
+    return Spectrum(continuum=RandomVariable.from_param(fitparams['c'])*y.unit,
+                    lines=[
+                        fit_to_line(
+                            wavelength=RandomVariable.from_param(fitparams[f'g{i}_center'])*x.unit,
+                            height=RandomVariable.from_param(fitparams[f'g{i}_height'])*y.unit,
+                            sigma=RandomVariable.from_param(fitparams[f'g{i}_sigma'])*x.unit,
+                            amplitude=RandomVariable.from_param(fitparams[f'g{i}_amplitude'])*x.unit*y.unit,
+                            fwhm=RandomVariable.from_param(fitparams[f'g{i}_fwhm'])*x.unit,
+                            z=redshift,
+                            restwl=wl_line[i]*wl_line.unit, 
+                            continuum=RandomVariable.from_param(fitparams['c'])*y.unit
+                        ) for i in range(len(wl_line))
+                    ])
 
 
 def fit_lines(target, spectrum, line_list, line_groups, fix_center=False, 

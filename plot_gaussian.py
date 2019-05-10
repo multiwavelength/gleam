@@ -249,9 +249,12 @@ def overview_plot(target, data_path, line_groups, spectrum, size_x=c.overview_x,
 
 
 def plot_gaussian_fit(wl, spectrum_fit, ax):
-    if spectrum_fit is not None:
-        line_fit: Line
-        for line_fit in spectrum_fit.lines:
+    """
+    Plot the a line fit as a continuum + a Gaussian, whenever the line was 
+    detected and not just an upper limit
+    """
+    for line_fit in spectrum_fit.lines:
+        if isinstance(line_fit, gf.Line):
             gauss_part = gf.gauss_function(wl, line_fit.height.value, 
                             line_fit.wavelength.value, 
                             line_fit.sigma.value)
