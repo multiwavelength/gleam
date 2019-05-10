@@ -1,0 +1,9 @@
+# Line    lambda_vacuum Doublet_sep type     Tex_name
+  OII_G   3727.30      0.0         1        "[O{\\sc ii}]"
+  Hb_G    4861.33      0.0         1        "H$\\boldsymbol{\\beta}$"
+  OIII4_G 4958.910      0.0         1        "[O{\\sc iii}]"
+  OIII5_G 5006.840      0.0         1        "[O{\\sc iii}]"
+  Ha_G    6562.820      0.0         1        "H$\\boldsymbol{\\alpha}$"
+  NII1_G  6583.570      0.0         1        "[N{\\sc ii}]"
+  SII2_DG 6730.810      0.0         1        "[S{\\sc ii}]"
+  SII1_DG 6716.440      0.0         1        "[S{\\sc ii}]"
