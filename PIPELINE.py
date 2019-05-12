@@ -9,7 +9,7 @@ import numpy as np
 from astropy.io import fits
 import click
 
-import line_fitting as lf
+import main
 import read_files as rf
 
 warnings.filterwarnings("ignore")
@@ -23,7 +23,7 @@ warnings.filterwarnings("ignore")
 @click.option('--head-path', 
        default='/home/andra/Desktop/Keep/Cluster_spectroscopy/ACRes/line_measurements')
 @click.option('--lines-table', default='rsvao.fits')#'Main_optical_lines.fits')
-def main(inspect, fix_center, constrain_center, bin, head_path, lines_table):
+def pipeline(inspect, fix_center, constrain_center, bin, head_path, lines_table):
     # Relative paths
     pipeline = f'{head_path}/pipeline'
     data_path = f'{head_path}/allfluxes'
@@ -48,7 +48,7 @@ def main(inspect, fix_center, constrain_center, bin, head_path, lines_table):
                     print(os.path.basename(cluster), os.path.basename(quadrant), 
                             os.path.basename(extension), 
                             target["SourceNumber"], target["Redshift"], target['Type'])
-                    lf.run_main(extension, target, line_list, inspect, 
+                    main.run_main(extension, target, line_list, inspect, 
                                 fix_center, constrain_center, bin)
                     # Fix the RA and DEC
                     #target = rf.read_infofile(extension, target["Cluster"], 
@@ -63,4 +63,4 @@ def main(inspect, fix_center, constrain_center, bin, head_path, lines_table):
                 #targets.write(list_of_targets_out, overwrite=True)
                 
 if __name__ == '__main__':
-    main()
+    pipeline()
