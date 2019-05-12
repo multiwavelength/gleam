@@ -354,36 +354,6 @@ def upper_limit(y,x):
     return upper_limit.to(x.unit*y.unit)
 
 
-def fit_to_line(wavelength: Qty, height: Qty, sigma: Qty, amplitude: Qty, fwhm: Qty, 
-                z: float, restwl: Qty, continuum: Qty) -> Union[Line, NonDetection]:
-    """
-    Determine whether the measurement is a detection or not and put the result
-    in the relevant Class type: a Line or a NonDetection. A non-detection will
-    only have a measurement of the amplitude (with no error) and it will inherit
-    the redshift of its parent source and the rest wavelength of the fitted
-    emission line. It will also contain the continuum information. A detection
-    will contain all of the parameters of the Gaussian fit.
-    Input: 
-        wavelength: measured wavelength of the emission line
-        height: height of the Gaussian fit to the line
-        sigma: sigma of the Gaussian fit to the line
-        amplitude: sigma of the Gaussian fit to the line
-        fwhm: FWHM of the Gaussian fit to the line
-        z: redshift of the parent source as measured externally
-        restwl: lab restframe wavelength assumed for the fitted emission line
-        continuum: measurement of the continuum around the emission line
-    Output:
-        Line or NonDetection contianing all of the properties that could be 
-        measured
-    """
-    if (amplitude.significance<c.SN_limit):
-        return NonDetection(amplitude=amplitude.value, z=z, restwl=restwl, 
-                            continuum=continuum)
-    else: 
-        return Line(wavelength=wavelength, height=height, sigma=sigma, 
-                    amplitude=amplitude, fwhm=fwhm, z=z, restwl=restwl, 
-                    continuum=continuum)
-
 
 def fit_gaussian(redshift, x, y, ystd, wl_line, fix_center=False, 
                  constrain_center=False, ctr=0.5, peak_sigma=5., 
@@ -453,14 +423,36 @@ def fit_gaussian(redshift, x, y, ystd, wl_line, fix_center=False,
     try:
         result:ModelResult = model.fit(y, params, x=x, weights=1.0/ystd)
         print(result.fit_report())
+        fitparams = result.params
     except:
         print(Fore.RED+"No model")
         sys.exit("Error!")
     
-    fitparams = result.params
-    return Spectrum(continuum=RandomVariable.from_param(fitparams['c'])*y.unit,
+
+    if result.errorbars==False:
+            # If the fit fails, fit just a constant to the continuum
+            model = ConstantModel()
+            params = model.make_params(c=ctr) 
+            result = model.fit(y, params, x=x, weights=1.0/ystd)
+            fitparams = result.params
+            return Spectrum(continuum=RandomVariable.from_param(fitparams['c'])*y.unit,
                     lines=[
-                        fit_to_line(
+                        NonDetection(
+                            amplitude=upper_limit(y,x),
+                            z=redshift,
+                            restwl=wl_line[i]*wl_line.unit, 
+                            continuum=RandomVariable.from_param(fitparams['c'])*y.unit
+                        ) for i in range(len(wl_line))
+                    ])
+
+    return Spectrum(continuum=RandomVariable.from_param(fitparams['c'])*y.unit,
+                    lines=[NonDetection(
+                            amplitude=upper_limit(y,x),
+                            z=redshift,
+                            restwl=wl_line[i]*wl_line.unit, 
+                            continuum=RandomVariable.from_param(fitparams['c'])*y.unit)
+                        if (RandomVariable.from_param(fitparams[f'g{i}_amplitude'])*x.unit*y.unit).significance<c.SN_limit else   
+                        Line(
                             wavelength=RandomVariable.from_param(fitparams[f'g{i}_center'])*x.unit,
                             height=RandomVariable.from_param(fitparams[f'g{i}_height'])*y.unit,
                             sigma=RandomVariable.from_param(fitparams[f'g{i}_sigma'])*x.unit,
