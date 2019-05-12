@@ -3,9 +3,10 @@ __version__ = "0.1"
 
 import os, sys
 import random
-from typing import List, Union
+from typing import List, Union, Iterable
 from dataclasses import dataclass
 from typing import TypeVar, Generic
+import itertools
 
 import numpy as np
 import astropy
@@ -354,10 +355,67 @@ def upper_limit(y,x):
     return upper_limit.to(x.unit*y.unit)
 
 
+def is_good(model: ModelResult) -> bool:
+    """
+    """
+    if model.result.errorbars==False: return False
+    fitparams = model.params
+    return all( 
+        RandomVariable.from_param(fitparams[f'g{i}_amplitude']).significance>c.SN_limit 
+        for i in range(len(model.components)-1)
+       )
 
-def fit_gaussian(redshift, x, y, ystd, wl_line, fix_center=False, 
-                 constrain_center=False, ctr=0.5, peak_sigma=5., 
-                 peak_height=1.) -> Spectrum:
+def subsets(length):
+    """
+    Generate all subsets of the line set, in case we want to fit only 1, 2 or
+    many subsets of the original line list
+    """
+    for n in range(length, -1, -1):
+        yield from itertools.combinations(range(length), n)
+
+def model_selection(redshift, x, y, ystd, wl_line, fix_center=False, 
+                 constrain_center=False) -> Spectrum:
+    
+    for wl_subset_indices in subsets(len(wl_line)):
+        wl_subset = wl_line[list(wl_subset_indices)]
+        model = fit_model(redshift, x, y, ystd, wl_subset, fix_center, constrain_center)
+        if is_good(model):
+            break
+        else:
+            print('NonDetection is in the fit, try a simpler model')
+            print(f'Set of lines: {wl_subset.data}')
+    else:
+        return None
+
+    yh = np.zeros_like(x)+model.eval(x=x)
+    residual = y - yh
+    ul = upper_limit(residual, x)
+    
+    fitparams = model.params
+    return Spectrum(continuum=RandomVariable.from_param(fitparams['c'])*y.unit,
+                    lines=[
+                        Line(
+                            wavelength=RandomVariable.from_param(fitparams[f'g{wl_subset_indices.index(i)}_center'])*x.unit,
+                            height=RandomVariable.from_param(fitparams[f'g{wl_subset_indices.index(i)}_height'])*y.unit,
+                            sigma=RandomVariable.from_param(fitparams[f'g{wl_subset_indices.index(i)}_sigma'])*x.unit,
+                            amplitude=RandomVariable.from_param(fitparams[f'g{wl_subset_indices.index(i)}_amplitude'])*x.unit*y.unit,
+                            fwhm=RandomVariable.from_param(fitparams[f'g{wl_subset_indices.index(i)}_fwhm'])*x.unit,
+                            z=redshift,
+                            restwl=wl_line[i]*wl_line.unit, 
+                            continuum=RandomVariable.from_param(fitparams['c'])*y.unit
+                        )
+                        if i in wl_subset_indices else
+                        NonDetection(
+                            amplitude=ul,
+                            z=redshift,
+                            restwl=wl_line[i]*wl_line.unit, 
+                            continuum=RandomVariable.from_param(fitparams['c'])*y.unit)
+                        for i in range(len(wl_line))
+                    ])
+
+
+def fit_model(redshift, x, y, ystd, wl_line: Iterable[Qty], fix_center=False, 
+                 constrain_center=False) -> ModelResult:
     """
     Fits a number of Gaussians plus a constant continuum to the given data with 
     the package `lmfit'
@@ -428,41 +486,7 @@ def fit_gaussian(redshift, x, y, ystd, wl_line, fix_center=False,
         print(Fore.RED+"No model")
         sys.exit("Error!")
     
-
-    if result.errorbars==False:
-            # If the fit fails, fit just a constant to the continuum
-            model = ConstantModel()
-            params = model.make_params(c=ctr) 
-            result = model.fit(y, params, x=x, weights=1.0/ystd)
-            fitparams = result.params
-            return Spectrum(continuum=RandomVariable.from_param(fitparams['c'])*y.unit,
-                    lines=[
-                        NonDetection(
-                            amplitude=upper_limit(y,x),
-                            z=redshift,
-                            restwl=wl_line[i]*wl_line.unit, 
-                            continuum=RandomVariable.from_param(fitparams['c'])*y.unit
-                        ) for i in range(len(wl_line))
-                    ])
-
-    return Spectrum(continuum=RandomVariable.from_param(fitparams['c'])*y.unit,
-                    lines=[NonDetection(
-                            amplitude=upper_limit(y,x),
-                            z=redshift,
-                            restwl=wl_line[i]*wl_line.unit, 
-                            continuum=RandomVariable.from_param(fitparams['c'])*y.unit)
-                        if (RandomVariable.from_param(fitparams[f'g{i}_amplitude'])*x.unit*y.unit).significance<c.SN_limit else   
-                        Line(
-                            wavelength=RandomVariable.from_param(fitparams[f'g{i}_center'])*x.unit,
-                            height=RandomVariable.from_param(fitparams[f'g{i}_height'])*y.unit,
-                            sigma=RandomVariable.from_param(fitparams[f'g{i}_sigma'])*x.unit,
-                            amplitude=RandomVariable.from_param(fitparams[f'g{i}_amplitude'])*x.unit*y.unit,
-                            fwhm=RandomVariable.from_param(fitparams[f'g{i}_fwhm'])*x.unit,
-                            z=redshift,
-                            restwl=wl_line[i]*wl_line.unit, 
-                            continuum=RandomVariable.from_param(fitparams['c'])*y.unit
-                        ) for i in range(len(wl_line))
-                    ])
+    return result
 
 
 def fit_lines(target, spectrum, line_list, line_groups, fix_center=False, 
@@ -516,7 +540,7 @@ def do_gaussian(selected_lines, other_lines, spectrum, target, fix_center=False,
     spectrum_line = spectrum[mask_line]
 
     # Fit the gaussian(s)
-    spectrum_fit = fit_gaussian(target['Redshift'], spectrum_line['wl_rest'], 
+    spectrum_fit = model_selection(target['Redshift'], spectrum_line['wl_rest'], 
                                 spectrum_line['flux'], spectrum_line['stdev'], 
                                 selected_lines['wl_vacuum'], fix_center,
                                 constrain_center)

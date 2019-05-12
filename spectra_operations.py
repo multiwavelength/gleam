@@ -135,7 +135,7 @@ def mask_line(wl, wl_ref, w = c.line_width):
     return mask
 
 def spectrum_rms(y):
-    rms = np.sqrt(np.mean(y**2))* y.unit
+    rms = np.sqrt(np.mean((y-np.mean(y))**2))* y.unit
     return rms
 
     
