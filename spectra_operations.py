@@ -379,7 +379,7 @@ def test_cc4():
     expected = []
     assert expected == comps
 
-def test_cc4():
+def test_cc5():
     a = ((0, 2),)
 
     comps = connected_components(a, left, right)
