@@ -382,6 +382,21 @@ def subsets(length):
 def model_selection(redshift, x, y, ystd, wl_line, fix_center=False, 
                  constrain_center=False) -> Spectrum:
     """
+    Start with the model with the most components (constant + as many 
+    Gaussians as emission lines) and find the simplest model that well 
+    described the data. In case the model does not work (i.e. 1 line or more is
+    non-detected), the search removes that component and attempts to fit a model
+    with fewer Gaussians until it finds a fit. For all non-detected lines, an
+    upper limit is estimated.
+    Input: 
+        redshift: redshift of the source
+        x: usually an array of wavelengths
+        y: usually an array of fluxes
+        ystd: errors on y, usually a stdev of the flux
+        wl_line: wavelengths of the lines to be fit; could be a single line or 
+                 multiple lines; usually a singlet or a doublet
+    Return:
+        Spectrum with continuum, detected lines and upperlimits
     """
     for wl_subset_indices in subsets(len(wl_line)):
         wl_subset = wl_line[list(wl_subset_indices)]
@@ -429,13 +444,12 @@ def fit_model(redshift, x, y, ystd, wl_line: Iterable[Qty], fix_center=False,
     the package `lmfit'
     !!! Assumes the spectra are restframe !!!
     Input:
+        redshift: redshift of the source
         x: usually an array of wavelengths
         y: usually an array of fluxes
         ystd: errors on y, usually a stdev of the flux
         wl_line: wavelengths of the lines to be fit; could be a single line or 
                  multiple lines; usually a singlet or a doublet
-        c, peak_sigma, peak_height: some reasonable guesses for the constant,
-            the sigma of the peak and the amplitude of the peak
     Output:
         parameter fits of the Gaussian(s) + continuum
     """

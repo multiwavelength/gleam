@@ -135,6 +135,9 @@ def mask_line(wl, wl_ref, w = c.line_width):
     return mask
 
 def spectrum_rms(y):
+    """
+    Calculate the rms of a spectrum, after removing the mean value
+    """
     rms = np.sqrt(np.mean((y-np.mean(y))**2))* y.unit
     return rms
 
@@ -150,7 +153,16 @@ def velocity_resolution(x):
     v_res = (wl_res/wl_av * const.c).to(u.km/u.s)
     return v_res
 
+
 def restframe_wl(x, z):
+    """
+    Transform a given spectrum x into the restframe, given the redshift
+    Input:
+        x: observed wavelengths of a spectrum, in Angstrom or nm for example
+        z: redshift
+    Return:
+        restframe spectrum
+    """
     return x/(1.+z)
 
 
