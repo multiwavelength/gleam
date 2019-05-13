@@ -229,6 +229,9 @@ class Line:
                         unit=self.velocity_fwhm.error.unit, 
                         description='Error on the restframe, decolvelved velocity FWHM; 99 means line is unresolved')    
 
+        # Detection flag
+        t['detected'] = Column([True], dtype='bool', 
+                        description='Line luminosity, Gaussian fit')
         return t
         
 @dataclass
@@ -288,6 +291,10 @@ class NonDetection:
         fl = 10.**40
         t['luminosity'] = Column([self.luminosity.value/fl], dtype='f', 
                         unit=self.luminosity.unit*fl, 
+                        description='Line luminosity, Gaussian fit')
+        
+        # Detection flag
+        t['detected'] = Column([False], dtype='bool', 
                         description='Line luminosity, Gaussian fit')
         return t
 
