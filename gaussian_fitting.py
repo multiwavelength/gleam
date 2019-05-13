@@ -387,7 +387,7 @@ def subsets(length):
 
 
 def model_selection(redshift, x, y, ystd, wl_line, fix_center=False, 
-                 constrain_center=False) -> Spectrum:
+                 constrain_center=False, verbose=False) -> Spectrum:
     """
     Start with the model with the most components (constant + as many 
     Gaussians as emission lines) and find the simplest model that well 
@@ -402,18 +402,23 @@ def model_selection(redshift, x, y, ystd, wl_line, fix_center=False,
         ystd: errors on y, usually a stdev of the flux
         wl_line: wavelengths of the lines to be fit; could be a single line or 
                  multiple lines; usually a singlet or a doublet
+        fix_center: fix the center of the Gaussian in the fit
+        constrain_center: constrain the center of the Gaussian to a narrow 
+                          region around the expected position of the line
+        verbose: print results of the fit
     Return:
         Spectrum with continuum, detected lines and upper limits
     """
     for wl_subset_indices in subsets(len(wl_line)):
         wl_subset = wl_line[list(wl_subset_indices)]
         model = fit_model(redshift, x, y, ystd, wl_subset, fix_center, 
-                          constrain_center)
+                          constrain_center, verbose)
         if is_good(model):
             break
         else:
-            print('NonDetection is in the fit, try a simpler model')
-            print(f'Set of lines: {wl_subset.data}')
+            if verbose==True:
+                print('NonDetection is in the fit, try a simpler model')
+                print(f'Set of lines: {wl_subset.data}')
     else:
         return None
 
@@ -446,7 +451,7 @@ def model_selection(redshift, x, y, ystd, wl_line, fix_center=False,
 
 
 def fit_model(redshift, x, y, ystd, wl_line: Iterable[Qty], fix_center=False, 
-                 constrain_center=False) -> ModelResult:
+                 constrain_center=False, verbose=False) -> ModelResult:
     """
     Fits a number of Gaussians plus a constant continuum to the given data with 
     the package `lmfit'
@@ -458,6 +463,10 @@ def fit_model(redshift, x, y, ystd, wl_line: Iterable[Qty], fix_center=False,
         ystd: errors on y, usually a stdev of the flux
         wl_line: wavelengths of the lines to be fit; could be a single line or 
                  multiple lines; usually a singlet or a doublet
+        fix_center: fix the center of the Gaussian in the fit
+        constrain_center: constrain the center of the Gaussian to a narrow 
+                          region around the expected position of the line
+        verbose: print results of the fit
     Output:
         parameter fits of the Gaussian(s) + continuum
     """
@@ -510,7 +519,7 @@ def fit_model(redshift, x, y, ystd, wl_line: Iterable[Qty], fix_center=False,
     # perform a least squares fit with errors taken into account as i.e. 1/sigma
     try:
         result:ModelResult = model.fit(y, params, x=x, weights=1.0/ystd)
-        print(result.fit_report())
+        if verbose==True: print(result.fit_report())
         fitparams = result.params
     except:
         print(Fore.RED+"No model")
@@ -520,7 +529,7 @@ def fit_model(redshift, x, y, ystd, wl_line: Iterable[Qty], fix_center=False,
 
 
 def fit_lines(target, spectrum, line_list, line_groups, fix_center=False, 
-              constrain_center=False):
+              constrain_center=False, verbose=False):
     """
     Head function that goes through the list of lines and fits all lines for a 
     particular spectrum
@@ -530,7 +539,11 @@ def fit_lines(target, spectrum, line_list, line_groups, fix_center=False,
         list_list: Astropy  list of all the lines that will be fit
         line_groups: Astropy list of lines that will be fit, connected into 
                      groups based on proximity; The grouped lines will be fit
-                     together as a sum of Gaussianss
+                     together as a sum of Gaussians
+        fix_center: fix the center of the Gaussian in the fit
+        constrain_center: constrain the center of the Gaussian to a narrow 
+                          region around the expected position of the line
+        verbose: print results of the fit
     Output:
         Astropy table containing details of emission lines and the Gaussian fits 
         to them
@@ -542,12 +555,12 @@ def fit_lines(target, spectrum, line_list, line_groups, fix_center=False,
               (group.beginning > np.amin(spectrum['wl_rest']) ) ):
             spectrum_fit, spectrum_line = do_gaussian(line_list[select_group], 
                     line_list[~select_group], spectrum, target, fix_center, 
-                    constrain_center)
+                    constrain_center, verbose)
             yield spectrum_fit, spectrum_line, line_list[select_group]
     
 
 def do_gaussian(selected_lines, other_lines, spectrum, target, fix_center=False,
-                constrain_center=False):
+                constrain_center=False, verbose=False):
     """
     Selects the spectrum around an emission line of interest. Then fits a single
     Gaussian plus a constant continuum to the given data with the package `lmfit'
@@ -559,9 +572,10 @@ def do_gaussian(selected_lines, other_lines, spectrum, target, fix_center=False,
         wl_line: wavelength of the line to be fit
         c, peak_sigma, peak_amplitude: some reasonable guesses for the constant,
             the sigma of the peak and the amplitude of the peak
-        fix_center: fix the center of the Gaussian
-        constrain_center: constrain the center of the Gaussian to a small region
-                          around the expected position of the line
+        fix_center: fix the center of the Gaussian in the fit
+        constrain_center: constrain the center of the Gaussian to a narrow 
+                          region around the expected position of the line
+        verbose: print results of the fit
     Output:
         spectrum_fit: parameters of the fit around the doublet
         spectrum_line: extracted spectrum around the lines    
@@ -575,7 +589,7 @@ def do_gaussian(selected_lines, other_lines, spectrum, target, fix_center=False,
     spectrum_fit = model_selection(target['Redshift'], spectrum_line['wl_rest'], 
                                 spectrum_line['flux'], spectrum_line['stdev'], 
                                 selected_lines['wl_vacuum'], fix_center,
-                                constrain_center)
+                                constrain_center, verbose)
     
     return spectrum_fit, spectrum_line
 

@@ -19,7 +19,7 @@ import spectra_operations as so
 
 
 def run_main(data_path, target, line_list, inspect=False, fix_center=False,
-             constrain_center=False, bin1=1):
+             constrain_center=False, verbose=False, bin1=1):
     """
     For a target/galaxy, read the spectrum and perform the line fitting for each 
     line within the list of lines
@@ -49,7 +49,7 @@ def run_main(data_path, target, line_list, inspect=False, fix_center=False,
         # Set the name to the exported plot in png format            
         for spectrum_fit, spectrum_line, lines in gf.fit_lines(
                 target, spectrum, line_list, line_groups, fix_center, 
-                constrain_center):
+                constrain_center, verbose):
             # Make a plot/fit a spectrum if the line in within the rest-frame 
             # spectral coverage of the source
             #pg.line_centres(line_list)
