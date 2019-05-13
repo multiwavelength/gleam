@@ -57,6 +57,20 @@ def fwhm_to_sigma(fwhm):
     return fwhm/(2.*np.sqrt(2.*np.log(2.)))
 
 
+def height_to_amplitude(height, sigma):
+    """
+    Convert height of a 1D Gaussian to the amplitude
+    """
+    return height*sigma*np.sqrt(2*np.pi)
+
+
+def amplitude_to_height(amplitude, sigma):
+    """
+    Convert amplitude of a 1D Gaussian to the height
+    """
+    return amplitude/(sigma*np.sqrt(2*np.pi))
+
+
 def bin_spectrum(spectrum, n=2):
     """
     Bin the spectrum by averaging n number of adjacent cells together
