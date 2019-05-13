@@ -403,7 +403,7 @@ def model_selection(redshift, x, y, ystd, wl_line, fix_center=False,
         wl_line: wavelengths of the lines to be fit; could be a single line or 
                  multiple lines; usually a singlet or a doublet
     Return:
-        Spectrum with continuum, detected lines and upperlimits
+        Spectrum with continuum, detected lines and upper limits
     """
     for wl_subset_indices in subsets(len(wl_line)):
         wl_subset = wl_line[list(wl_subset_indices)]
@@ -417,8 +417,9 @@ def model_selection(redshift, x, y, ystd, wl_line, fix_center=False,
     else:
         return None
 
-    yh = np.zeros_like(x)+model.eval(x=x)
-    residual = y - yh
+    # Calculate upper limit, by subtracting best fit model and then calculating
+    # the upper limit from the rms noise on the residuals
+    residual = y - model.eval(x=x)
     ul = upper_limit(residual, x)
     
     fitparams = model.params
