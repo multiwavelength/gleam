@@ -29,7 +29,7 @@ def run_source(p):
     """
     extension, target,line_list, inspect, fix_center, constrain_center, bin = p
     main.run_main(extension, target, line_list, inspect, 
-                            fix_center, constrain_center, bin)
+                  fix_center, constrain_center, bin)
 
 # Define command line arguments
 @click.command()
@@ -41,7 +41,8 @@ def run_source(p):
        default='/home/andra/Desktop/Keep/Cluster_spectroscopy/ACRes/line_measurements')
 @click.option('--lines-table', default='rsvao.fits')#'Main_optical_lines.fits')
 @click.option('--max-cpu', default=8, type=int)
-def pipeline(inspect, fix_center, constrain_center, bin, head_path, lines_table, max_cpu):
+def pipeline(inspect, fix_center, constrain_center, bin, head_path,
+             lines_table, max_cpu):
     # Relative paths
     pipeline = f'{head_path}/pipeline'
     data_path = f'{head_path}/allfluxes'

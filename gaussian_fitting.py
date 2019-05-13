@@ -381,10 +381,12 @@ def subsets(length):
 
 def model_selection(redshift, x, y, ystd, wl_line, fix_center=False, 
                  constrain_center=False) -> Spectrum:
-    
+    """
+    """
     for wl_subset_indices in subsets(len(wl_line)):
         wl_subset = wl_line[list(wl_subset_indices)]
-        model = fit_model(redshift, x, y, ystd, wl_subset, fix_center, constrain_center)
+        model = fit_model(redshift, x, y, ystd, wl_subset, fix_center, 
+                          constrain_center)
         if is_good(model):
             break
         else:
@@ -536,6 +538,8 @@ def do_gaussian(selected_lines, other_lines, spectrum, target, fix_center=False,
         c, peak_sigma, peak_amplitude: some reasonable guesses for the constant,
             the sigma of the peak and the amplitude of the peak
         fix_center: fix the center of the Gaussian
+        constrain_center: constrain the center of the Gaussian to a small region
+                          around the expected position of the line
     Output:
         spectrum_fit: parameters of the fit around the doublet
         spectrum_line: extracted spectrum around the lines    
