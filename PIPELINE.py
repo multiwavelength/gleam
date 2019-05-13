@@ -4,8 +4,9 @@ __version__ = "0.1"
 import os, sys
 import warnings
 import glob
-import numpy as np
+from multiprocessing import Pool
 
+import numpy as np
 from astropy.io import fits
 import click
 
@@ -13,6 +14,22 @@ import main
 import read_files as rf
 
 warnings.filterwarnings("ignore")
+
+def run_source(p):
+    """
+    Convenience function that runs the fitting on a single source. This is 
+    needed for the implementation of the multi-threading. The function Pool 
+    takes only one parameter, which is contained in the dictionary "p"
+    Input:
+        p: dictionary that contains the folder name where the data is, the table
+           that contains all the details on the source, the line list table that
+           will be fit, and a number of click parameters controlling the 
+           interactive inspection of the data and the way the center is being
+           fit as well as binning the data   
+    """
+    extension, target,line_list, inspect, fix_center, constrain_center, bin = p
+    main.run_main(extension, target, line_list, inspect, 
+                            fix_center, constrain_center, bin)
 
 # Define command line arguments
 @click.command()
@@ -23,15 +40,18 @@ warnings.filterwarnings("ignore")
 @click.option('--head-path', 
        default='/home/andra/Desktop/Keep/Cluster_spectroscopy/ACRes/line_measurements')
 @click.option('--lines-table', default='rsvao.fits')#'Main_optical_lines.fits')
-def pipeline(inspect, fix_center, constrain_center, bin, head_path, lines_table):
+@click.option('--max-cpu', default=8, type=int)
+def pipeline(inspect, fix_center, constrain_center, bin, head_path, lines_table, max_cpu):
     # Relative paths
     pipeline = f'{head_path}/pipeline'
     data_path = f'{head_path}/allfluxes'
     final_path = f'{head_path}/measurements'
     line_list = rf.read_lol(f'{pipeline}/line_lists/{lines_table}')
-    #Define the folder structure such that we run the main line fitting
-    #tool in the right place
+    
+    # Define the folder structure such that we run the main line fitting
+    # tool in the right place
     clusters = np.genfromtxt(f'{data_path}/clusters_in_my_sample', dtype='U')
+    unique_sources = []
     for cluster in glob.glob(f'{data_path}/A115'):#clusters:
         #cluster=f'{data_path}/{cluster}'
         for quadrant in glob.glob(f'{cluster}/Q1*'):
@@ -48,8 +68,13 @@ def pipeline(inspect, fix_center, constrain_center, bin, head_path, lines_table)
                     print(os.path.basename(cluster), os.path.basename(quadrant), 
                             os.path.basename(extension), 
                             target["SourceNumber"], target["Redshift"], target['Type'])
-                    main.run_main(extension, target, line_list, inspect, 
-                                fix_center, constrain_center, bin)
+                    # Add all the relevant variable for the running of the
+                    # fitting function to a list in the form of a dictionary
+                    # This is necessary such that all variable are together
+                    # in a single variable for executing the code in a parallel
+                    # manner with Pool
+                    unique_sources.append((extension, target, line_list, inspect, 
+                                fix_center, constrain_center, bin))
                     # Fix the RA and DEC
                     #target = rf.read_infofile(extension, target["Cluster"], 
                     #                          target["SourceNumber"], 
@@ -61,6 +86,12 @@ def pipeline(inspect, fix_center, constrain_center, bin, head_path, lines_table)
                                   f"{os.path.basename(extension)}_"
                                   f"zinfo.fits")
                 #targets.write(list_of_targets_out, overwrite=True)
-                
+    
+    # Set up multithread processing as executing the fitting on different
+    # sources is trivially parallelisable
+    nproc = 1 if inspect else max_cpu
+    with Pool(nproc) as p:
+        p.map(run_source, unique_sources)
+
 if __name__ == '__main__':
     pipeline()
