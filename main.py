@@ -16,7 +16,6 @@ import read_files as rf
 import gaussian_fitting as gf
 import plot_gaussian as pg
 import spectra_operations as so
-import write_files as wf
 
 
 def run_main(data_path, target, line_list, inspect=False, fix_center=False,
@@ -62,8 +61,7 @@ def run_main(data_path, target, line_list, inspect=False, fix_center=False,
                              inspect)
             if spectrum_fit is not None: 
                 for (line_fit, line)  in zip(spectrum_fit.lines, lines):
-                    tables.append(line_fit.as_fits_table(line))
-                    #tables.append(wf.write_emline_fits(line_fit, line))                       
+                    tables.append(line_fit.as_fits_table(line))                      
                 plot_line(lines, spectrum_fit)
 
     try:
