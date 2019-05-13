@@ -357,6 +357,10 @@ def upper_limit(y,x):
 
 def is_good(model: ModelResult) -> bool:
     """
+    Test whether the model provided a good fit: i.e. whether all the lines are 
+    detected. If the model has no error bars because of a poor fit or if the
+    amplitude of the Gaussian is measured at a significance lower than the 
+    indicated limit that would be flagged as a bad fit
     """
     if model.result.errorbars==False: return False
     fitparams = model.params
@@ -365,6 +369,7 @@ def is_good(model: ModelResult) -> bool:
         for i in range(len(model.components)-1)
        )
 
+
 def subsets(length):
     """
     Generate all subsets of the line set, in case we want to fit only 1, 2 or
@@ -372,6 +377,7 @@ def subsets(length):
     """
     for n in range(length, -1, -1):
         yield from itertools.combinations(range(length), n)
+
 
 def model_selection(redshift, x, y, ystd, wl_line, fix_center=False, 
                  constrain_center=False) -> Spectrum:
