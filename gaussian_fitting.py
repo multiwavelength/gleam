@@ -452,8 +452,7 @@ def model_selection(redshift, x, y, ystd, wl_line, fix_center=False,
             break
         else:
             if verbose==True:
-                print('NonDetection is in the fit, try a simpler model')
-                print(f'Set of lines: {wl_subset.data}')
+                print(Fore.BLUE+f'NonDetection when fitting set of lines {wl_subset}, try a simpler model')
     else:
         return None
 
@@ -466,8 +465,7 @@ def model_selection(redshift, x, y, ystd, wl_line, fix_center=False,
     if verbose==True:
         for i, wl in enumerate(wl_line):
             if (i not in wl_subset_indices) and np.sum(~so.mask_line(x, wl_line[i], w=2*c.w))<c.spectral_resolution:
-                    print('No spectral coverage on line', redshift, wl, len(x[~so.mask_line(x, wl, w=2*c.w)]), np.sum(~so.mask_line(x, wl, w=2*c.w)))
-                    sys.exit('Blah')
+                    print(Fore.BLUE+f'No spectral coverage on line {wl_line[i]}')
             else:
                 continue
     
@@ -575,9 +573,8 @@ def fit_model(redshift, x, y, ystd, wl_line: Iterable[Qty], fix_center=False,
         if verbose==True: print(result.fit_report())
         fitparams = result.params
     except:
-        print(Fore.RED+"No model")
+        print(Fore.RED+"No model could be fit")
         sys.exit("Error!")
-    
     return result
 
 
