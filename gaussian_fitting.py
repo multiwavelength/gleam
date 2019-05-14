@@ -296,10 +296,47 @@ class NonDetection:
                         description='Detected or nondetected line')
         return t
 
-    
+
+@dataclass
+class NoCoverage:
+    continuum: RandomVariable
+    restwl: float
+    z: float
+
+    def as_fits_table(self, line: Table) -> Table:
+        """ 
+        Writes out the results for an emission line within a multiple line fit 
+        for which there is no spectral coverage
+        Input:
+            self: emission line fit parameters
+            line: lab properties of the fitted emission line
+        Return: 
+            Fits table with all the lab and measured properties of a particular
+            emission line
+        """
+        t = Table()
+        # Vacuum/laboratory properties of the line
+        t = add_lab_values(line, t)
+
+        t['z'] = Column([self.z], dtype='f', description='Source redshift, from specpro')
+        
+        # Line fits
+        # Continuum around line 
+        t['cont'] =  Column([self.continuum.value.value], dtype='f', 
+                            unit=self.continuum.value.unit, 
+                            description='Continuum around line, Gaussian fit')
+        t['cont_err'] =  Column([self.continuum.error.value], dtype='f', 
+                            unit=self.continuum.error.unit, 
+                            description='Error on continuum around line, Gaussian fit')
+        # Detection flag
+        t['detected'] = Column([False], dtype='bool', 
+                        description='Detected or nondetected line')
+        return t
+
+
 @dataclass
 class Spectrum:
-    lines: List[Union[Line, NonDetection]]
+    lines: List[Union[Line, NonDetection, NoCoverage]]
     continuum: RandomVariable
 
 
@@ -425,6 +462,17 @@ def model_selection(redshift, x, y, ystd, wl_line, fix_center=False,
     residual = y.value - model.eval(x=x.value)
     ul = upper_limit(residual, x.value)
     
+    # Print a note when the spectrum does not cover one of the lines to be fit
+    if verbose==True:
+        for i, wl in enumerate(wl_line):
+            if (i not in wl_subset_indices) and np.sum(~so.mask_line(x, wl_line[i], w=2*c.w))<c.spectral_resolution:
+                    print('No spectral coverage on line', redshift, wl, len(x[~so.mask_line(x, wl, w=2*c.w)]), np.sum(~so.mask_line(x, wl, w=2*c.w)))
+                    sys.exit('Blah')
+            else:
+                continue
+    
+    # Add line measurements, nondetections and lines without coverage into a 
+    # Spectrum class format
     fitparams = model.params
     return Spectrum(continuum=RandomVariable.from_param(fitparams['c'])*y.unit,
                     lines=[
@@ -438,12 +486,18 @@ def model_selection(redshift, x, y, ystd, wl_line, fix_center=False,
                             restwl=wl_line[i], 
                             continuum=RandomVariable.from_param(fitparams['c'])*y.unit
                         )
-                        if i in wl_subset_indices else
+                        if i in wl_subset_indices else 
+                        NoCoverage(
+                            z=redshift,
+                            restwl=wl_line[i], 
+                            continuum=RandomVariable.from_param(fitparams['c'])*y.unit
+                        )
+                        if np.sum(~so.mask_line(x, wl_line[i], w=2*c.w))<c.spectral_resolution else
                         NonDetection(
                             amplitude=ul*x.unit*y.unit,
                             z=redshift,
                             restwl=wl_line[i], 
-                            continuum=RandomVariable.from_param(fitparams['c'])*y.unit)
+                            continuum=RandomVariable.from_param(fitparams['c'])*y.unit) 
                         for i in range(len(wl_line))
                     ])
 
