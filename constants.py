@@ -13,8 +13,12 @@ SN_limit = 3
 
 # Custom units
 # Flux unit
-fluxunit = 10**-16. * u.erg / (u.cm ** 2 * u.s * u.Angstrom) 
-fluxu = u.erg / (u.cm ** 2 * u.s * u.Angstrom) 
+fluxu = u.erg / (u.cm ** 2 * u.s * u.Angstrom)
+fluxval = 10**-16. * fluxu
+fluxunit = u.def_unit('1E16 erg cm^-2 s^-1 AA^-1', fluxval, 
+                        format={'latex': r'10^{16}\,erg\,cm^{-2}\,s^{-1}\,\AA^{-1}'})
+ff = 10**-17 # fudge factor for flux units
+fl = 10**40 # fudge factor for luminosity units
 
 # Cosmology
 H0=70

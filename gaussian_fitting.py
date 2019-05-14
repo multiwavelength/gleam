@@ -191,20 +191,18 @@ class Line:
                         unit=self.amplitude.error.unit, 
                         description='Error on amplitude, Gaussian fit')           
         # Flux
-        ff = 10.**-17
-        t['flux'] = Column([self.flux.value.value/ff], dtype='f', 
-                        unit=self.flux.value.unit*ff, 
+        t['flux'] = Column([self.flux.value.value/c.ff], dtype='f', 
+                        unit=self.flux.value.unit*c.ff, 
                         description='Line flux, Gaussian fit')
-        t['flux_err'] = Column([self.flux.error.value/ff], dtype='f', 
-                        unit=self.flux.error.unit*ff, 
+        t['flux_err'] = Column([self.flux.error.value/c.ff], dtype='f', 
+                        unit=self.flux.error.unit*c.ff, 
                         description='Error on line flux, Gaussian fit') 
         # Luminosity
-        fl = 10.**40
-        t['luminosity'] = Column([self.luminosity.value.value/fl], dtype='f', 
-                        unit=self.luminosity.value.unit*fl, 
+        t['luminosity'] = Column([self.luminosity.value.value/c.fl], dtype='f', 
+                        unit=self.luminosity.value.unit*c.fl, 
                         description='Line luminosity, Gaussian fit')
-        t['luminosity_err'] = Column([self.luminosity.error.value/fl], dtype='f', 
-                        unit=self.luminosity.error.unit*fl, 
+        t['luminosity_err'] = Column([self.luminosity.error.value/c.fl], dtype='f', 
+                        unit=self.luminosity.error.unit*c.fl, 
                         description='Error on line luminosity, Gaussian fit') 
         # Equivalent width
         t['EWrest'] = Column([self.ew_rest.value.value], dtype='f', 
@@ -283,14 +281,12 @@ class NonDetection:
                         unit=self.amplitude.unit, 
                         description='Amplitude, Gaussian fit')
         # Flux
-        ff = 10.**-17
-        t['flux'] = Column([self.flux.value/ff], dtype='f', 
-                        unit=self.flux.unit*ff, 
+        t['flux'] = Column([self.flux.value/c.ff], dtype='f', 
+                        unit=self.flux.unit*c.ff, 
                         description='Line flux, Gaussian fit')
         # Luminosity
-        fl = 10.**40
-        t['luminosity'] = Column([self.luminosity.value/fl], dtype='f', 
-                        unit=self.luminosity.unit*fl, 
+        t['luminosity'] = Column([self.luminosity.value/c.fl], dtype='f', 
+                        unit=self.luminosity.unit*c.fl, 
                         description='Line luminosity, Gaussian fit')
         
         # Detection flag
