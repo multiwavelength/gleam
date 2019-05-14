@@ -9,7 +9,7 @@ from astropy import units as u
 from astropy.cosmology import FlatLambdaCDM
 
 
-SN_limit = 3
+SN_limit = 2
 
 # Custom units
 # Flux unit
