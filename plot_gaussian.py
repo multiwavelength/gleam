@@ -12,6 +12,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 import astropy
+from astropy import units as u
 from astropy.table import Table
 
 import read_files as rf
@@ -99,31 +100,33 @@ def plot_spectrum(data_path, target, spectrum, spectrum_line, spectrum_fit,
                           bbox_transform=ax.transAxes)
 
     # Select the region around the emission line and overplot the line
-    select = ( (spectrum['wl_rest'] < (np.average(fitted_wl)+d_wl) ) &  
-                (spectrum['wl_rest'] > (np.average(fitted_wl)-d_wl) ) )             
+    select = ( (spectrum['wl_rest'].quantity < (np.average(fitted_wl.quantity)+d_wl) ) &  
+                (spectrum['wl_rest'].quantity > (np.average(fitted_wl.quantity)-d_wl) ) )  
     sub_axes.plot(spectrum['wl_rest'][select], spectrum['flux'][select], \
                   color='gray')
-
+       
     # Mark the emission line
     for line in fitted_wl:
         sub_axes.axvline(x=line, color='k', linestyle='-')
-    
+
     if plot_fit == True:
         plot_gaussian_fit(spectrum['wl_rest'][select], spectrum_fit, ax)
         plot_gaussian_fit(spectrum['wl_rest'][select], spectrum_fit, sub_axes)
-
+    
     # Overplot the emission lines of reference
     ax2 = overplot_lines(ax, line_latex, line_wls)
     sub_axes.set_zorder(ax.get_zorder()+1) # put ax in front of ax2
     ax.patch.set_visible(False) # hide the 'canvas'
     sub_axes.patch.set_visible(True)
-
+    
     # Add title to the zoomed in axis
     sub_axes.set_title(r"{}".format(title))
-    ax.set_xlabel(r'$\boldsymbol{\lambda}$ (\AA)', fontsize=c.labelsize)
+    ax.set_xlabel(r'$\boldsymbol{\lambda}$ '+
+                  f"({spectrum['wl_rest'].unit.to_string('latex_inline')})", 
+                  fontsize=c.labelsize)
     ax.set_ylabel(r'$F_{\boldsymbol{\lambda}}$'+
-               r'$\left(10^{-16} \mathrm{erg}\,\mathrm{s}^{-1}\,\mathrm{cm}^{-2}\right)$',
-               fontsize=c.labelsize)
+                  f"({spectrum['flux'].unit.to_string('latex_inline')})",
+                  fontsize=c.labelsize)
   
     # show or save the figure depending on the command line flag
     if inspect:
@@ -162,9 +165,10 @@ def overview_plot(target, data_path, line_groups, spectrum, size_x=c.overview_x,
     basename = rf.naming_convention(data_path, target["Cluster"], 
                                     target["SourceNumber"], "linefits", 
                                     target["Mode"])
-    Myxlabel = r'$\boldsymbol{\lambda}$ (\AA)'
-    Myylabel = (r'$F_{\boldsymbol{\lambda}}$'+
-               r'$\left(10^{-16} \mathrm{erg}\,\mathrm{s}^{-1}\,\mathrm{cm}^{-2}\right)$')
+    Myxlabel = (r'$\boldsymbol{\lambda}$ '+
+                f"({spectrum['wl_rest'].unit.to_string('latex_inline')})")
+    Myylabel = (r'$F_{\boldsymbol{\lambda}}$ '+
+               f"({spectrum['flux'].unit.to_string('latex_inline')})")
     # How many zoom-in plots will we have? As many as groups of lines, as the
     # lines grouped together will also be plotted together
     No_plots = len(line_groups)
@@ -189,8 +193,8 @@ def overview_plot(target, data_path, line_groups, spectrum, size_x=c.overview_x,
 
         # Select a small wavelength range around the emission line where to 
         # overplot the fit
-        select = ((spectrum['wl_rest'] < (np.average(line["wl_vacuum"])+d_wl)) &  
-                  (spectrum['wl_rest'] > (np.average(line["wl_vacuum"])-d_wl)) ) 
+        select = ((spectrum['wl_rest'].quantity < (np.average(line["wl_vacuum"].quantity)+d_wl)) &  
+                  (spectrum['wl_rest'].quantity > (np.average(line["wl_vacuum"].quantity)-d_wl)) ) 
 
         # Create a zoomed in axis focusing on each line
         r"""

@@ -355,7 +355,7 @@ def upper_limit(y,x):
     # Takes SN limit into account
     upper_limit = ( c.SN_limit * so.spectrum_rms(y) * 
                     np.sqrt(pixel**2*c.spectral_resolution) )
-    return upper_limit.to(x.unit*y.unit)
+    return upper_limit
 
 
 def is_good(model: ModelResult) -> bool:
@@ -420,8 +420,8 @@ def model_selection(redshift, x, y, ystd, wl_line, fix_center=False,
 
     # Calculate upper limit, by subtracting best fit model and then calculating
     # the upper limit from the rms noise on the residuals
-    residual = y - model.eval(x=x)
-    ul = upper_limit(residual, x)
+    residual = y.value - model.eval(x=x.value)
+    ul = upper_limit(residual, x.value)
     
     fitparams = model.params
     return Spectrum(continuum=RandomVariable.from_param(fitparams['c'])*y.unit,
@@ -433,14 +433,14 @@ def model_selection(redshift, x, y, ystd, wl_line, fix_center=False,
                             amplitude=RandomVariable.from_param(fitparams[f'g{wl_subset_indices.index(i)}_amplitude'])*x.unit*y.unit,
                             fwhm=RandomVariable.from_param(fitparams[f'g{wl_subset_indices.index(i)}_fwhm'])*x.unit,
                             z=redshift,
-                            restwl=wl_line[i]*wl_line.unit, 
+                            restwl=wl_line[i], 
                             continuum=RandomVariable.from_param(fitparams['c'])*y.unit
                         )
                         if i in wl_subset_indices else
                         NonDetection(
-                            amplitude=ul,
+                            amplitude=ul*x.unit*y.unit,
                             z=redshift,
-                            restwl=wl_line[i]*wl_line.unit, 
+                            restwl=wl_line[i], 
                             continuum=RandomVariable.from_param(fitparams['c'])*y.unit)
                         for i in range(len(wl_line))
                     ])
@@ -468,7 +468,7 @@ def fit_model(redshift, x, y, ystd, wl_line: Iterable[Qty], fix_center=False,
     """
     # make a model that is a number of Gaussians + a constant:
     model = sum((GaussianModel(prefix=f'g{i}_')
-                 for i in range(len(wl_line))),
+                 for i in range(len(wl_line.value))),
                 ConstantModel())
 
     # define the model parameters, i.e. the continuum, wavelength of line we are
@@ -484,37 +484,38 @@ def fit_model(redshift, x, y, ystd, wl_line: Iterable[Qty], fix_center=False,
     # of the emission line
     elif constrain_center==True:
         for i, wl in enumerate(wl_line):
-            model.set_param_hint(f'g{i}_center', value=wl, 
-                                                 min=wl-c.w, max=wl+c.w)
+            model.set_param_hint(f'g{i}_center', value=wl.value, 
+                                                 min=(wl-c.w).value, 
+                                                 max=(wl+c.w).value)
     
     # If no fixing or constraining is done, then constrain the center to be
     # within the entire range selected around the line that is used for the 
     # fitting
     else:
         for i, wl in enumerate(wl_line):
-            model.set_param_hint(f'g{i}_center', value=wl, 
-                                                 min=wl-c.cont_width, 
-                                                 max=wl+c.cont_width)
+            model.set_param_hint(f'g{i}_center', value=wl.value, 
+                                                 min=(wl-c.cont_width).value, 
+                                                 max=(wl+c.cont_width).value)
     # Constain the FWHM and the sigma to values set by the used. I chose 
     # reasonable values where the minimum is 3*channel width and 10*channel 
     # width
-    for i, wl in enumerate(wl_line):
-        model.set_param_hint(f'g{i}_fwhm', value=(c.fwhm_min+c.fwhm_max)/2., 
-                             min=c.fwhm_min, max=c.fwhm_max)
-    for i, wl in enumerate(wl_line):
+    for i, wl in enumerate(wl_line.value):
+        model.set_param_hint(f'g{i}_fwhm', value=(c.fwhm_min+c.fwhm_max).value/2., 
+                             min=c.fwhm_min.value, max=c.fwhm_max.value)
+    for i, wl in enumerate(wl_line.value):
         model.set_param_hint(f'g{i}_sigma',
-                             value=so.fwhm_to_sigma((c.fwhm_min+c.fwhm_max)/2.),
-                             min=so.fwhm_to_sigma(c.fwhm_min), 
-                             max=so.fwhm_to_sigma(c.fwhm_max))
+                             value=so.fwhm_to_sigma((c.fwhm_min.value+c.fwhm_max.value)/2.),
+                             min=so.fwhm_to_sigma(c.fwhm_min.value), 
+                             max=so.fwhm_to_sigma(c.fwhm_max.value))
     
     # Set the continuum to the median of the selected range
-    ctr = np.median(y)
+    ctr = np.median(y).value
     params = model.make_params(c=ctr, **{f'g{i}_center': wl
-                                       for i, wl in enumerate(wl_line)})    
-    
+                                       for i, wl in enumerate(wl_line.value)})    
     # perform a least squares fit with errors taken into account as i.e. 1/sigma
     try:
-        result:ModelResult = model.fit(y, params, x=x, weights=1.0/ystd)
+        result:ModelResult = model.fit(y.value, params, x=x.value, 
+                                       weights=1.0/ystd.value)
         if verbose==True: print(result.fit_report())
         fitparams = result.params
     except:
@@ -545,10 +546,10 @@ def fit_lines(target, spectrum, line_list, line_groups, fix_center=False,
         to them
     """
     for group in line_groups:
-        select_group = ( (line_list['wl_vacuum']>group.beginning) & 
-                         (line_list['wl_vacuum']<group.ending) )
-        if  ( (group.ending    < np.amax(spectrum['wl_rest']) ) & 
-              (group.beginning > np.amin(spectrum['wl_rest']) ) ):
+        select_group = ( (line_list['wl_vacuum'].quantity>group.beginning) & 
+                         (line_list['wl_vacuum'].quantity<group.ending) )
+        if  ( (group.ending    < np.amax(spectrum['wl_rest'].quantity) ) & 
+              (group.beginning > np.amin(spectrum['wl_rest'].quantity) ) ):
             spectrum_fit, spectrum_line = do_gaussian(line_list[select_group], 
                     line_list[~select_group], spectrum, target, fix_center, 
                     constrain_center, verbose)
@@ -582,10 +583,10 @@ def do_gaussian(selected_lines, other_lines, spectrum, target, fix_center=False,
     spectrum_line = spectrum[mask_line]
 
     # Fit the gaussian(s)
-    spectrum_fit = model_selection(target['Redshift'], spectrum_line['wl_rest'], 
-                                spectrum_line['flux'], spectrum_line['stdev'], 
-                                selected_lines['wl_vacuum'], fix_center,
+    spectrum_fit = model_selection(target['Redshift'], spectrum_line['wl_rest'].quantity, 
+                                spectrum_line['flux'].quantity, spectrum_line['stdev'].quantity, 
+                                selected_lines['wl_vacuum'].quantity, fix_center,
                                 constrain_center, verbose)
-    
+
     return spectrum_fit, spectrum_line
 

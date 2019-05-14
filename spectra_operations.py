@@ -126,7 +126,7 @@ def resolution(wl):
     stdev = np.std(diff)
 
     if (stdev/average>10**-3): print(Fore.RED+"Warning: non-constant resolution")
-    return average*wl.unit
+    return average
 
 
 
@@ -152,7 +152,7 @@ def spectrum_rms(y):
     """
     Calculate the rms of a spectrum, after removing the mean value
     """
-    rms = np.sqrt(np.mean((y-np.mean(y))**2))* y.unit
+    rms = np.sqrt(np.mean((y-np.mean(y))**2))
     return rms
 
     
@@ -163,8 +163,8 @@ def velocity_resolution(x):
     spectrum has been rest-framed or not
     """
     wl_res = resolution(x)
-    wl_av = np.average(x)*x.unit
-    v_res = (wl_res/wl_av * const.c).to(u.km/u.s)
+    wl_av = np.average(x)
+    v_res = (wl_res/wl_av * const.c)
     return v_res
 
 
@@ -196,9 +196,9 @@ def mask_atmosphere(wl, z):
     Aband = restframe_wl(c.Aband, z)
     Bband = restframe_wl(c.Bband, z)
     Cband = restframe_wl(c.Cband, z) # for Toothbrush WHT data
-    absorption = ((wl.quantity>Aband[0]) & (wl.quantity<Aband[1])) | \
-                 ((wl.quantity>Bband[0]) & (wl.quantity<Bband[1])) | \
-                 ((wl.quantity>Cband[0]) & (wl.quantity<Cband[1])) # Tooth data
+    absorption = ((wl>Aband[0]) & (wl<Aband[1])) | \
+                 ((wl>Bband[0]) & (wl<Bband[1])) | \
+                 ((wl>Cband[0]) & (wl<Cband[1])) # Tooth data
              
     without_absorption = ~absorption 
     return without_absorption
@@ -248,7 +248,7 @@ def select_singleline(wl_rest, line, cont_width):
     """
     wl_min = line - cont_width
     wl_max = line + cont_width
-    mask = ( (wl_rest.quantity>wl_min) & (wl_rest.quantity<wl_max) )
+    mask = ( (wl_rest>wl_min) & (wl_rest<wl_max) )
     return mask
 
 
@@ -275,13 +275,13 @@ def select_lines(selected_lines, other_lines, spectrum, target_info,
                    and the continuum; all other lines masked
     """
     z_ref = target_info['Redshift']
-    wl_rest = spectrum['wl_rest']
+    wl_rest = spectrum['wl_rest'].quantity
     flux = spectrum['flux'].quantity
     # Restframe resolution
     res_rest = resolution(wl_rest)
     # mask all lines, but the line we are interested in
     masked_otherlines = np.full(np.shape(wl_rest), True)
-    for line in  map(Table, other_lines):
+    for line in map(Table, other_lines):
         mask = mask_line(wl_rest, line['wl_vacuum'])
         masked_otherlines = (masked_otherlines & mask)
 
@@ -291,7 +291,7 @@ def select_lines(selected_lines, other_lines, spectrum, target_info,
     # select the lines of interest
     select_lines =  np.full(np.shape(wl_rest), False)
     for line in map(Table, selected_lines):
-        mask = select_singleline(wl_rest, line['wl_vacuum'], cont_width)
+        mask = select_singleline(wl_rest, line['wl_vacuum'].quantity, cont_width)
         select_lines = (select_lines | mask)
 
     masked_all =  masked_atm & masked_otherlines & select_lines
@@ -311,7 +311,7 @@ def group_lines(line_list, t=c.tolerance):
     Output:
         Groups of lines of type Component as returned by connected components
     """
-    wl = [(x-t, x+t) for x in line_list['wl_vacuum']]
+    wl = [(x-t, x+t) for x in line_list['wl_vacuum'].quantity]
     line_groups = connected_components(wl, left, right)
     return line_groups
 

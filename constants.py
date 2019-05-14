@@ -41,20 +41,20 @@ Cband = [8169., 8245.]*u.Angstrom # for Toothbrush WHT data
 
 # Tolerance for considering emission lines part of a group and thus fitting them
 # together
-tolerance = 13. # Angstrom
+tolerance = 13.*u.Angstrom # Angstrom
 
 # Range to be probed by lmfit when searching around Gaussian center hint
-w = 3. #Angstrom
+w = 3.*u.Angstrom #Angstrom
  
 # Wavelength width used to mask lines
-line_width = 20. # Angstrom
+line_width = 20.*u.Angstrom # Angstrom
 
 # Range used for selecting continuum left and right of the source
-cont_width = 70.#*u.Angstrom
-cont_plot_width = 70
+cont_width = 70.*u.Angstrom#*u.Angstrom
+cont_plot_width = 70*u.Angstrom
 
 # Parameters to constrain the width of the lines
-pixel = 1.21 # 1 pixel is 1.21 Angtrom
+pixel = 1.21*u.Angstrom # 1 pixel is 1.21 Angtrom
 fwhm_min = 3*pixel
 fwhm_max = 10*pixel
 
