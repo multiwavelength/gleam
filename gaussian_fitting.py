@@ -52,6 +52,7 @@ class RandomVariable:
         """ other * self """
         return self * other
 
+
 @dataclass
 class Line:
     wavelength: RandomVariable
@@ -229,9 +230,10 @@ class Line:
 
         # Detection flag
         t['detected'] = Column([True], dtype='bool', 
-                        description='Line luminosity, Gaussian fit')
+                        description='Detected or nondetected line')
         return t
-        
+
+
 @dataclass
 class NonDetection:
     amplitude: Qty
@@ -253,7 +255,7 @@ class NonDetection:
 
     def as_fits_table(self, line: Table) -> Table:
         """ 
-        Writes out the results of all the line fits for a single emission line 
+        Writes out the results for a nondetected emission line within a line fit 
         (either stand alone or one that was part of a doublet, triplet etc), for
         a particular source using astropy
         Input:
@@ -291,7 +293,7 @@ class NonDetection:
         
         # Detection flag
         t['detected'] = Column([False], dtype='bool', 
-                        description='Line luminosity, Gaussian fit')
+                        description='Detected or nondetected line')
         return t
 
     
