@@ -54,24 +54,17 @@ def pipeline(inspect, fix_center, constrain_center, bin, head_path,
     
     # Define the folder structure such that we run the main line fitting
     # tool in the right place
-    clusters = np.genfromtxt(f'{data_path}/clusters_in_my_sample', dtype='U')
     unique_sources = []
-    for cluster in glob.glob(f'{data_path}/A115'):#clusters:
-        #cluster=f'{data_path}/{cluster}'
-        for quadrant in glob.glob(f'{cluster}/Q1*'):
+    for cluster in glob.glob(f'{data_path}/*'):
+        for quadrant in glob.glob(f'{cluster}/Q*'):
             for extension in glob.glob(f'{quadrant}/EXT1*'):
                 list_of_targets = (f"{extension}/{os.path.basename(cluster)}_"
                                   f"{os.path.basename(quadrant)}_"
                                   f"{os.path.basename(extension)}_"
                                   f"zinfo.dat")
                 targets = rf.read_lof(list_of_targets)
-                for target in targets:#targets[0:1]:
+                for target in targets:
                     if target['Membership']!='member': continue
-                    #print(target)
-                    #if target["SourceNumber"]!='156': continue
-                    print(os.path.basename(cluster), os.path.basename(quadrant), 
-                            os.path.basename(extension), 
-                            target["SourceNumber"], target["Redshift"], target['Type'])
                     # Add all the relevant variable for the running of the
                     # fitting function to a list in the form of a dictionary
                     # This is necessary such that all variable are together
@@ -84,12 +77,11 @@ def pipeline(inspect, fix_center, constrain_center, bin, head_path,
                     #target = rf.read_infofile(extension, target["Cluster"], 
                     #                          target["SourceNumber"], 
                     #                          target["Mode"], target)
-                    #print('miau')
                 # Write out correct list of sources with correct RA and DEC    
-                list_of_targets_out = (f"{extension}/{os.path.basename(cluster)}_"
-                                  f"{os.path.basename(quadrant)}_"
-                                  f"{os.path.basename(extension)}_"
-                                  f"zinfo.fits")
+                #list_of_targets_out = (f"{extension}/{os.path.basename(cluster)}_"
+                #                  f"{os.path.basename(quadrant)}_"
+                #                  f"{os.path.basename(extension)}_"
+                #                  f"zinfo.fits")
                 #targets.write(list_of_targets_out, overwrite=True)
     
     # Set up multithread processing as executing the fitting on different

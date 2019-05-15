@@ -41,6 +41,11 @@ def run_main(data_path, target, line_list, inspect=False, fix_center=False,
     Output:
         fits of emission lines and plots for each fitted lines
     """
+    print(f'Now working in {data_path} ' +
+          f'on cluster {target["Cluster"]} ' + 
+          f'on source {target["SourceNumber"]} at z={target["Redshift"]:1.3f} '+
+          f'of type {target["Type"]}\n')
+
     # Read spectrum for the current source from outside file
     spectrum = rf.read_spectrum(data_path, target["Cluster"],
                                 target["SourceNumber"], target["Mode"])
