@@ -148,6 +148,7 @@ def mask_line(wl, wl_ref, w = c.line_width):
 
     return mask
 
+
 def spectrum_rms(y):
     """
     Calculate the rms of a spectrum, after removing the mean value
@@ -249,7 +250,6 @@ def select_singleline(wl_rest, line, cont_width):
     wl_max = line + cont_width
     mask = ( (wl_rest>wl_min) & (wl_rest<wl_max) )
     return mask
-
 
 
 
