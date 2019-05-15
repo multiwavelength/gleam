@@ -579,7 +579,7 @@ def fit_model(redshift, x, y, ystd, wl_line: Iterable[Qty], fix_center=False,
 
 
 def fit_lines(target, spectrum, line_list, line_groups, fix_center=False, 
-              constrain_center=False, verbose=False):
+              constrain_center=False, verbose=False, ignore_sky_lines=False):
     """
     Head function that goes through the list of lines and fits all lines for a 
     particular spectrum
@@ -593,7 +593,9 @@ def fit_lines(target, spectrum, line_list, line_groups, fix_center=False,
         fix_center: fix the center of the Gaussian in the fit
         constrain_center: constrain the center of the Gaussian to a narrow 
                           region around the expected position of the line
-        verbose: print results of the fit
+        verbose: print results of the fit and warnings
+        ignore_sky_lines: do not mask the regions around the expected positions
+                          of the sky lines
     Output:
         Astropy table containing details of emission lines and the Gaussian fits 
         to them
@@ -605,12 +607,12 @@ def fit_lines(target, spectrum, line_list, line_groups, fix_center=False,
               (group.beginning > np.amin(spectrum['wl_rest'].quantity) ) ):
             spectrum_fit, spectrum_line = do_gaussian(line_list[select_group], 
                     line_list[~select_group], spectrum, target, fix_center, 
-                    constrain_center, verbose)
+                    constrain_center, verbose, ignore_sky_lines)
             yield spectrum_fit, spectrum_line, line_list[select_group]
     
 
 def do_gaussian(selected_lines, other_lines, spectrum, target, fix_center=False,
-                constrain_center=False, verbose=False):
+                constrain_center=False, verbose=False, ignore_sky_lines=False):
     """
     Selects the spectrum around an emission line of interest. Then fits a single
     Gaussian plus a constant continuum to the given data with the package `lmfit'
@@ -625,13 +627,17 @@ def do_gaussian(selected_lines, other_lines, spectrum, target, fix_center=False,
         fix_center: fix the center of the Gaussian in the fit
         constrain_center: constrain the center of the Gaussian to a narrow 
                           region around the expected position of the line
-        verbose: print results of the fit
+        verbose: print results of the fit and warnings
+        ignore_sky_lines: do not mask the regions around the expected positions
+                          of the sky lines
     Output:
         spectrum_fit: parameters of the fit around the doublet
         spectrum_line: extracted spectrum around the lines    
     """
     # Mask the region around the line
-    mask_line = so.select_lines(selected_lines, other_lines, spectrum, target)
+    mask_line = so.select_lines(selected_lines, other_lines, spectrum, target,
+                                ignore_sky_lines)
+                                
     # Create a new variable that contains the spectrum around the line
     spectrum_line = spectrum[mask_line]
 

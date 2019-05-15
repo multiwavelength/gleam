@@ -19,7 +19,8 @@ import spectra_operations as so
 
 
 def run_main(data_path, target, line_list, inspect=False, fix_center=False,
-             constrain_center=False, verbose=False, bin1=1):
+             constrain_center=False, verbose=False, ignore_sky_lines=False,
+             bin1=1):
     """
     For a target/galaxy, read the spectrum and perform the line fitting for each 
     line within the list of lines
@@ -28,6 +29,15 @@ def run_main(data_path, target, line_list, inspect=False, fix_center=False,
         target: observed specturm in specpro format 
         line_list: list of emission lines to measure; in astropy table format
         inspect: if true, show the plots; otherwise write to disk
+        fix_center: fix the centers of the Gaussians to the lab value of the
+                    emisison line
+        constrain_center: constrain the centers of the Gaussian to a small 
+                          region around the expected lab wavelength of the line
+        verbose: verbose output of warnings and line fit results
+        ignore_sky_lines: do not mask sky lines, for cases where the processing
+                          of the data was highly successful and emission lines 
+                          can be recovered
+        bin1: number of adjacent spectral pixels to be binned
     Output:
         fits of emission lines and plots for each fitted lines
     """
@@ -49,7 +59,7 @@ def run_main(data_path, target, line_list, inspect=False, fix_center=False,
         # Set the name to the exported plot in png format            
         for spectrum_fit, spectrum_line, lines in gf.fit_lines(
                 target, spectrum, line_list, line_groups, fix_center, 
-                constrain_center, verbose):
+                constrain_center, verbose, ignore_sky_lines):
             # Make a plot/fit a spectrum if the line in within the rest-frame 
             # spectral coverage of the source
             #pg.line_centres(line_list)

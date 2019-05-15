@@ -255,7 +255,7 @@ def select_singleline(wl_rest, line, cont_width):
 
 
 def select_lines(selected_lines, other_lines, spectrum, target_info, 
-                cont_width=c.cont_width):
+                 ignore_sky_lines=False, cont_width=c.cont_width):
     """
     Masks the spectrum in the vicinity of the line of interest. It should leave 
     unmasked the actual line and lots of continuum, but mask other neightbouring 
@@ -268,6 +268,10 @@ def select_lines(selected_lines, other_lines, spectrum, target_info,
                   wavelength
         target: ancillary information on the source, such as RA, DEC or redshift
                 as produced by read_files.read_lof()
+        ignore_sky_lines: in some cases, when the processing of the data is very
+                          good, the sky lines are very well subtracted and lines
+                          can be recovered; in these cases do not mark the 
+                          regions around the expected position of the sky lines
         cont_width: amount of wavelength coverage on each side of the line that
                     will be taken into account
     Output:
@@ -285,17 +289,19 @@ def select_lines(selected_lines, other_lines, spectrum, target_info,
         mask = mask_line(wl_rest, line['wl_vacuum'])
         masked_otherlines = (masked_otherlines & mask)
 
-    # mask the atmospheric lines
-    masked_atm = mask_atmosphere(wl_rest, z_ref)
-
     # select the lines of interest
     select_lines =  np.full(np.shape(wl_rest), False)
     for line in map(Table, selected_lines):
         mask = select_singleline(wl_rest, line['wl_vacuum'].quantity, cont_width)
         select_lines = (select_lines | mask)
 
-    masked_all =  masked_atm & masked_otherlines & select_lines
-    
+    # decide whether to mask the atmospheric lines
+    if ignore_sky_lines == True:
+        masked_all =  masked_otherlines & select_lines
+    else:
+        masked_atm = mask_atmosphere(wl_rest, z_ref)
+        masked_all =  masked_atm & masked_otherlines & select_lines
+
     return masked_all
 
 
