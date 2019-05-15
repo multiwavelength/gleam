@@ -232,7 +232,6 @@ def add_restframe(spectrum, z):
     return spectrum
 
 
-
 def select_singleline(wl_rest, line, cont_width):
     """
     Select the region around an emission line
