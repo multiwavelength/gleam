@@ -78,7 +78,8 @@ def pipeline(inspect, fix_center, constrain_center, bin, head_path,
                     # in a single variable for executing the code in a parallel
                     # manner with Pool
                     unique_sources.append((extension, target, line_list, inspect, 
-                                fix_center, constrain_center, bin))
+                                fix_center, constrain_center, bin, verbose, 
+                                ignore_sky_lines))
                     # Fix the RA and DEC
                     #target = rf.read_infofile(extension, target["Cluster"], 
                     #                          target["SourceNumber"], 
