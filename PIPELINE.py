@@ -41,7 +41,7 @@ def run_source(p):
 @click.option('--verbose', is_flag=True)
 @click.option('--ignore-sky-lines', is_flag=True)
 @click.option('--head-path', 
-       default='/home/andra/Desktop/Keep/Cluster_spectroscopy/ACRes/line_measurements')
+       default='/media/andra/Elements/Keep/Cluster_spectroscopy/line_measurements_ACReS')
 @click.option('--lines-table', default='rsvao.fits')#'Main_optical_lines.fits')
 @click.option('--max-cpu', default=8, type=int)
 def pipeline(inspect, fix_center, constrain_center, bin, head_path,
@@ -56,8 +56,8 @@ def pipeline(inspect, fix_center, constrain_center, bin, head_path,
     # tool in the right place
     unique_sources = []
     for cluster in glob.glob(f'{data_path}/*'):
-        for quadrant in glob.glob(f'{cluster}/Q*'):
-            for extension in glob.glob(f'{quadrant}/EXT1*'):
+        for quadrant in glob.glob(f'{cluster}/Q'):
+            for extension in glob.glob(f'{quadrant}/EXT*'):
                 list_of_targets = (f"{extension}/{os.path.basename(cluster)}_"
                                   f"{os.path.basename(quadrant)}_"
                                   f"{os.path.basename(extension)}_"
@@ -65,6 +65,7 @@ def pipeline(inspect, fix_center, constrain_center, bin, head_path,
                 targets = rf.read_lof(list_of_targets)
                 for target in targets:
                     if target['Membership']!='member': continue
+                    #if target["SourceNumber"]!='31': continue
                     # Add all the relevant variable for the running of the
                     # fitting function to a list in the form of a dictionary
                     # This is necessary such that all variable are together
@@ -73,16 +74,6 @@ def pipeline(inspect, fix_center, constrain_center, bin, head_path,
                     unique_sources.append((extension, target, line_list, inspect, 
                                 fix_center, constrain_center, bin, verbose, 
                                 ignore_sky_lines))
-                    # Fix the RA and DEC
-                    #target = rf.read_infofile(extension, target["Cluster"], 
-                    #                          target["SourceNumber"], 
-                    #                          target["Mode"], target)
-                # Write out correct list of sources with correct RA and DEC    
-                #list_of_targets_out = (f"{extension}/{os.path.basename(cluster)}_"
-                #                  f"{os.path.basename(quadrant)}_"
-                #                  f"{os.path.basename(extension)}_"
-                #                  f"zinfo.fits")
-                #targets.write(list_of_targets_out, overwrite=True)
     
     # Set up multithread processing as executing the fitting on different
     # sources is trivially parallelisable
