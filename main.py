@@ -81,6 +81,7 @@ def run_main(data_path, target, line_list, inspect=False, fix_center=False,
 
     try:
         outtable = astropy.table.vstack(tables)
+        outtable = Table(outtable, masked=True, copy=False) 
         outfile = '{}.fits'.format(rf.naming_convention(data_path, 
                                 target['Cluster'], target['SourceNumber'], 
                                 'linefits', target["Mode"]))
