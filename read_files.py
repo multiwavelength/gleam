@@ -109,7 +109,7 @@ def read_lof(file1):
                       description='Declination')
     t['Cluster'] = Column([datum[4] for datum in data], dtype='U', 
                           description='Parent cluster')
-    t['Redshift'] = Column([datum[5]-0.0002 for datum in data], dtype='f', 
+    t['Redshift'] = Column([datum[5] for datum in data], dtype='f', 
                            description='Redshift')
     t['Confidence'] = Column([datum[6] for datum in data], dtype='f', 
                              description='Confidence as assigned by user. '
