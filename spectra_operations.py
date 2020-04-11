@@ -12,6 +12,7 @@ from astropy import constants as const
 from astropy.table import Table, Column
 from colorama import Fore
 from colorama import init
+
 init(autoreset=True)
 
 import constants as c
@@ -40,35 +41,35 @@ def average_err(x, n):
     Return:
         geometric mean of errors
     """
-    return np.sqrt(np.average((x**2).reshape((-1, n)), axis=1)/n)
+    return np.sqrt(np.average((x ** 2).reshape((-1, n)), axis=1) / n)
 
 
 def sigma_to_fwhm(sigma):
     """
     Convert from Gaussian sigma to FWHM
     """
-    return sigma*2.*np.sqrt(2.*np.log(2.))
+    return sigma * 2.0 * np.sqrt(2.0 * np.log(2.0))
 
 
 def fwhm_to_sigma(fwhm):
     """
     Convert FWHM of 1D Gaussian to sigma
     """
-    return fwhm/(2.*np.sqrt(2.*np.log(2.)))
+    return fwhm / (2.0 * np.sqrt(2.0 * np.log(2.0)))
 
 
 def height_to_amplitude(height, sigma):
     """
     Convert height of a 1D Gaussian to the amplitude
     """
-    return height*sigma*np.sqrt(2*np.pi)
+    return height * sigma * np.sqrt(2 * np.pi)
 
 
 def amplitude_to_height(amplitude, sigma):
     """
     Convert amplitude of a 1D Gaussian to the height
     """
-    return amplitude/(sigma*np.sqrt(2*np.pi))
+    return amplitude / (sigma * np.sqrt(2 * np.pi))
 
 
 def bin_spectrum(spectrum, n=2):
@@ -80,18 +81,22 @@ def bin_spectrum(spectrum, n=2):
     Output:
         binned spectrum
     """
-    tsize = len(spectrum)//n * n
+    tsize = len(spectrum) // n * n
     spectrum = spectrum[:tsize]
     t = Table()
-    
-    t['wl'] = Column(average_(spectrum['wl'], n), unit=spectrum['wl'].unit, 
-                    dtype='f')  # Ang
-    t['flux'] = Column(average_(spectrum['flux'], n), unit=spectrum['flux'].unit, 
-                    dtype='f')  # Ang
-    t['stdev'] = Column(average_err(spectrum['stdev'], n), unit=spectrum['flux'].unit, 
-                    dtype='f')
-    
+
+    t["wl"] = Column(
+        average_(spectrum["wl"], n), unit=spectrum["wl"].unit, dtype="f"
+    )  # Ang
+    t["flux"] = Column(
+        average_(spectrum["flux"], n), unit=spectrum["flux"].unit, dtype="f"
+    )  # Ang
+    t["stdev"] = Column(
+        average_err(spectrum["stdev"], n), unit=spectrum["flux"].unit, dtype="f"
+    )
+
     return t
+
 
 def reject_outliers(data, m=2):
     """
@@ -119,23 +124,22 @@ def resolution(wl):
     ! Writes warning if the spectrum in non uniform
     """
 
-    diff = wl[1:]-wl[0:-1]
+    diff = wl[1:] - wl[0:-1]
     diff, mask = reject_outliers(diff, 3)
-    
     average = np.mean(diff)
     stdev = np.std(diff)
     minimum = np.min(diff)
 
-    if (stdev/average>10**-3): print(Fore.RED+"Warning: non-constant resolution")
+    if stdev / average > 10 ** -3:
+        print(Fore.RED + "Warning: non-constant resolution")
     return minimum
 
 
-
-def mask_line(wl, wl_ref, w = c.line_width):
+def mask_line(wl, wl_ref, w=c.line_width):
     """
     Masks the spectrum around the listed line, within the width specified
     Input:
-        wl: spectrum to be masked; preferablye has unit
+        wl: spectrum to be masked; preferable has unit
         wl_ref: reference wavelength that we want to mask; preferably has unit
         res_elem: number of resolution elements over which to masks lines nearby
         res: spectral resolution; preferably with unit
@@ -143,8 +147,8 @@ def mask_line(wl, wl_ref, w = c.line_width):
         mask: mask to be applied to the spectrum such that the spectrum now has 
               the line in question masked away
     """
-    wl_min = wl_ref - w/2.
-    wl_max = wl_ref + w/2.
+    wl_min = wl_ref - w / 2.0
+    wl_max = wl_ref + w / 2.0
     mask = (wl < wl_min) | (wl > wl_max)
 
     return mask
@@ -154,10 +158,10 @@ def spectrum_rms(y):
     """
     Calculate the rms of a spectrum, after removing the mean value
     """
-    rms = np.sqrt(np.mean((y-np.mean(y))**2))
+    rms = np.sqrt(np.mean((y - np.mean(y)) ** 2))
     return rms
 
-    
+
 def velocity_resolution(x):
     """
     Get the velocity resolution of a piece of spectrum; might be observed or
@@ -166,7 +170,7 @@ def velocity_resolution(x):
     """
     wl_res = resolution(x)
     wl_av = np.average(x)
-    v_res = (wl_res/wl_av * const.c)
+    v_res = wl_res / wl_av * const.c
     return v_res
 
 
@@ -179,7 +183,7 @@ def restframe_wl(x, z):
     Return:
         restframe spectrum
     """
-    return x/(1.+z)
+    return x / (1.0 + z)
 
 
 def mask_atmosphere(wl, z):
@@ -197,14 +201,11 @@ def mask_atmosphere(wl, z):
     """
     Aband = restframe_wl(c.Aband, z)
     Bband = restframe_wl(c.Bband, z)
-    Cband = restframe_wl(c.Cband, z) # for Toothbrush WHT data
-    absorption = ((wl>Aband[0]) & (wl<Aband[1])) | \
-                 ((wl>Bband[0]) & (wl<Bband[1])) | \
-                 ((wl>Cband[0]) & (wl<Cband[1])) # Tooth data
-             
-    without_absorption = ~absorption 
+    absorption = ((wl > Aband[0]) & (wl < Aband[1])) | (
+        (wl > Bband[0]) & (wl < Bband[1])
+    )
+    without_absorption = ~absorption
     return without_absorption
-
 
 
 def restframe_spectrum(wl, z):
@@ -216,9 +217,8 @@ def restframe_spectrum(wl, z):
     Output:
         wl_rest: restframe spectrum
     """
-    wl_rest = wl/(1.+z)
+    wl_rest = wl / (1.0 + z)
     return wl_rest
-
 
 
 def add_restframe(spectrum, z):
@@ -230,7 +230,7 @@ def add_restframe(spectrum, z):
     Output:
         spectrum with the new added restframe wavelength column
     """
-    spectrum.add_column(restframe_spectrum(spectrum['wl'], z), name='wl_rest')
+    spectrum.add_column(restframe_spectrum(spectrum["wl"], z), name="wl_rest")
     return spectrum
 
 
@@ -249,16 +249,21 @@ def select_singleline(wl_rest, line, cont_width):
     """
     wl_min = line - cont_width
     wl_max = line + cont_width
-    mask = ( (wl_rest>wl_min) & (wl_rest<wl_max) )
+    mask = (wl_rest > wl_min) & (wl_rest < wl_max)
     return mask
 
 
-
-def select_lines(selected_lines, other_lines, spectrum, target_info, 
-                 ignore_sky_lines=False, cont_width=c.cont_width):
+def select_lines(
+    selected_lines,
+    other_lines,
+    spectrum,
+    target_info,
+    ignore_sky_lines=False,
+    cont_width=c.cont_width,
+):
     """
     Masks the spectrum in the vicinity of the line of interest. It should leave 
-    unmasked the actual line and lots of continuum, but mask other neightbouring 
+    unmasked the actual line and lots of continuum, but mask other neighboring 
     lines we want to fit, that might contaminate the continuum estimation
     Input: 
         selected_lines: table of all the lines to be fit
@@ -278,32 +283,31 @@ def select_lines(selected_lines, other_lines, spectrum, target_info,
         wl_masked: masked wavelength coverage, with only the line of interest 
                    and the continuum; all other lines masked
     """
-    z_ref = target_info['Redshift']
-    wl_rest = spectrum['wl_rest'].quantity
-    flux = spectrum['flux'].quantity
+    z_ref = target_info["Redshift"]
+    wl_rest = spectrum["wl_rest"].quantity
+    flux = spectrum["flux"].quantity
     # Restframe resolution
     res_rest = resolution(wl_rest)
     # mask all lines, but the line we are interested in
     masked_otherlines = np.full(np.shape(wl_rest), True)
     for line in map(Table, other_lines):
-        mask = mask_line(wl_rest, line['wl_vacuum'])
-        masked_otherlines = (masked_otherlines & mask)
+        mask = mask_line(wl_rest, line["wl_vacuum"])
+        masked_otherlines = masked_otherlines & mask
 
     # select the lines of interest
-    select_lines =  np.full(np.shape(wl_rest), False)
+    select_lines = np.full(np.shape(wl_rest), False)
     for line in map(Table, selected_lines):
-        mask = select_singleline(wl_rest, line['wl_vacuum'].quantity, cont_width)
-        select_lines = (select_lines | mask)
+        mask = select_singleline(wl_rest, line["wl_vacuum"].quantity, cont_width)
+        select_lines = select_lines | mask
 
     # decide whether to mask the atmospheric lines
     if ignore_sky_lines == True:
-        masked_all =  masked_otherlines & select_lines
+        masked_all = masked_otherlines & select_lines
     else:
         masked_atm = mask_atmosphere(wl_rest, z_ref)
-        masked_all =  masked_atm & masked_otherlines & select_lines
+        masked_all = masked_atm & masked_otherlines & select_lines
 
     return masked_all
-
 
 
 def group_lines(line_list, t=c.tolerance):
@@ -317,10 +321,9 @@ def group_lines(line_list, t=c.tolerance):
     Output:
         Groups of lines of type Component as returned by connected components
     """
-    wl = [(x-t, x+t) for x in line_list['wl_vacuum'].quantity]
+    wl = [(x - t, x + t) for x in line_list["wl_vacuum"].quantity]
     line_groups = connected_components(wl, left, right)
     return line_groups
-
 
 
 @dataclass
@@ -328,6 +331,7 @@ class Component:
     segments: List
     beginning: float
     ending: float
+
 
 # offline algorithm
 def connected_components(segments, left, right):
@@ -345,63 +349,71 @@ def connected_components(segments, left, right):
         side edges
     """
     segments = sorted(segments, key=left)
-    try: 
+    try:
         head, *segments = segments
     except:
         return []
-    
-    ref_component = Component(segments=[head], beginning=left(head), 
-                          ending=right(head))
+
+    ref_component = Component(segments=[head], beginning=left(head), ending=right(head))
     components = [ref_component]
 
     for segment in segments:
         opening = left(segment)
         closing = right(segment)
-        if ref_component.ending > opening: 
+        if ref_component.ending > opening:
             ref_component.segments.append(segment)
             if closing > ref_component.ending:
                 ref_component.ending = closing
         else:
-            ref_component = Component(segments=[segment], beginning=opening, 
-                              ending=closing)
+            ref_component = Component(
+                segments=[segment], beginning=opening, ending=closing
+            )
             components.append(ref_component)
     return components
 
+
 def left(x):
     return x[0]
-    
+
+
 def right(x):
     return x[1]
 
+
 def test_cc():
-    a = ((0,5), (3,9), (16,22), (20,26), (25,31))
+    a = ((0, 5), (3, 9), (16, 22), (20, 26), (25, 31))
 
     comps = connected_components(a, left, right)
     print(comps)
-    expected = [Component(segments=[(0, 5), (3, 9)], beginning=0, ending=9), 
-                Component(segments=[(16, 22), (20, 26), (25, 31)], beginning=16, 
-                ending=31)]
+    expected = [
+        Component(segments=[(0, 5), (3, 9)], beginning=0, ending=9),
+        Component(segments=[(16, 22), (20, 26), (25, 31)], beginning=16, ending=31),
+    ]
     assert expected == comps
+
 
 def test_cc2():
-    a = ((0,4), (1,2), (3,6), (5,7))
-    
+    a = ((0, 4), (1, 2), (3, 6), (5, 7))
+
     comps = connected_components(a, left, right)
     print(comps)
-    expected = [Component(segments=[(0,4), (1,2), (3,6), (5,7)], beginning=0, 
-                          ending=7)]
+    expected = [
+        Component(segments=[(0, 4), (1, 2), (3, 6), (5, 7)], beginning=0, ending=7)
+    ]
     assert expected == comps
 
+
 def test_cc3():
-    a = ((0,2), (5,7), (1,4), (8,9), (3,6))
-    
+    a = ((0, 2), (5, 7), (1, 4), (8, 9), (3, 6))
+
     comps = connected_components(a, left, right)
     print(comps)
-    expected = [Component(segments=[(0,2), (1,4), (3,6), (5,7)], beginning=0, 
-                          ending=7), 
-                Component(segments=[(8,9)], beginning=8, 
-                          ending=9)]
+    expected = [
+        Component(segments=[(0, 2), (1, 4), (3, 6), (5, 7)], beginning=0, ending=7),
+        Component(segments=[(8, 9)], beginning=8, ending=9),
+    ]
     assert expected == comps
+
 
 def test_cc4():
     a = ()
@@ -411,11 +423,11 @@ def test_cc4():
     expected = []
     assert expected == comps
 
+
 def test_cc5():
     a = ((0, 2),)
 
     comps = connected_components(a, left, right)
     print(comps)
-    expected = [Component(segments=[(0,2)], beginning=0, ending=2)]
+    expected = [Component(segments=[(0, 2)], beginning=0, ending=2)]
     assert expected == comps
-
