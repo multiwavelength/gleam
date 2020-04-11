@@ -103,7 +103,7 @@ def reject_outliers(data, m=2):
         data: filtered data
         mask: where the data should be masked
     """
-    mask = np.abs(data - np.mean(data)) < m * np.std(data)
+    mask = np.abs(data - np.mean(data)) <= m * np.std(data)
     return data[mask], mask
 
 
