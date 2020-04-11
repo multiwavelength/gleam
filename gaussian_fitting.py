@@ -578,6 +578,12 @@ def fit_model(
                  for i in range(len(wl_line.value))),
                 ConstantModel())
 
+    # rescale the flux scale to get numbers comparable to the wavelength and
+    # avoid numerical instabilities
+    flux_scale = 1.0 / np.std(y).value * c.cont_width.value
+    y = y * flux_scale
+    ystd = ystd * flux_scale
+
     # define the model parameters, i.e. the continuum, wavelength of line we are
     # fitting, rough estimates for the sigma and height of the peak
 
@@ -600,31 +606,88 @@ def fit_model(
     # fitting
     else:
         for i, wl in enumerate(wl_line):
-            model.set_param_hint(f'g{i}_center', value=wl.value, 
-                                                 min=(wl-c.cont_width).value, 
-                                                 max=(wl+c.cont_width).value)
-    # Constain the FWHM and the sigma to values set by the used. I chose 
-    # reasonable values where the minimum is 3*channel width and 10*channel 
-    # width
+            model.set_param_hint(
+                f"g{i}_center",
+                value=wl.value,
+                min=(wl - c.cont_width).value,
+                max=(wl + c.cont_width).value,
+            )
+
+    # Constrain the FWHM, sigma, height and amplitude to reasonable values which
+    # depend of wavelength pixel size and the continuum
+    pixel = so.resolution(x)
+
     for i, wl in enumerate(wl_line.value):
-        model.set_param_hint(f'g{i}_fwhm', value=(c.fwhm_min+c.fwhm_max).value/2., 
-                             min=c.fwhm_min.value, max=c.fwhm_max.value)
-    for i, wl in enumerate(wl_line.value):
-        model.set_param_hint(f'g{i}_sigma',
-                             value=so.fwhm_to_sigma((c.fwhm_min.value+c.fwhm_max.value)/2.),
-                             min=so.fwhm_to_sigma(c.fwhm_min.value), 
-                             max=so.fwhm_to_sigma(c.fwhm_max.value))
-    
+        # FWHM & sigma: average between minimum and maximum expected width
+        model.set_param_hint(
+            f"g{i}_fwhm",
+            value=(c.fwhm_min * pixel + c.fwhm_max * pixel).value / 2.0,
+            min=(c.fwhm_min * pixel).value,
+        )
+        model.set_param_hint(
+            f"g{i}_sigma",
+            value=so.fwhm_to_sigma(
+                (c.fwhm_min * pixel + c.fwhm_max * pixel).value / 2.0
+            ),
+            min=so.fwhm_to_sigma((c.fwhm_min * pixel).value),
+        )
+        # Height & amplitude: maximum y value - median of continuum
+        model.set_param_hint(
+            f"g{i}_height", value=max(y.value, key=abs) - np.median(y).value
+        )
+        model.set_param_hint(
+            f"g{i}_amplitude",
+            value=so.height_to_amplitude(
+                max(y.value, key=abs) - np.median(y).value,
+                so.fwhm_to_sigma((c.fwhm_min * pixel + c.fwhm_max * pixel).value / 2.0),
+            ),
+        )
+
     # Set the continuum to the median of the selected range
     ctr = np.median(y).value
     params = model.make_params(c=ctr, **{f'g{i}_center': wl
                                        for i, wl in enumerate(wl_line.value)})    
     # perform a least squares fit with errors taken into account as i.e. 1/sigma
     try:
-        result:ModelResult = model.fit(y.value, params, x=x.value, 
-                                       weights=1.0/ystd.value)
-        if verbose==True: print(result.fit_report())
-        fitparams = result.params
+        result: ModelResult = model.fit(
+            y.value, params, x=x.value, weights=1.0 / ystd.value
+        )  # , fit_kws={'epsfcn':1e-1})
+        if verbose == True:
+            print(result.fit_report())
+        try:
+            result.params["c"].value = result.params["c"].value / flux_scale
+        except:
+            pass
+        try:
+            result.params["c"].stderr = result.params["c"].stderr / flux_scale
+        except:
+            pass
+        for i, wl in enumerate(wl_line.value):
+            try:
+                result.params[f"g{i}_amplitude"].value = (
+                    result.params[f"g{i}_amplitude"].value / flux_scale
+                )
+            except:
+                pass
+            try:
+                result.params[f"g{i}_amplitude"].stderr = (
+                    result.params[f"g{i}_amplitude"].stderr / flux_scale
+                )
+            except:
+                pass
+            try:
+                result.params[f"g{i}_height"].value = (
+                    result.params[f"g{i}_height"].value / flux_scale
+                )
+            except:
+                pass
+            try:
+                result.params[f"g{i}_height"].stderr = (
+                    result.params[f"g{i}_height"].stderr / flux_scale
+                )
+            except:
+                pass
+
     except:
         print(Fore.RED+"No model could be fit")
         sys.exit("Error!")
