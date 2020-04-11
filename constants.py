@@ -60,9 +60,9 @@ fwhm_max = 10*pixel
 
 # Plotting parameters
 # overview plot size
-overview_x = 80.
-overview_y = 30.
+overview_x = 60.0
+overview_y = 15.0
 
 # Font sizes
 # X & Y label sizes
-labelsize = 20
+labelsize = 30
