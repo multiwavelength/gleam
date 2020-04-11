@@ -255,12 +255,26 @@ def overview_plot(target, data_path, line_groups, spectrum, size_x=c.overview_x,
 def plot_gaussian_fit(wl, spectrum_fit, ax):
     """
     Plot the a line fit as a continuum + a Gaussian, whenever the line was 
-    detected and not just an upper limit
+    detected . Plot a dashed line for upper limits.
     """
     for line_fit in spectrum_fit.lines:
+        # Plot detections
         if isinstance(line_fit, gf.Line):
-            gauss_part = gf.gauss_function(wl, line_fit.height.value, 
-                            line_fit.wavelength.value, 
-                            line_fit.sigma.value)
+            gauss_part = gf.gauss_function(
+                wl,
+                line_fit.height.value,
+                line_fit.wavelength.value,
+                line_fit.sigma.value,
+            )
             fit_flux = gauss_part + spectrum_fit.continuum.value
-            ax.plot(wl, fit_flux) 
+            ax.plot(wl, fit_flux)
+        # Plot upper limits
+        if isinstance(line_fit, gf.NonDetection) & (
+            not isinstance(line_fit, gf.NoCoverage)
+        ):
+            s = so.fwhm_to_sigma(so.resolution(wl) * wl.unit * c.spectral_resolution)
+            gauss_part = gf.gauss_function(
+                wl, so.amplitude_to_height(line_fit.amplitude, s), line_fit.restwl, s
+            )
+            fit_flux = gauss_part + spectrum_fit.continuum.value
+            ax.plot(wl, fit_flux, linestyle="--")
