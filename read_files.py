@@ -20,14 +20,13 @@ def read_fitsimg(hdulist):
         Astropy image and header
     """
 
-    try: 
+    try:
         img = hdulist[1].data
         hdr = hdulist[1].header
-    except: 
+    except:
         img = hdulist[0].data
         hdr = hdulist[0].header
-    return img, hdr    
-
+    return img, hdr
 
 
 def read_fits_table(data_path):
@@ -42,11 +41,11 @@ def read_fits_table(data_path):
     """
 
     hdulist = fits.open(data_path)
-    try: 
+    try:
         data = hdulist[1].data
-    except: data = hdulist[0].data
+    except:
+        data = hdulist[0].data
     return data
-
 
 
 def read_lol(data_path):
@@ -61,24 +60,38 @@ def read_lol(data_path):
         wavelength in vacuum, type (whether it is a single of double Gaussian), 
         (if doublet) separation from the main line and name in Latex format (for 
         convenince, if plotting the lines somewhere)
-    """ 
+    """
 
-    data = read_fits_table(data_path) 
+    data = read_fits_table(data_path)
 
     t = Table()
-    t['line'] = Column(data.field('Line'), dtype='U',
-                       description='Line name, which includes modifier for single or double Gaussian')
-    t['wl_vacuum'] = Column(data.field('lambda_vacuum'), unit=u.Angstrom, dtype='f', 
-                            description='Wavelength in vacuum')
-    t['type'] = Column(data.field('type'), dtype='d',
-                       description='Single or double Gaussian')
-    t['separation'] = Column(data.field('Doublet_sep'), unit=u.Angstrom, dtype='f', 
-                                    description='Separation from the main line, if a doublet')
-    t['latex'] = Column(data.field('Tex_name'), dtype='U', 
-                            description='Line name written in latex format, useful for plotting purposes')
+    t["line"] = Column(
+        data.field("Line"),
+        dtype="U",
+        description="Line name, which includes modifier for single or double Gaussian",
+    )
+    t["wl_vacuum"] = Column(
+        data.field("lambda_vacuum"),
+        unit=u.Angstrom,
+        dtype="f",
+        description="Wavelength in vacuum",
+    )
+    t["type"] = Column(
+        data.field("type"), dtype="d", description="Single or double Gaussian"
+    )
+    t["separation"] = Column(
+        data.field("Doublet_sep"),
+        unit=u.Angstrom,
+        dtype="f",
+        description="Separation from the main line, if a doublet",
+    )
+    t["latex"] = Column(
+        data.field("Tex_name"),
+        dtype="U",
+        description="Line name written in latex format, useful for plotting purposes",
+    )
 
     return t
-
 
 
 def read_lof(file1):
@@ -95,34 +108,51 @@ def read_lof(file1):
         Astropy Table with measurements of interest: the source number, RA, DEC,
         the parent cluster, redshift (from specpro) and the z confidence
     """
-    data = np.array(np.genfromtxt(file1, dtype='U8,i,f,f,U10,f,f,U2,U20,U20'))
+    data = np.array(np.genfromtxt(file1, dtype="U8,i,f,f,U10,f,f,U2,U20,U20"))
 
     # Extract each measurement of interest into a separate Table
     t = Table()
-    t['Mode'] = Column([datum[0] for datum in data], dtype='U', 
-                               description='Stack type or telescope source')
-    t['SourceNumber'] = Column([datum[1] for datum in data], dtype='U', 
-                               description='SourceNumber')
-    t['RA'] = Column([datum[2] for datum in data], unit=u.degree, dtype='f', 
-                     description='Right Ascension')
-    t['DEC'] = Column([datum[3] for datum in data], unit=u.degree, dtype='f', 
-                      description='Declination')
-    t['Cluster'] = Column([datum[4] for datum in data], dtype='U', 
-                          description='Parent cluster')
-    t['Redshift'] = Column([datum[5] for datum in data], dtype='f', 
-                           description='Redshift')
-    t['Confidence'] = Column([datum[6] for datum in data], dtype='f', 
-                             description='Confidence as assigned by user. '
-                                         'Scales from 1 (best) to 5 (worst)')
-    t['Membership'] = Column([datum[8] for datum in data], dtype='U20')
-    t['Type'] = Column([datum[9] for datum in data], dtype='U20', 
-                             description='Type')
+    t["Mode"] = Column(
+        [datum[0] for datum in data],
+        dtype="U",
+        description="Stack type or telescope source",
+    )
+    t["SourceNumber"] = Column(
+        [datum[1] for datum in data], dtype="U", description="SourceNumber"
+    )
+    t["RA"] = Column(
+        [datum[2] for datum in data],
+        unit=u.degree,
+        dtype="f",
+        description="Right Ascension",
+    )
+    t["DEC"] = Column(
+        [datum[3] for datum in data],
+        unit=u.degree,
+        dtype="f",
+        description="Declination",
+    )
+    t["Cluster"] = Column(
+        [datum[4] for datum in data], dtype="U", description="Parent cluster"
+    )
+    t["Redshift"] = Column(
+        [datum[5] for datum in data], dtype="f", description="Redshift"
+    )
+    t["Confidence"] = Column(
+        [datum[6] for datum in data],
+        dtype="f",
+        description="Confidence as assigned by user. "
+        "Scales from 1 (best) to 5 (worst)",
+    )
+    t["Membership"] = Column([datum[8] for datum in data], dtype="U20")
+    t["Type"] = Column([datum[9] for datum in data], dtype="U20", description="Type")
     return t
 
 
 def naming_convention(data_path, cluster, source_number, type1, mod):
-    return '{}/{}.{}_{}.{:03d}.{}'.format(data_path, type1, cluster, mod, 
-                                            source_number.astype(int), cluster)
+    return "{}/{}.{}_{}.{:03d}.{}".format(
+        data_path, type1, cluster, mod, source_number.astype(int), cluster
+    )
 
 
 def read_spectrum(data_path, cluster, source_number, mod):
@@ -140,19 +170,26 @@ def read_spectrum(data_path, cluster, source_number, mod):
         Astropy Table with wavelength, flux and standard deviation on the flux
         for the source 
     """
-    
-    file1 = '{}.dat'.format(naming_convention(data_path, cluster, source_number, \
-                            'spec1d', mod))
+
+    file1 = "{}.dat".format(
+        naming_convention(data_path, cluster, source_number, "spec1d", mod)
+    )
     spec = np.genfromtxt(file1, dtype="f,f,f", names=True)
 
     # Extract the measurements into a separate Table
     t = Table()
-    t['wl'] = Column(spec['LAMBDA'], unit=u.Angstrom, dtype='f', 
-                     description='Observed Wavelength')  # Ang
-    t['flux'] = Column(spec['FLUX'], unit=c.fluxunit, dtype='f', 
-                       description='Flux')  # 10^-16 # erg/cm2/s/Ang
-    t['stdev'] = Column(spec['STDEV'], unit=c.fluxunit,  dtype='f', 
-                        description='Standard deviation of the 1D flux') # 10^-16 # erg/cm2/s/Ang
+    t["wl"] = Column(
+        spec["LAMBDA"], unit=u.Angstrom, dtype="f", description="Observed Wavelength"
+    )
+    t["flux"] = Column(
+        spec["FLUX"], unit=c.fluxunit, dtype="f", description="Flux"
+    )
+    t["stdev"] = Column(
+        spec["STDEV"],
+        unit=c.fluxunit,
+        dtype="f",
+        description="Standard deviation of the 1D flux",
+    )
 
     return t
 
@@ -169,12 +206,15 @@ def read_infofile(data_path, cluster, source_number, mod, target):
     Output:
         RA, DEC
     """
-    file1 = '{}.dat'.format(naming_convention(data_path, cluster, source_number, \
-                            'info', mod))
-    information = np.genfromtxt(file1, dtype='U10, f', unpack=True)
+    file1 = "{}.dat".format(
+        naming_convention(data_path, cluster, source_number, "info", mod)
+    )
+    information = np.genfromtxt(file1, dtype="U10, f", unpack=True)
     names = [v[0] for v in information]
     values = [v[1] for v in information]
     for n, v in zip(names, values):
-        if n=='RA': target['RA']=v
-        if n=='DEC': target['DEC']=v
+        if n == "RA":
+            target["RA"] = v
+        if n == "DEC":
+            target["DEC"] = v
     return target
