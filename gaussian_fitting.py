@@ -231,6 +231,12 @@ class Line:
         # Detection flag
         t['detected'] = Column([True], dtype='bool', 
                         description='Detected or nondetected line')
+
+        # Coverage flag
+        t["covered"] = Column(
+            [True], dtype="bool", description="Does the spectrum cover the line?"
+        )
+
         return t
 
 
@@ -294,6 +300,11 @@ class NonDetection:
         # Detection flag
         t['detected'] = Column([False], dtype='bool', 
                         description='Detected or nondetected line')
+
+        # Coverage flag
+        t["covered"] = Column(
+            [True], dtype="bool", description="Does the spectrum cover the line?"
+        )
         return t
 
 
@@ -331,6 +342,12 @@ class NoCoverage:
         # Detection flag
         t['detected'] = Column([False], dtype='bool', 
                         description='Detected or nondetected line')
+
+        # Coverage flag
+        t["covered"] = Column(
+            [False], dtype="bool", description="Does the spectrum cover the line?"
+        )
+
         return t
 
 
