@@ -109,12 +109,12 @@ def reject_outliers(data, m=2):
 
 def resolution(wl):
     """
-    Returns the average resolution of a 1D spectrum
+    Returns the minimum resolution of a 1D spectrum
     Input:
         wl: 1D wavelength in some units (preferably Astropy
             Table, such that it has units attached)
     Output:
-        resolution: single average value for resolution in the
+        resolution: single minimum value for resolution in the
         
     ! Writes warning if the spectrum in non uniform
     """
@@ -124,9 +124,10 @@ def resolution(wl):
     
     average = np.mean(diff)
     stdev = np.std(diff)
+    minimum = np.min(diff)
 
     if (stdev/average>10**-3): print(Fore.RED+"Warning: non-constant resolution")
-    return average
+    return minimum
 
 
 
