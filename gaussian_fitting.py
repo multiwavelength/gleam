@@ -481,44 +481,80 @@ def model_selection(redshift, x, y, ystd, wl_line, fix_center=False,
     # Print a note when the spectrum does not cover one of the lines to be fit
     if verbose==True:
         for i, wl in enumerate(wl_line):
-            if (i not in wl_subset_indices) and np.sum(~so.mask_line(x, wl_line[i], w=2*c.w))<c.spectral_resolution:
-                    print(Fore.BLUE+f'No spectral coverage on line {wl_line[i]}')
+            if (i not in wl_subset_indices) and np.sum(
+                ~so.mask_line(
+                    x, wl_line[i], w=1.01 * c.spectral_resolution * so.resolution(x)
+                )
+            ) < c.spectral_resolution:
+                print(Fore.BLUE + f"No spectral coverage on line {wl_line[i]}")
             else:
                 continue
     
     # Add line measurements, nondetections and lines without coverage into a 
     # Spectrum class format
     fitparams = model.params
-    return Spectrum(continuum=RandomVariable.from_param(fitparams['c'])*y.unit,
-                    lines=[
-                        Line(
-                            wavelength=RandomVariable.from_param(fitparams[f'g{wl_subset_indices.index(i)}_center'])*x.unit,
-                            height=RandomVariable.from_param(fitparams[f'g{wl_subset_indices.index(i)}_height'])*y.unit,
-                            sigma=RandomVariable.from_param(fitparams[f'g{wl_subset_indices.index(i)}_sigma'])*x.unit,
-                            amplitude=RandomVariable.from_param(fitparams[f'g{wl_subset_indices.index(i)}_amplitude'])*x.unit*y.unit,
-                            fwhm=RandomVariable.from_param(fitparams[f'g{wl_subset_indices.index(i)}_fwhm'])*x.unit,
-                            z=redshift,
-                            restwl=wl_line[i], 
-                            continuum=RandomVariable.from_param(fitparams['c'])*y.unit
-                        )
-                        if i in wl_subset_indices else 
-                        NoCoverage(
-                            z=redshift,
-                            restwl=wl_line[i], 
-                            continuum=RandomVariable.from_param(fitparams['c'])*y.unit
-                        )
-                        if np.sum(~so.mask_line(x, wl_line[i], w=2*c.w))<c.spectral_resolution else
-                        NonDetection(
-                            amplitude=ul*x.unit*y.unit,
-                            z=redshift,
-                            restwl=wl_line[i], 
-                            continuum=RandomVariable.from_param(fitparams['c'])*y.unit) 
-                        for i in range(len(wl_line))
-                    ])
+    return Spectrum(
+        continuum=RandomVariable.from_param(fitparams["c"]) * y.unit,
+        lines=[
+            Line(
+                wavelength=RandomVariable.from_param(
+                    fitparams[f"g{wl_subset_indices.index(i)}_center"]
+                )
+                * x.unit,
+                height=RandomVariable.from_param(
+                    fitparams[f"g{wl_subset_indices.index(i)}_height"]
+                )
+                * y.unit,
+                sigma=RandomVariable.from_param(
+                    fitparams[f"g{wl_subset_indices.index(i)}_sigma"]
+                )
+                * x.unit,
+                amplitude=RandomVariable.from_param(
+                    fitparams[f"g{wl_subset_indices.index(i)}_amplitude"]
+                )
+                * x.unit
+                * y.unit,
+                fwhm=RandomVariable.from_param(
+                    fitparams[f"g{wl_subset_indices.index(i)}_fwhm"]
+                )
+                * x.unit,
+                z=redshift,
+                restwl=wl_line[i],
+                continuum=RandomVariable.from_param(fitparams["c"]) * y.unit,
+            )
+            if i in wl_subset_indices
+            else NoCoverage(
+                z=redshift,
+                restwl=wl_line[i],
+                continuum=RandomVariable.from_param(fitparams["c"]) * y.unit,
+            )
+            if np.sum(
+                ~so.mask_line(
+                    x, wl_line[i], w=1.01 * c.spectral_resolution * so.resolution(x)
+                )
+            )
+            < c.spectral_resolution
+            else NonDetection(
+                amplitude=ul * x.unit * y.unit,
+                z=redshift,
+                restwl=wl_line[i],
+                continuum=RandomVariable.from_param(fitparams["c"]) * y.unit,
+            )
+            for i in range(len(wl_line))
+        ],
+    )
 
 
-def fit_model(redshift, x, y, ystd, wl_line: Iterable[Qty], fix_center=False, 
-                 constrain_center=False, verbose=False) -> ModelResult:
+def fit_model(
+    redshift,
+    x,
+    y,
+    ystd,
+    wl_line: Iterable[Qty],
+    fix_center=False,
+    constrain_center=False,
+    verbose=False,
+) -> ModelResult:
     """
     Fits a number of Gaussians plus a constant continuum to the given data with 
     the package `lmfit'
