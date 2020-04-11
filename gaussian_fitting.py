@@ -654,13 +654,24 @@ def fit_lines(target, spectrum, line_list, line_groups, fix_center=False,
         to them
     """
     for group in line_groups:
-        select_group = ( (line_list['wl_vacuum'].quantity>group.beginning) & 
-                         (line_list['wl_vacuum'].quantity<group.ending) )
-        if  ( (group.ending    < np.amax(spectrum['wl_rest'].quantity) ) & 
-              (group.beginning > np.amin(spectrum['wl_rest'].quantity) ) ):
-            spectrum_fit, spectrum_line = do_gaussian(line_list[select_group], 
-                    line_list[~select_group], spectrum, target, fix_center, 
-                    constrain_center, verbose, ignore_sky_lines)
+        select_group = (line_list["wl_vacuum"].quantity > group.beginning) & (
+            line_list["wl_vacuum"].quantity < group.ending
+        )
+        if (
+            group.ending - c.tolerance / 2.0 < np.amax(spectrum["wl_rest"].quantity)
+        ) & (
+            group.beginning + c.tolerance / 2.0 > np.amin(spectrum["wl_rest"].quantity)
+        ):
+            spectrum_fit, spectrum_line = do_gaussian(
+                line_list[select_group],
+                line_list[~select_group],
+                spectrum,
+                target,
+                fix_center,
+                constrain_center,
+                verbose,
+                ignore_sky_lines,
+            )
             yield spectrum_fit, spectrum_line, line_list[select_group]
     
 
