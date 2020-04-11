@@ -573,8 +573,11 @@ def fit_model(
     Output:
         parameter fits of the Gaussian(s) + continuum
     """
+    x = x.astype(dtype=np.float64)
+    y = y.astype(dtype=np.float64)
+    ystd = ystd.astype(dtype=np.float64)
     # make a model that is a number of Gaussians + a constant:
-    model = sum((GaussianModel(prefix=f'g{i}_')
+    model = sum((GaussianModel(prefix=f'g{i}_') 
                  for i in range(len(wl_line.value))),
                 ConstantModel())
 
