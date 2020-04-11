@@ -176,6 +176,7 @@ def overview_plot(target, data_path, line_groups, spectrum, size_x=c.overview_x,
     # Set figure and its size; add axis
     fig = plt.figure(figsize=(size_x, size_y))
     ax = fig.add_subplot(111)
+    ax.set_title(r"{}".format(title), size=2 * c.labelsize)
 
     # Plot the base obseved spectrum to the main axis
     ax.plot(spectrum['wl_rest'], spectrum['flux'], color='k') 
