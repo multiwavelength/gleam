@@ -284,8 +284,8 @@ def select_lines(
                    and the continuum; all other lines masked
     """
     z_ref = target_info["Redshift"]
-    wl_rest = spectrum["wl_rest"].quantity
-    flux = spectrum["flux"].quantity
+    wl_rest = spectrum["wl_rest"]
+    flux = spectrum["flux"]
     # Restframe resolution
     res_rest = resolution(wl_rest)
     # mask all lines, but the line we are interested in
@@ -297,7 +297,7 @@ def select_lines(
     # select the lines of interest
     select_lines = np.full(np.shape(wl_rest), False)
     for line in map(Table, selected_lines):
-        mask = select_singleline(wl_rest, line["wl_vacuum"].quantity, cont_width)
+        mask = select_singleline(wl_rest, line["wl_vacuum"], cont_width)
         select_lines = select_lines | mask
 
     # decide whether to mask the atmospheric lines
@@ -321,7 +321,7 @@ def group_lines(line_list, t=c.tolerance):
     Output:
         Groups of lines of type Component as returned by connected components
     """
-    wl = [(x - t, x + t) for x in line_list["wl_vacuum"].quantity]
+    wl = [(x - t, x + t) for x in line_list["wl_vacuum"]]
     line_groups = connected_components(wl, left, right)
     return line_groups
 

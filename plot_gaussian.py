@@ -20,6 +20,10 @@ import gaussian_fitting as gf
 import constants as c
 import spectra_operations as so
 
+from astropy.visualization import quantity_support
+
+quantity_support()
+
 
 def overplot_lines(ax, linelabels, lineloc):
     """
@@ -67,7 +71,7 @@ def plot_spectrum(
     catalogue. 
     Input:
         data_path: folder location of where the plot will be saved
-        target: target structure containin info on the target
+        target: target structure containing info on the target
         spectrum: entire observed spectrum, format from rf.read_spectrum
         spectrum_line: observed spectrum selected around fitted lines
         spectrum_fit: fit to the spectrum (sum of continuum and Gaussians)
@@ -116,9 +120,9 @@ def plot_spectrum(
     )
 
     # Select the region around the emission line and overplot the line
-    select = (
-        spectrum["wl_rest"].quantity < (np.average(fitted_wl.quantity) + d_wl)
-    ) & (spectrum["wl_rest"].quantity > (np.average(fitted_wl.quantity) - d_wl))
+    select = (spectrum["wl_rest"] < (np.average(fitted_wl) + d_wl)) & (
+        spectrum["wl_rest"] > (np.average(fitted_wl) - d_wl)
+    )
     sub_axes.plot(spectrum["wl_rest"][select], spectrum["flux"][select], color="gray")
 
     # Mark the emission line
@@ -224,12 +228,8 @@ def overview_plot(
 
         # Select a small wavelength range around the emission line where to
         # overplot the fit
-        select = (
-            spectrum["wl_rest"].quantity
-            < (np.average(line["wl_vacuum"].quantity) + d_wl)
-        ) & (
-            spectrum["wl_rest"].quantity
-            > (np.average(line["wl_vacuum"].quantity) - d_wl)
+        select = (spectrum["wl_rest"] < (np.average(line["wl_vacuum"]) + d_wl)) & (
+            spectrum["wl_rest"] > (np.average(line["wl_vacuum"]) - d_wl)
         )
 
         # Create a zoomed in axis focusing on each line
@@ -286,7 +286,7 @@ def overview_plot(
 
     for band in [Aband, Bband]:
         ax.fill_between(
-            [band[0].value, band[1].value],
+            [band[0], band[1]],
             ax.get_ylim()[0],
             ax.get_ylim()[1],
             facecolor="gray",
@@ -323,7 +323,7 @@ def plot_gaussian_fit(wl, spectrum_fit, ax):
         if isinstance(line_fit, gf.NonDetection) & (
             not isinstance(line_fit, gf.NoCoverage)
         ):
-            s = so.fwhm_to_sigma(so.resolution(wl) * wl.unit * c.spectral_resolution)
+            s = so.fwhm_to_sigma(so.resolution(wl) * c.spectral_resolution)
             gauss_part = gf.gauss_function(
                 wl, so.amplitude_to_height(line_fit.amplitude, s), line_fit.restwl, s
             )

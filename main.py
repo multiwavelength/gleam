@@ -6,7 +6,7 @@ import os, sys
 import numpy as np
 import astropy
 from astropy import units as u
-from astropy.table import Table, Column
+from astropy.table import QTable, Table, Column
 from astropy.io import fits
 from colorama import Fore
 from colorama import init
@@ -58,9 +58,18 @@ def run_main(
     )
 
     # Read spectrum for the current source from outside file
-    spectrum = rf.read_spectrum(
-        data_path, target["Cluster"], target["SourceNumber"], target["Mode"]
+    spectrum = QTable.read(
+        "{}.fits".format(
+            rf.naming_convention(
+                data_path,
+                target["Cluster"],
+                target["SourceNumber"],
+                "spec1d",
+                target["Mode"],
+            )
+        )
     )
+
     if bin1 > 1:
         spectrum = so.bin_spectrum(spectrum, bin1)
 
@@ -99,7 +108,9 @@ def run_main(
             )
             if spectrum_fit is not None:
                 for (line_fit, line) in zip(spectrum_fit.lines, lines):
-                    tables.append(line_fit.as_fits_table(line))
+                    tables.append(
+                        Table(line_fit.as_fits_table(line), masked=True, copy=False)
+                    )
                 plot_line(lines, spectrum_fit)
 
     try:

@@ -11,23 +11,6 @@ from astropy.cosmology import FlatLambdaCDM
 # Signal to noise limit for a detection
 SN_limit = 2
 
-# Custom units -- change as necessary
-# Flux unit for flux calibrated data
-"""
-fluxu = u.erg / (u.cm ** 2 * u.s * u.Angstrom)
-fluxval = 10**-16. * fluxu
-fluxunit = u.def_unit('1E-16 erg cm^-2 s^-1 AA^-1', fluxval, 
-                        format={'latex': r'10^{-16}\,erg\,cm^{-2}\,s^{-1}\,\AA^{-1}'})
-ff = 10**-17 # fudge factor for flux units
-fl = 10**40 # fudge factor for luminosity units
-"""
-# Flux unit for MMT where data is not flux calibrated
-fluxu = u.ct
-fluxval = fluxu
-fluxunit = u.ct
-ff = 1  # fudge factor for flux units
-fl = 1  # fudge factor for luminosity units
-
 # Cosmology
 H0 = 70
 Om0 = 0.3

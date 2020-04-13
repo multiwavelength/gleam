@@ -5,7 +5,7 @@ import glob
 
 import numpy as np
 from astropy.io import fits
-from astropy.table import Table, Column
+from astropy.table import QTable, Column
 from astropy import units as u
 
 import constants as c
@@ -59,12 +59,12 @@ def read_lol(data_path):
         Astropy Table of all the information in the line list file: line name, 
         wavelength in vacuum, type (whether it is a single of double Gaussian), 
         (if doublet) separation from the main line and name in Latex format (for 
-        convenince, if plotting the lines somewhere)
+        convenience, if plotting the lines somewhere)
     """
 
     data = read_fits_table(data_path)
 
-    t = Table()
+    t = QTable()
     t["line"] = Column(
         data.field("Line"),
         dtype="U",
@@ -111,7 +111,7 @@ def read_lof(file1):
     data = np.array(np.genfromtxt(file1, dtype="U8,i,f,f,U10,f,f,U2,U20,U20"))
 
     # Extract each measurement of interest into a separate Table
-    t = Table()
+    t = QTable()
     t["Mode"] = Column(
         [datum[0] for datum in data],
         dtype="U",
@@ -177,13 +177,11 @@ def read_spectrum(data_path, cluster, source_number, mod):
     spec = np.genfromtxt(file1, dtype="f,f,f", names=True)
 
     # Extract the measurements into a separate Table
-    t = Table()
+    t = QTable()
     t["wl"] = Column(
         spec["LAMBDA"], unit=u.Angstrom, dtype="f", description="Observed Wavelength"
     )
-    t["flux"] = Column(
-        spec["FLUX"], unit=c.fluxunit, dtype="f", description="Flux"
-    )
+    t["flux"] = Column(spec["FLUX"], unit=c.fluxunit, dtype="f", description="Flux")
     t["stdev"] = Column(
         spec["STDEV"],
         unit=c.fluxunit,

@@ -12,7 +12,7 @@ import numpy as np
 import astropy
 from astropy import units as u
 from astropy import constants as const
-from astropy.table import Table, Column
+from astropy.table import QTable, Column, hstack
 from astropy.units.quantity import Quantity as Qty
 from colorama import Fore
 from colorama import init
@@ -67,15 +67,12 @@ class Line:
     @property
     def flux(self):
         # Line flux
-        return RandomVariable(
-            value=self.amplitude.value.to(c.fluxu * u.Angstrom),
-            error=self.amplitude.error.to(c.fluxu * u.Angstrom),
-        )
+        return RandomVariable(value=self.amplitude.value, error=self.amplitude.error,)
 
     @property
     def luminosity(self):
         # Line luminosity
-        ld = c.cosmo.luminosity_distance(self.z).to(u.cm)
+        ld = c.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
         v = 4.0 * np.pi * ld ** 2 * self.flux.value
         e = 4.0 * np.pi * ld ** 2 * self.flux.error
         return RandomVariable(v, e)
@@ -127,7 +124,7 @@ class Line:
             e = const.c.to("km/s") * self.fwhm.error / self.restwl
             return RandomVariable(value=v, error=e)
 
-    def as_fits_table(self, line: Table) -> Table:
+    def as_fits_table(self, line: QTable) -> QTable:
         """ 
         Writes out the results of all the line fits for a single emission line 
         (either stand alone or one that was part of a doublet, triplet etc), for
@@ -139,9 +136,9 @@ class Line:
             Fits table with all the lab and measured properties of a particular
             emission line
         """
-        t = Table()
+        t = QTable()
         # Vacuum/laboratory properties of the line
-        t = add_lab_values(line, t)
+        t = hstack([t, line])
 
         # Source properties
         t["z"] = Column(
@@ -241,28 +238,28 @@ class Line:
         )
         # Flux
         t["flux"] = Column(
-            [self.flux.value.value / c.ff],
+            [self.flux.value.value],
             dtype="f",
-            unit=self.flux.value.unit * c.ff,
+            unit=self.flux.value.unit,
             description="Line flux, Gaussian fit",
         )
         t["flux_err"] = Column(
-            [self.flux.error.value / c.ff],
+            [self.flux.error.value],
             dtype="f",
-            unit=self.flux.error.unit * c.ff,
+            unit=self.flux.error.unit,
             description="Error on line flux, Gaussian fit",
         )
         # Luminosity
         t["luminosity"] = Column(
-            [self.luminosity.value.value / c.fl],
+            [self.luminosity.value.value],
             dtype="f",
-            unit=self.luminosity.value.unit * c.fl,
+            unit=self.luminosity.value.unit,
             description="Line luminosity, Gaussian fit",
         )
         t["luminosity_err"] = Column(
-            [self.luminosity.error.value / c.fl],
+            [self.luminosity.error.value],
             dtype="f",
-            unit=self.luminosity.error.unit * c.fl,
+            unit=self.luminosity.error.unit,
             description="Error on line luminosity, Gaussian fit",
         )
         # Equivalent width
@@ -307,8 +304,9 @@ class Line:
         )
 
         # Detection flag
-        t['detected'] = Column([True], dtype='bool', 
-                        description='Detected or nondetected line')
+        t["detected"] = Column(
+            [True], dtype="bool", description="Detected or nondetected line"
+        )
 
         # Coverage flag
         t["covered"] = Column(
@@ -328,16 +326,16 @@ class NonDetection:
     @property
     def flux(self) -> Qty:
         # Line flux
-        return self.amplitude.to(c.fluxu * u.Angstrom)
+        return self.amplitude
 
     @property
     def luminosity(self) -> Qty:
         # Line luminosity
-        ld = c.cosmo.luminosity_distance(self.z).to(u.cm)
+        ld = c.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
         v = 4.0 * np.pi * ld ** 2 * self.flux
         return v
 
-    def as_fits_table(self, line: Table) -> Table:
+    def as_fits_table(self, line: QTable) -> QTable:
         """ 
         Writes out the results for a nondetected emission line within a line fit 
         (either stand alone or one that was part of a doublet, triplet etc), for
@@ -349,9 +347,9 @@ class NonDetection:
             Fits table with all the lab and measured properties of a particular
             emission line
         """
-        t = Table()
+        t = QTable()
         # Vacuum/laboratory properties of the line
-        t = add_lab_values(line, t)
+        t = hstack([t, line])
 
         t["z"] = Column(
             [self.z], dtype="f", description="Source redshift, from specpro"
@@ -379,22 +377,23 @@ class NonDetection:
         )
         # Flux
         t["flux"] = Column(
-            [self.flux.value / c.ff],
+            [self.flux.value],
             dtype="f",
-            unit=self.flux.unit * c.ff,
+            unit=self.flux.unit,
             description="Line flux, Gaussian fit",
         )
         # Luminosity
         t["luminosity"] = Column(
-            [self.luminosity.value / c.fl],
+            [self.luminosity.value],
             dtype="f",
-            unit=self.luminosity.unit * c.fl,
+            unit=self.luminosity.unit,
             description="Line luminosity, Gaussian fit",
         )
 
         # Detection flag
-        t['detected'] = Column([False], dtype='bool', 
-                        description='Detected or nondetected line')
+        t["detected"] = Column(
+            [False], dtype="bool", description="Detected or nondetected line"
+        )
 
         # Coverage flag
         t["covered"] = Column(
@@ -409,7 +408,7 @@ class NoCoverage:
     restwl: float
     z: float
 
-    def as_fits_table(self, line: Table) -> Table:
+    def as_fits_table(self, line: QTable) -> QTable:
         """ 
         Writes out the results for an emission line within a multiple line fit 
         for which there is no spectral coverage
@@ -420,9 +419,9 @@ class NoCoverage:
             Fits table with all the lab and measured properties of a particular
             emission line
         """
-        t = Table()
+        t = QTable()
         # Vacuum/laboratory properties of the line
-        t = add_lab_values(line, t)
+        t = hstack([t, line])
 
         t["z"] = Column(
             [self.z], dtype="f", description="Source redshift, from specpro"
@@ -443,8 +442,9 @@ class NoCoverage:
             description="Error on continuum around line, Gaussian fit",
         )
         # Detection flag
-        t['detected'] = Column([False], dtype='bool', 
-                        description='Detected or nondetected line')
+        t["detected"] = Column(
+            [False], dtype="bool", description="Detected or nondetected line"
+        )
 
         # Coverage flag
         t["covered"] = Column(
@@ -458,45 +458,6 @@ class NoCoverage:
 class Spectrum:
     lines: List[Union[Line, NonDetection, NoCoverage]]
     continuum: RandomVariable
-
-
-def add_lab_values(line: Table, t: Table) -> Table:
-    """
-    For writing out the table with the results of the fits, add the lab-measured
-    properties of the emission lines.
-    Input:
-        line: table with properties of the emission line, such as name, 
-              wavelength, type etc.
-        t: table with fit results, for one emission line per source
-    Output:
-        table with added lines
-    """
-    t["line"] = Column(
-        [line["line"]],
-        dtype="U",
-        description="Line name, which includes modifier for single or double Gaussian",
-    )
-    t["wl_vacuum"] = Column(
-        [line["wl_vacuum"]],
-        unit=u.Angstrom,
-        dtype="f",
-        description="Wavelength in vacuum",
-    )
-    t["type"] = Column(
-        [line["type"]], dtype="d", description="Single or double Gaussian"
-    )
-    t["separation"] = Column(
-        line["separation"],
-        unit=u.Angstrom,
-        dtype="f",
-        description="Separation from the main line, if a doublet",
-    )
-    t["latex"] = Column(
-        [line["latex"]],
-        dtype="U",
-        description="Line name written in latex format, useful for plotting purposes",
-    )
-    return t
 
 
 def gauss_function(x, a, x0, sigma):
@@ -710,9 +671,10 @@ def fit_model(
     y = y.astype(dtype=np.float64)
     ystd = ystd.astype(dtype=np.float64)
     # make a model that is a number of Gaussians + a constant:
-    model = sum((GaussianModel(prefix=f'g{i}_') 
-                 for i in range(len(wl_line.value))),
-                ConstantModel())
+    model = sum(
+        (GaussianModel(prefix=f"g{i}_") for i in range(len(wl_line.value))),
+        ConstantModel(),
+    )
 
     # rescale the flux scale to get numbers comparable to the wavelength and
     # avoid numerical instabilities
@@ -866,13 +828,11 @@ def fit_lines(
         to them
     """
     for group in line_groups:
-        select_group = (line_list["wl_vacuum"].quantity > group.beginning) & (
-            line_list["wl_vacuum"].quantity < group.ending
+        select_group = (line_list["wl_vacuum"] > group.beginning) & (
+            line_list["wl_vacuum"] < group.ending
         )
-        if (
-            group.ending - c.tolerance / 2.0 < np.amax(spectrum["wl_rest"].quantity)
-        ) & (
-            group.beginning + c.tolerance / 2.0 > np.amin(spectrum["wl_rest"].quantity)
+        if (group.ending - c.tolerance / 2.0 < np.amax(spectrum["wl_rest"])) & (
+            group.beginning + c.tolerance / 2.0 > np.amin(spectrum["wl_rest"])
         ):
             spectrum_fit, spectrum_line = do_gaussian(
                 line_list[select_group],
@@ -929,10 +889,10 @@ def do_gaussian(
     # Fit the gaussian(s)
     spectrum_fit = model_selection(
         target["Redshift"],
-        spectrum_line["wl_rest"].quantity,
-        spectrum_line["flux"].quantity,
-        spectrum_line["stdev"].quantity,
-        selected_lines["wl_vacuum"].quantity,
+        spectrum_line["wl_rest"],
+        spectrum_line["flux"],
+        spectrum_line["stdev"],
+        selected_lines["wl_vacuum"],
         fix_center,
         constrain_center,
         verbose,
