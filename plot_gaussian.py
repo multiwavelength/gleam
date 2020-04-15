@@ -172,7 +172,7 @@ def overview_plot(
     spectrum,
     size_x=c.overview_x,
     size_y=c.overview_y,
-    d_wl=c.cont_plot_width,
+    d_wl=c.cont_width,
 ):
     """
     Overview plot of the spectrum of a single target, with zoom-in plots around

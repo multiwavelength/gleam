@@ -40,7 +40,6 @@ line_width = 20.0 * u.Angstrom
 
 # Range used for selecting continuum left and right of the source
 cont_width = 70.0 * u.Angstrom
-cont_plot_width = 70 * u.Angstrom
 
 # Parameters to constrain the width of the lines
 fwhm_min = 2.0  # pixel
