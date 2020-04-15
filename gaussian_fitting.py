@@ -754,7 +754,7 @@ def fit_model(
     try:
         result: ModelResult = model.fit(
             y.value, params, x=x.value, weights=1.0 / ystd.value
-        )  # , fit_kws={'epsfcn':1e-1})
+        )
         if verbose == True:
             print(result.fit_report())
         try:
