@@ -144,12 +144,10 @@ def plot_spectrum(
     ax.set_xlabel(
         r"$\boldsymbol{\lambda}$ "
         + f"({spectrum['wl_rest'].unit.to_string('latex_inline')})",
-        fontsize=c.labelsize,
     )
     ax.set_ylabel(
         r"$F_{\boldsymbol{\lambda}}$"
         + f"({spectrum['flux'].unit.to_string('latex_inline')})",
-        fontsize=c.labelsize,
     )
 
     # show or save the figure depending on the command line flag
@@ -170,8 +168,6 @@ def overview_plot(
     data_path,
     line_groups,
     spectrum,
-    size_x=c.overview_x,
-    size_y=c.overview_y,
     d_wl=c.cont_width,
 ):
     """
@@ -185,9 +181,8 @@ def overview_plot(
         line_groups: how many groups of lines are there, i.e. how many zoom-in 
                      plots do we want
         spectrum: spectrum of the source
-        size
-
     """
+
     # Generate the title of the plot from information on the target
     title = (
         f"{target['Cluster']} {target['SourceNumber']} " f"z={target['Redshift']:.3}"
@@ -208,11 +203,11 @@ def overview_plot(
     # lines grouped together will also be plotted together
     No_plots = len(line_groups)
 
-    # Set figure and its size; add axis
-    fig = plt.figure(figsize=(size_x, size_y))
-    ax = fig.add_subplot(111)
-    ax.set_title(r"{}".format(title), size=2 * c.labelsize)
-
+    # Set figure and add axis
+    fig = plt.figure()    
+    
+    ax = fig.add_subplot(311)
+    
     # Plot the base restframe spectrum to the main axis
     ax.plot(spectrum["wl_rest"], spectrum["flux"], color="k")
     ylims = ax.get_ylim()
@@ -242,12 +237,13 @@ def overview_plot(
         """
         # Semi-random x-y ratio that does not match the main plot, but better
         # shows the lines
+        
         axins = inset_axes(
             ax,
-            size_x * 0.8 / No_plots,
-            size_y,
+            f"{100*0.9/No_plots}%",
+            f"{150}%",
             loc="lower left",
-            bbox_to_anchor=(0 + j / (No_plots - 1), 1.1),
+            bbox_to_anchor=(0 + j / (No_plots - 1), 1.3, 1, 1),
             bbox_transform=ax.transAxes,
         )
 
@@ -267,12 +263,11 @@ def overview_plot(
                 f"{l['latex']}",
                 ha="center",
                 va="bottom",
-                fontsize=c.labelsize,
             )
 
         # if it's the first plot, i.e. the left-most plot, label the y axis
         if j == 0:
-            axins.set_ylabel(Myylabel, fontsize=c.labelsize)
+            axins.set_ylabel(Myylabel)
 
         mark_inset(ax, axins, loc1=3, loc2=4, fc="none", ec="0.5")
         j = j + 1
@@ -280,9 +275,11 @@ def overview_plot(
     # Return the individual lines plots to the overview plot
     yield plot_line
 
-    # Mark atmosphere absorption
-    Aband = so.restframe_wl(c.Aband, target["Redshift"])
-    Bband = so.restframe_wl(c.Bband, target["Redshift"])
+    # Set title, taking into account inset axes, if they exist
+    if j==0:
+        ax.set_title(r"{}".format(title))
+    else: 
+        ax.set_title(r"{}".format(title), y=3)
 
     for band in [Aband, Bband]:
         ax.fill_between(
@@ -296,8 +293,8 @@ def overview_plot(
     ax.set_ylim(ylims)
 
     # Set the proper labels
-    ax.set_xlabel(Myxlabel, fontsize=c.labelsize)
-    ax.set_ylabel(Myylabel, fontsize=c.labelsize)
+    ax.set_xlabel(Myxlabel)
+    ax.set_ylabel(Myylabel)
     # Save the figure under the above-decided name
     plt.savefig(f"{basename}.png", format="png", bbox_inches="tight")
     plt.close()

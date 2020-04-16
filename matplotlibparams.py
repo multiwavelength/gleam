@@ -21,7 +21,7 @@ plt.rcParams["text.latex.preamble"] = [
 # plotting parameters
 size_major = 8.0
 size_minor = 4.0
-thick = 2.0
+thick = 1.0
 
 ms1 = 10
 t1 = 0.2
@@ -48,8 +48,10 @@ plt.rcParams["lines.linewidth"] = thick
 plt.rcParams["lines.antialiased"] = True
 
 plt.rcParams.update({"font.size": 15})
-# plt.rcParams['figure.figsize'] = 10, 10
+plt.rcParams["axes.titlesize"] = 30
+
 plt.rcParams["figure.figsize"] = 20, 10
+plt.rcParams['savefig.dpi'] = 300
 #                                                                         #
 #                                                                         #
 #                                                                         #
