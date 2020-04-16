@@ -306,6 +306,9 @@ def overview_plot(
         # Overplot sky
         overplot_sky(axins, target["Redshift"])
 
+        # Hide axis labels for inset axes
+        axins.xaxis.label.set_visible(False)
+        if j>0: axins.yaxis.label.set_visible(False)
         # Plot the observed spectrum in the zoomed-in axis
         axins.plot(spectrum["wl_rest"][select], spectrum["flux"][select], color="k")
 
