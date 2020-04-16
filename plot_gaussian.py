@@ -73,6 +73,29 @@ def overplot_lines(ax, linelabels, lineloc):
     return ax2
 
 
+def overplot_sky(ax, z):
+    """
+    Overplots sky bands on an already existing plot with axes
+    Input:
+        ax: matplolib axis
+        z: redshift of the source
+    Output:
+        ax: returns the new axis in case we want to overplot some more stuff on
+             top
+    """
+    Aband = so.restframe_wl(c.Aband, z)
+    Bband = so.restframe_wl(c.Bband, z)
+
+    for band in [Aband, Bband]:
+            ax.fill_between(
+            [band[0], band[1]],
+            ax.get_ylim()[0],
+            ax.get_ylim()[1],
+            facecolor="gray",
+            alpha=0.3,
+        )
+        
+
 def plot_spectrum(
     data_path,
     target,
@@ -160,6 +183,11 @@ def plot_spectrum(
 
     # Overplot the emission lines of reference
     ax2 = overplot_lines(ax, line_latex, line_wls)
+
+    # Overplot sky bands
+    overplot_sky(ax, target["Redshift"])
+    overplot_sky(sub_axes, target["Redshift"])
+    
     sub_axes.set_zorder(ax.get_zorder() + 1)  # put ax in front of ax2
     ax.patch.set_visible(False)  # hide the 'canvas'
     sub_axes.patch.set_visible(True)
@@ -275,6 +303,9 @@ def overview_plot(
             bbox_transform=ax.transAxes,
         )
 
+        # Overplot sky
+        overplot_sky(axins, target["Redshift"])
+
         # Plot the observed spectrum in the zoomed-in axis
         axins.plot(spectrum["wl_rest"][select], spectrum["flux"][select], color="k")
 
@@ -311,14 +342,8 @@ def overview_plot(
     else: 
         ax.set_title(r"{}".format(title), y=3)
 
-    for band in [Aband, Bband]:
-        ax.fill_between(
-            [band[0], band[1]],
-            ax.get_ylim()[0],
-            ax.get_ylim()[1],
-            facecolor="gray",
-            alpha=0.3,
-        )
+    # Mark atmosphere absorption
+    overplot_sky(ax, target["Redshift"])
 
     ax.set_ylim(ylims)
 
