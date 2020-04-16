@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
+from mpl_toolkits.axes_grid1.inset_locator import TransformedBbox, BboxPatch, BboxConnector 
 import astropy
 from astropy import units as u
 from astropy.table import Table
@@ -23,6 +24,26 @@ import spectra_operations as so
 from astropy.visualization import quantity_support
 
 quantity_support()
+
+def mark_inset(parent_axes, inset_axes, loc1a=1, loc1b=1, loc2a=2, loc2b=2, 
+              **kwargs):
+    """
+    Redefined the mark_inset function. Gives freedom to connect any corner of an 
+    inset plot to any corner of the parent plot.
+    """
+    rect = TransformedBbox(inset_axes.viewLim, parent_axes.transData)
+
+    pp = BboxPatch(rect, fill=False, **kwargs)
+    parent_axes.add_patch(pp)
+
+    p1 = BboxConnector(inset_axes.bbox, rect, loc1=loc1a, loc2=loc1b, **kwargs)
+    inset_axes.add_patch(p1)
+    p1.set_clip_on(False)
+    p2 = BboxConnector(inset_axes.bbox, rect, loc1=loc2a, loc2=loc2b, **kwargs)
+    inset_axes.add_patch(p2)
+    p2.set_clip_on(False)
+
+    return pp, p1, p2
 
 
 def overplot_lines(ax, linelabels, lineloc):
@@ -269,7 +290,8 @@ def overview_plot(
         if j == 0:
             axins.set_ylabel(Myylabel)
 
-        mark_inset(ax, axins, loc1=3, loc2=4, fc="none", ec="0.5")
+        mark_inset(ax, axins, loc1a=4, loc1b=1, loc2a=3, loc2b=2, fc="none", ec="0.5")
+        
         j = j + 1
 
     # Return the individual lines plots to the overview plot
