@@ -145,7 +145,7 @@ def plot_spectrum(
         basename = f"{basename}.{line_names[i].strip()}"
 
     # Set up figure and axes
-    fig = plt.figure(111)
+    fig = plt.figure(211)
     ax = fig.add_subplot(111)
 
     # Overplot the observed spectrum
