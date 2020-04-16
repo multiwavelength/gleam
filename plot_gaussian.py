@@ -65,9 +65,9 @@ def overplot_lines(ax, linelabels, lineloc):
     ax.set_zorder(ax2.get_zorder() + 1)  # put ax in front of ax2
     ax.patch.set_visible(False)  # hide the 'canvas'
     ax2.patch.set_visible(True)
-    ax2.set_xlim(ax.get_xlim())
     ax2.axes.get_xaxis().set_ticks(lineloc)
     ax2.axes.xaxis.set_ticklabels(linelabels)
+    ax2.set_xlim(ax.get_xlim())
     ax2.xaxis.set_label_position("top")
     ax2.set_xticklabels(ax2.xaxis.get_majorticklabels(), rotation=90)
     return ax2
@@ -145,6 +145,10 @@ def plot_spectrum(
         spectrum["wl_rest"] > (np.average(fitted_wl) - d_wl)
     )
     sub_axes.plot(spectrum["wl_rest"][select], spectrum["flux"][select], color="gray")
+    ax.set_xlim(min(spectrum["wl_rest"])-d_wl, max(spectrum["wl_rest"])+d_wl)
+    ax.set_ylim(ax.get_ylim())
+    sub_axes.set_xlim(sub_axes.get_xlim())
+    sub_axes.set_ylim(sub_axes.get_ylim())
 
     # Mark the emission line
     for line in fitted_wl:
@@ -231,6 +235,9 @@ def overview_plot(
     
     # Plot the base restframe spectrum to the main axis
     ax.plot(spectrum["wl_rest"], spectrum["flux"], color="k")
+
+    # Set x axis limits based on the spectrum
+    ax.set_xlim(min(spectrum["wl_rest"])-d_wl, max(spectrum["wl_rest"])+d_wl)
     ylims = ax.get_ylim()
 
     j = 0
@@ -273,6 +280,7 @@ def overview_plot(
 
         # Overplot the gaussian fit to the line in the zoomed-in axis
         plot_gaussian_fit(spectrum["wl_rest"][select], spectrum_fit, axins)
+        axins.set_xlim([np.average(line["wl_vacuum"]) - d_wl, np.average(line["wl_vacuum"]) + d_wl])
         axins.set_ylim(ylims)
 
         # Mark the emission lines fitted
