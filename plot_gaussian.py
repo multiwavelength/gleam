@@ -331,6 +331,10 @@ def overview_plot(
                 va="bottom",
             ) for l in line]
 
+        # Adjust for potential label overlap
+        if len(texts)>1:
+            adjust_labels(texts, fig, axins, zoom)
+        
         # if it's the first plot, i.e. the left-most plot, label the y axis
         if j == 0:
             axins.set_ylabel(Myylabel)
@@ -390,3 +394,33 @@ def plot_gaussian_fit(wl, spectrum_fit, ax):
             )
             fit_flux = gauss_part + spectrum_fit.continuum.value
             ax.plot(wl, fit_flux, linestyle="--")
+
+
+def adjust_labels(texts, fig, ax, zoom=None):
+    """
+    Sometime added text labels for lines overlap because the lines are too close.
+    This attempts to move the labels horizontally to allow for better visibility.
+    ! Changes are made only for 2 and 3 labels, not more.
+    Input:
+        texts: lists of text that need to be shuffled around
+        fig: parent figure
+        ax: parent axis
+        zoom: if any zoom was added to the axis with respect to the parent axis.
+    Return:
+        new positions for text objects.
+    """ 
+    transf = ax.transData.inverted()
+    unzoom = [1/z for z in zoom]
+    bbox = [t.get_window_extent(renderer = fig.canvas.get_renderer()).expanded(*(unzoom)).transformed(transf) for t in texts]
+    
+    # Calculate the offset between the right side of the current box and 
+    # compare it to the the left side of the next box
+    difs = [bbox[i].x1-bbox[i+1].x0 for i in range(len(bbox)-1)]
+    
+    # Make changes only if there is overlap between text boxes
+    if any(dif > 0 for dif in difs):
+            if (len(texts)==2):
+                offsets = ((-difs[0]/2, 0),(difs[0]/2, 0))
+            if len(texts)==3:
+                offsets = ((-max(difs[0],0), 0), (0, 0), (max(difs[1],0), 0))
+            [text.set_position(list(np.add(text.get_position(),offset))) for (text, offset) in zip(texts, offsets)]            
