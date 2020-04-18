@@ -333,6 +333,9 @@ def overview_plot(
         if j == 0:
             axins.set_ylabel(Myylabel)
 
+        # Overplot sky
+        overplot_sky(axins, target["Redshift"])
+        
         mark_inset(ax, axins, loc1a=4, loc1b=1, loc2a=3, loc2b=2, fc="none", ec="0.5")
         
         j = j + 1
