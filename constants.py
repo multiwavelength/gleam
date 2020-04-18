@@ -44,12 +44,3 @@ cont_width = 70.0 * u.Angstrom
 # Parameters to constrain the width of the lines
 fwhm_min = 2.0  # pixel
 fwhm_max = 15.0  # pixel
-
-# Plotting parameters
-# overview plot size
-overview_x = 60.0
-overview_y = 15.0
-
-# Font sizes
-# X & Y label sizes
-labelsize = 30
