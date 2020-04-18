@@ -320,15 +320,14 @@ def overview_plot(
         axins.set_ylim(ylims)
 
         # Mark the emission lines fitted
-        for l in line:
-            axins.axvline(x=l["wl_vacuum"], color="gray", linestyle="-")
-            axins.text(
-                l["wl_vacuum"],
-                axins.get_ylim()[1],
+        [axins.axvline(x=l["wl_vacuum"], color="gray", linestyle="-") for l in line]
+        texts = [axins.text(
+                l["wl_vacuum"].value,
+                axins.get_ylim()[1]*1.01,
                 f"{l['latex']}",
                 ha="center",
                 va="bottom",
-            )
+            ) for l in line]
 
         # if it's the first plot, i.e. the left-most plot, label the y axis
         if j == 0:
