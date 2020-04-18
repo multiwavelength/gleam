@@ -3,6 +3,7 @@ __version__ = "0.1"
 
 import os, sys
 from contextlib import contextmanager
+from collections import namedtuple
 
 import click
 import numpy as np
@@ -295,18 +296,17 @@ def overview_plot(
         """
         # Semi-random x-y ratio that does not match the main plot, but better
         # shows the lines
-        
+
+        Zoom = namedtuple("Zoom", ['x', 'y'])
+        zoom = Zoom(x=0.9/No_plots, y=1.5)
         axins = inset_axes(
             ax,
-            f"{100*0.9/No_plots}%",
-            f"{150}%",
+            f"{100*zoom.x}%",
+            f"{100*zoom.y}%",
             loc="lower left",
             bbox_to_anchor=(0 + j / (No_plots - 1), 1.3, 1, 1),
             bbox_transform=ax.transAxes,
         )
-
-        # Overplot sky
-        overplot_sky(axins, target["Redshift"])
 
         # Hide axis labels for inset axes
         axins.xaxis.label.set_visible(False)
