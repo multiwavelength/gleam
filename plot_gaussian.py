@@ -170,7 +170,9 @@ def plot_spectrum(
     )
     sub_axes.plot(spectrum["wl_rest"][select], spectrum["flux"][select], color="gray")
     ax.set_xlim(min(spectrum["wl_rest"])-d_wl, max(spectrum["wl_rest"])+d_wl)
-    ax.set_ylim(ax.get_ylim())
+    ylims = list(ax.get_ylim())
+    ylims[0] = max(ylims[0], -2*np.std(spectrum["flux"].value))
+    ax.set_ylim(ylims)
     sub_axes.set_xlim(sub_axes.get_xlim())
     sub_axes.set_ylim(sub_axes.get_ylim())
 
