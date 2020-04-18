@@ -264,9 +264,11 @@ def overview_plot(
     # Plot the base restframe spectrum to the main axis
     ax.plot(spectrum["wl_rest"], spectrum["flux"], color="k")
 
-    # Set x axis limits based on the spectrum
+    # Set x & y axis limits based on the spectrum
     ax.set_xlim(min(spectrum["wl_rest"])-d_wl, max(spectrum["wl_rest"])+d_wl)
-    ylims = ax.get_ylim()
+    ylims = list(ax.get_ylim())
+    ylims[0] = max(ylims[0], -2*np.std(spectrum["flux"].value))
+    ax.set_ylim(ylims)
 
     j = 0
 
