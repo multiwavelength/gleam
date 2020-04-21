@@ -19,7 +19,8 @@ from astropy.table import Table
 
 import read_files as rf
 import gaussian_fitting as gf
-import constants as c
+import constants as config
+from constants import a as c
 import spectra_operations as so
 
 from astropy.visualization import quantity_support
@@ -91,7 +92,7 @@ def overplot_sky(ax, z):
             facecolor="gray",
             alpha=0.3,
         )
-        for band in c.SKY
+        for band in config.SKY
     ]
 
 

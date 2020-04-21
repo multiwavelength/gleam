@@ -19,7 +19,8 @@ from colorama import init
 
 import plot_gaussian as pg
 import spectra_operations as so
-import constants as c
+import constants as config
+from constants import a as c
 
 import lmfit
 from lmfit.models import GaussianModel, ConstantModel
@@ -72,7 +73,7 @@ class Line:
     @property
     def luminosity(self):
         # Line luminosity
-        ld = c.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
+        ld = config.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
         v = 4.0 * np.pi * ld ** 2 * self.flux.value
         e = 4.0 * np.pi * ld ** 2 * self.flux.error
         return RandomVariable(v, e)
@@ -331,7 +332,7 @@ class NonDetection:
     @property
     def luminosity(self) -> Qty:
         # Line luminosity
-        ld = c.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
+        ld = config.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
         v = 4.0 * np.pi * ld ** 2 * self.flux
         return v
 

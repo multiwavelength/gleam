@@ -17,7 +17,8 @@ from colorama import init
 
 init(autoreset=True)
 
-import constants as c
+import constants as config
+from constants import a as c
 import matplotlib.pyplot as plt
 
 
@@ -207,7 +208,7 @@ def mask_atmosphere(wl, z):
         (
             (wl > restframe_wl(band["wl_min"], z))
             & (wl < restframe_wl(band["wl_max"], z))
-            for band in c.SKY
+            for band in config.SKY
         ),
     )
 
