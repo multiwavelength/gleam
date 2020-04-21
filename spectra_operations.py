@@ -9,7 +9,7 @@ from typing import List
 import numpy as np
 from astropy import units as u
 from astropy import constants as const
-from astropy.table import Table, Column
+from astropy.table import QTable, Column
 from colorama import Fore
 from colorama import init
 
@@ -83,7 +83,7 @@ def bin_spectrum(spectrum, n=2):
     """
     tsize = len(spectrum) // n * n
     spectrum = spectrum[:tsize]
-    t = Table()
+    t = QTable()
 
     t["wl"] = Column(
         average_(spectrum["wl"], n), unit=spectrum["wl"].unit, dtype="f"
@@ -117,7 +117,7 @@ def resolution(wl):
     Returns the minimum resolution of a 1D spectrum
     Input:
         wl: 1D wavelength in some units (preferably Astropy
-            Table, such that it has units attached)
+            QTable, such that it has units attached)
     Output:
         resolution: single minimum value for resolution in the
         
@@ -290,13 +290,13 @@ def select_lines(
     res_rest = resolution(wl_rest)
     # mask all lines, but the line we are interested in
     masked_otherlines = np.full(np.shape(wl_rest), True)
-    for line in map(Table, other_lines):
+    for line in map(QTable, other_lines):
         mask = mask_line(wl_rest, line["wl_vacuum"])
         masked_otherlines = masked_otherlines & mask
 
     # select the lines of interest
     select_lines = np.full(np.shape(wl_rest), False)
-    for line in map(Table, selected_lines):
+    for line in map(QTable, selected_lines):
         mask = select_singleline(wl_rest, line["wl_vacuum"], cont_width)
         select_lines = select_lines | mask
 
