@@ -91,6 +91,7 @@ def read_lol(data_path):
         description="Line name written in latex format, useful for plotting purposes",
     )
 
+    t.sort("wl_vacuum")
     return t
 
 
