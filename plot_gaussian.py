@@ -84,18 +84,16 @@ def overplot_sky(ax, z):
         ax: returns the new axis in case we want to overplot some more stuff on
              top
     """
-    Aband = so.restframe_wl(c.Aband, z)
-    Bband = so.restframe_wl(c.Bband, z)
-
-    for band in [Aband, Bband]:
-            ax.fill_between(
-            [band[0], band[1]],
+    [ax.fill_between(
+            [so.restframe_wl(band["wl_min"], z), so.restframe_wl(band["wl_max"], z)],
             ax.get_ylim()[0],
             ax.get_ylim()[1],
             facecolor="gray",
             alpha=0.3,
         )
-        
+        for band in c.SKY
+    ]
+
 
 def plot_spectrum(
     data_path,

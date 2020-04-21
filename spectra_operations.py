@@ -5,6 +5,8 @@ __version__ = "0.1"
 import os, sys
 from dataclasses import dataclass
 from typing import List
+import functools
+import operator
 
 import numpy as np
 from astropy import units as u
@@ -192,18 +194,23 @@ def mask_atmosphere(wl, z):
     !!! Assumes spectrum has been restframed !!!
     Input:
         wl: rest-frame wavelength spectrum
-        z: redshift of the souce; used to restframe the sky lines
+        z: redshift of the source; used to restframe the sky lines
     Output:
         mask: mask to be applied to the spectrum such that the spectrum now has 
               the absorption features masked
     Note: the wavelengths of the A band and B band sky absorption areas are 
     defined in the constants file
     """
-    Aband = restframe_wl(c.Aband, z)
-    Bband = restframe_wl(c.Bband, z)
-    absorption = ((wl > Aband[0]) & (wl < Aband[1])) | (
-        (wl > Bband[0]) & (wl < Bband[1])
+
+    absorption = functools.reduce(
+        operator.or_,
+        (
+            (wl > restframe_wl(band["wl_min"], z))
+            & (wl < restframe_wl(band["wl_max"], z))
+            for band in c.SKY
+        ),
     )
+
     without_absorption = ~absorption
     return without_absorption
 
