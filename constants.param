@@ -1,32 +1,38 @@
-# Signal to noise limit for a detection
-SN_limit: 2
+# Fitting parameters
+fitting:
+    SN_limit: 2 # Signal to noise limit for a detection
+    tolerance: 13.0 Angstrom # Tolerance for considering emission lines part of a group and thus fitting them together
+    w: 3.0 Angstrom # Range around either side of the Gaussian center to be probed
+    line_width: 20.0 Angstrom # Wavelength range used to mask lines
+    cont_width: 70.0 Angstrom # Range used for selecting continuum left and right of the source
+    fwhm_min: 2.0  # Minimum expected FWHM of the line in pixels
+    fwhm_max: 15.0  # Maximum expected FWHM of the line in pixels
+    spectral_resolution: 5.0 # Expected line width for undetected lines in units of pixels
 
 # Cosmology
-H0: 70 km / (Mpc s)
-Om0: 0.3
-Tcmb0: 2.725 K
+cosmology:
+    H0: 70 km / (Mpc s)
+    Om0: 0.4
+    Tcmb0: 2.725 K
 
-# Expected line width for undetected lines in units of pixels
-spectral_resolution: 5.0  # pixels
+#telescopes:
+#    - name: VIMOS
+#      line_list: vimoslines.fits
+#      resolution:
+#         m: 23
+#         c: 43
+#    - name: MMT
+#      resolution:
+#         c: 12
+
+
+
 
 # Formula for resolution in the observed spectrum, not restframe!!!
 # [a, b], y: a*x+b obtained from MOS_SPECTRAL_RESOLUTION.fits
 m_res: 0.07445/Angstrom
 c_res: 52.1895
 
-# Tolerance for considering emission lines part of a group and thus fitting them
-# together
-tolerance: 13.0 Angstrom
 
-# Range to be probed by lmfit when searching around Gaussian center hint
-w: 3.0 Angstrom
 
-# Wavelength width used to mask lines
-line_width: 20.0 Angstrom
 
-# Range used for selecting continuum left and right of the source
-cont_width: 70.0 Angstrom
-
-# Parameters to constrain the width of the lines
-fwhm_min: 2.0  # pixel
-fwhm_max: 15.0  # pixel

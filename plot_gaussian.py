@@ -108,7 +108,7 @@ def plot_spectrum(
     fitted_wl,
     inspect,
     plot_fit=True,
-    d_wl=c.cont_width,
+    d_wl=c.fitting.cont_width,
 ):
     """
     Plots spectrum and a fit to a specific line. Overplots the entire line 
@@ -223,7 +223,7 @@ def overview_plot(
     data_path,
     line_groups,
     spectrum,
-    d_wl=c.cont_width,
+    d_wl=c.fitting.cont_width,
 ):
     """
     Overview plot of the spectrum of a single target, with zoom-in plots around
@@ -387,7 +387,7 @@ def plot_gaussian_fit(wl, spectrum_fit, ax):
         if isinstance(line_fit, gf.NonDetection) & (
             not isinstance(line_fit, gf.NoCoverage)
         ):
-            s = so.fwhm_to_sigma(so.resolution(wl) * c.spectral_resolution)
+            s = so.fwhm_to_sigma(so.resolution(wl) * c.fitting.spectral_resolution)
             gauss_part = gf.gauss_function(
                 wl, so.amplitude_to_height(line_fit.amplitude, s), line_fit.restwl, s
             )

@@ -73,7 +73,7 @@ class Line:
     @property
     def luminosity(self):
         # Line luminosity
-        ld = c.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
+        ld = c.cosmology.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
         v = 4.0 * np.pi * ld ** 2 * self.flux.value
         e = 4.0 * np.pi * ld ** 2 * self.flux.error
         return RandomVariable(v, e)
@@ -332,7 +332,7 @@ class NonDetection:
     @property
     def luminosity(self) -> Qty:
         # Line luminosity
-        ld = c.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
+        ld = c.cosmology.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
         v = 4.0 * np.pi * ld ** 2 * self.flux
         return v
 
@@ -490,7 +490,7 @@ def upper_limit(y, x):
     # Resolution is assumed to be a multiple of the pixel size, e.g. 5
     # Takes SN limit into account
     upper_limit = (
-        c.SN_limit * so.spectrum_rms(y) * np.sqrt(pixel ** 2 * c.spectral_resolution)
+        c.fitting.SN_limit * so.spectrum_rms(y) * np.sqrt(pixel ** 2 * c.fitting.spectral_resolution)
     )
     return upper_limit
 
@@ -507,7 +507,7 @@ def is_good(model: ModelResult) -> bool:
     fitparams = model.params
     return all(
         RandomVariable.from_param(fitparams[f"g{i}_amplitude"]).significance
-        > c.SN_limit
+        > c.fitting.SN_limit
         for i in range(len(model.components) - 1)
     )
 
@@ -578,9 +578,9 @@ def model_selection(
         for i, wl in enumerate(wl_line):
             if (i not in wl_subset_indices) and np.sum(
                 ~so.mask_line(
-                    x, wl_line[i], w=1.01 * c.spectral_resolution * so.resolution(x)
+                    x, wl_line[i], w=1.01 * c.fitting.spectral_resolution * so.resolution(x)
                 )
-            ) < c.spectral_resolution:
+            ) < c.fitting.spectral_resolution:
                 print(Fore.BLUE + f"No spectral coverage on line {wl_line[i]}")
             else:
                 continue
@@ -625,10 +625,10 @@ def model_selection(
             )
             if np.sum(
                 ~so.mask_line(
-                    x, wl_line[i], w=1.01 * c.spectral_resolution * so.resolution(x)
+                    x, wl_line[i], w=1.01 * c.fitting.spectral_resolution * so.resolution(x)
                 )
             )
-            < c.spectral_resolution
+            < c.fitting.spectral_resolution
             else NonDetection(
                 amplitude=ul * x.unit * y.unit,
                 z=redshift,
@@ -679,7 +679,7 @@ def fit_model(
 
     # rescale the flux scale to get numbers comparable to the wavelength and
     # avoid numerical instabilities
-    flux_scale = 1.0 / np.std(y).value * c.cont_width.value
+    flux_scale = 1.0 / np.std(y).value * c.fitting.cont_width.value
     y = y * flux_scale
     ystd = ystd * flux_scale
 
@@ -699,8 +699,8 @@ def fit_model(
             model.set_param_hint(
                 f"g{i}_center",
                 value=wl.value,
-                min=(wl - c.w).value,
-                max=(wl + c.w).value,
+                min=(wl - c.fitting.w).value,
+                max=(wl + c.fitting.w).value,
             )
 
     # If no fixing or constraining is done, then constrain the center to be
@@ -711,8 +711,8 @@ def fit_model(
             model.set_param_hint(
                 f"g{i}_center",
                 value=wl.value,
-                min=(wl - c.cont_width).value,
-                max=(wl + c.cont_width).value,
+                min=(wl - c.fitting.cont_width).value,
+                max=(wl + c.fitting.cont_width).value,
             )
 
     # Constrain the FWHM, sigma, height and amplitude to reasonable values which
@@ -723,15 +723,15 @@ def fit_model(
         # FWHM & sigma: average between minimum and maximum expected width
         model.set_param_hint(
             f"g{i}_fwhm",
-            value=(c.fwhm_min * pixel + c.fwhm_max * pixel).value / 2.0,
-            min=(c.fwhm_min * pixel).value,
+            value=(c.fitting.fwhm_min * pixel + c.fitting.fwhm_max * pixel).value / 2.0,
+            min=(c.fitting.fwhm_min * pixel).value,
         )
         model.set_param_hint(
             f"g{i}_sigma",
             value=so.fwhm_to_sigma(
-                (c.fwhm_min * pixel + c.fwhm_max * pixel).value / 2.0
+                (c.fitting.fwhm_min * pixel + c.fitting.fwhm_max * pixel).value / 2.0
             ),
-            min=so.fwhm_to_sigma((c.fwhm_min * pixel).value),
+            min=so.fwhm_to_sigma((c.fitting.fwhm_min * pixel).value),
         )
         # Height & amplitude: maximum y value - median of continuum
         model.set_param_hint(
@@ -741,7 +741,7 @@ def fit_model(
             f"g{i}_amplitude",
             value=so.height_to_amplitude(
                 max(y.value, key=abs) - np.median(y).value,
-                so.fwhm_to_sigma((c.fwhm_min * pixel + c.fwhm_max * pixel).value / 2.0),
+                so.fwhm_to_sigma((c.fitting.fwhm_min * pixel + c.fitting.fwhm_max * pixel).value / 2.0),
             ),
         )
 
@@ -832,8 +832,8 @@ def fit_lines(
         select_group = (line_list["wl_vacuum"] > group.beginning) & (
             line_list["wl_vacuum"] < group.ending
         )
-        if (group.ending - c.tolerance / 2.0 < np.amax(spectrum["wl_rest"])) & (
-            group.beginning + c.tolerance / 2.0 > np.amin(spectrum["wl_rest"])
+        if (group.ending - c.fitting.tolerance / 2.0 < np.amax(spectrum["wl_rest"])) & (
+            group.beginning + c.fitting.tolerance / 2.0 > np.amin(spectrum["wl_rest"])
         ):
             spectrum_fit, spectrum_line = do_gaussian(
                 line_list[select_group],

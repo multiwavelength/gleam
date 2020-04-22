@@ -12,6 +12,7 @@ astropy = "^4.0.1"
 colorama = "^0.4.3"
 numpy = "^1.18.2"
 click = "^7.1.1"
+pydantic = "^1.5"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.770"

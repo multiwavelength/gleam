@@ -138,7 +138,7 @@ def resolution(wl):
     return minimum
 
 
-def mask_line(wl, wl_ref, w=c.line_width):
+def mask_line(wl, wl_ref, w=c.fitting.line_width):
     """
     Masks the spectrum around the listed line, within the width specified
     Input:
@@ -267,7 +267,7 @@ def select_lines(
     spectrum,
     target_info,
     ignore_sky_lines=False,
-    cont_width=c.cont_width,
+    cont_width=c.fitting.cont_width,
 ):
     """
     Masks the spectrum in the vicinity of the line of interest. It should leave 
@@ -318,7 +318,7 @@ def select_lines(
     return masked_all
 
 
-def group_lines(line_list, t=c.tolerance):
+def group_lines(line_list, t=c.fitting.tolerance):
     """
     Group together lines within a wavelenght tolerance. These will be fit 
     together as a sum of Gaussian, rathen than independently.
