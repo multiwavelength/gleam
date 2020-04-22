@@ -73,7 +73,7 @@ class Line:
     @property
     def luminosity(self):
         # Line luminosity
-        ld = config.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
+        ld = c.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
         v = 4.0 * np.pi * ld ** 2 * self.flux.value
         e = 4.0 * np.pi * ld ** 2 * self.flux.error
         return RandomVariable(v, e)
@@ -332,7 +332,7 @@ class NonDetection:
     @property
     def luminosity(self) -> Qty:
         # Line luminosity
-        ld = config.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
+        ld = c.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
         v = 4.0 * np.pi * ld ** 2 * self.flux
         return v
 

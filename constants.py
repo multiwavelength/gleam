@@ -29,6 +29,11 @@ class Constants:
     fwhm_min: u.Quantity = 2.0
     fwhm_max: u.Quantity = 15.0
 
+    @property
+    def cosmo(self):
+        # Cosmology
+        return FlatLambdaCDM(H0=self.H0, Om0=self.Om0, Tcmb0=self.Tcmb0)
+
 
 def read_config(config_file) -> Constants:
     config = yaml.safe_load(open(config_file).read())
@@ -39,6 +44,5 @@ def read_config(config_file) -> Constants:
 a = read_config('constants.param')
 print(a)
 
-cosmo = FlatLambdaCDM(H0=a.H0, Om0=a.Om0, Tcmb0=a.Tcmb0)
+SKY = QTable.read("line_lists/Sky_bands.fits")
 
-SKY = QTable.read('line_lists/Sky_bands.fits')
