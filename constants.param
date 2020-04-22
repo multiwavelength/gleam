@@ -15,6 +15,9 @@ cosmology:
     Om0: 0.4
     Tcmb0: 2.725 K
 
+# Telescope/instrument setup
+resolution: 12.5 Angstrom
+
 #telescopes:
 #    - name: VIMOS
 #      line_list: vimoslines.fits
@@ -22,16 +25,16 @@ cosmology:
 #         m: 23
 #         c: 43
 #    - name: MMT
-#      resolution:
+#      resolution: delta lambda = 6 Angstrom 
 #         c: 12
-
-
-
-
-# Formula for resolution in the observed spectrum, not restframe!!!
-# [a, b], y: a*x+b obtained from MOS_SPECTRAL_RESOLUTION.fits
-m_res: 0.07445/Angstrom
-c_res: 52.1895
+#    - name: KECK
+#      resolution: delta lambda = 1 Angstrom
+#    - name: AF2/R316R
+#      resolution: delta lambda = 8.1 Angstrom
+#    - name: AF2/R600R
+#      resolution: 4.4 Angstrom 
+#    - name: VIMOS
+#      resolution: 12.5 Angstrom     
 
 
 

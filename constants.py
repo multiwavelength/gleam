@@ -32,10 +32,6 @@ class Length(Quantity):
     _equivalent_unit = u.m
 
 
-class InvLength(Quantity):
-    _equivalent_unit = (1 / u.m).unit
-
-
 class Frequency(Quantity):
     _equivalent_unit = (1 / u.s).unit
 
@@ -85,9 +81,7 @@ class Constants:
     specific parameters. Contains sensible defaults and check for unit type
     correctness.
     """
-
-    m_res: InvLength = 0.07445 / u.Angstrom
-    c_res: float = 52.1895
+    resolution: Length = 6 * u.Angstrom
 
     fitting: FittingParameters = FittingParameters()
     cosmology: Cosmology = Cosmology()

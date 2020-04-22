@@ -113,10 +113,8 @@ class Line:
     @property
     def velocity_fwhm(self):
         # Deconvolved velocity fwhm
-        # Observed resolving power at the line wavelength
-        res_power = c.m_res * self.restwl * (1 + self.z) + c.c_res
         # Observed resolution at the restframe wavelength
-        resolution = self.restwl / res_power
+        resolution = c.resolution / (1 + self.z)
         if (self.fwhm.value ** 2.0 - resolution ** 2.0) < 0:
             return RandomVariable(value=np.nan * u.km / u.s, error=np.nan * u.km / u.s)
         else:
