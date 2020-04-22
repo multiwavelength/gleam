@@ -118,7 +118,7 @@ class Line:
         # Observed resolution at the restframe wavelength
         resolution = self.restwl / res_power
         if (self.fwhm.value ** 2.0 - resolution ** 2.0) < 0:
-            return RandomVariable(value=0 * u.km / u.s, error=99 * u.km / u.s)
+            return RandomVariable(value=np.nan * u.km / u.s, error=np.nan * u.km / u.s)
         else:
             eff_fwhm = np.sqrt(self.fwhm.value ** 2.0 - resolution ** 2.0)
             v = const.c.to("km/s") * eff_fwhm / self.restwl
