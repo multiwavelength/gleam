@@ -91,44 +91,49 @@ def read_lof(file1):
         Astropy Table with measurements of interest: the source number, RA, DEC,
         the parent cluster, redshift (from specpro) and the z confidence
     """
-    data = np.array(np.genfromtxt(file1, dtype="U8,i,f,f,U10,f,f,U2,U20,U20"))
+    data = np.array(np.genfromtxt(file1, dtype="U8,U20,i,f,f,U10,f,f,U2,U20,U20"))
 
     # Extract each measurement of interest into a separate Table
     t = QTable()
-    t["Mode"] = Column(
+    t["Setup"] = Column(
         [datum[0] for datum in data],
+        dtype="U",
+        description="Telescope setup",
+    )
+    t["Pointing"] = Column(
+        [datum[1] for datum in data],
         dtype="U",
         description="Stack type or telescope source",
     )
     t["SourceNumber"] = Column(
-        [datum[1] for datum in data], dtype="U", description="SourceNumber"
+        [datum[2] for datum in data], dtype="U", description="SourceNumber"
     )
     t["RA"] = Column(
-        [datum[2] for datum in data],
+        [datum[3] for datum in data],
         unit=u.degree,
         dtype="f",
         description="Right Ascension",
     )
     t["DEC"] = Column(
-        [datum[3] for datum in data],
+        [datum[4] for datum in data],
         unit=u.degree,
         dtype="f",
         description="Declination",
     )
     t["Cluster"] = Column(
-        [datum[4] for datum in data], dtype="U", description="Parent cluster"
+        [datum[5] for datum in data], dtype="U", description="Parent cluster"
     )
     t["Redshift"] = Column(
-        [datum[5] for datum in data], dtype="f", description="Redshift"
+        [datum[6] for datum in data], dtype="f", description="Redshift"
     )
     t["Confidence"] = Column(
-        [datum[6] for datum in data],
+        [datum[7] for datum in data],
         dtype="f",
         description="Confidence as assigned by user. "
         "Scales from 1 (best) to 5 (worst)",
     )
-    t["Membership"] = Column([datum[8] for datum in data], dtype="U20")
-    t["Type"] = Column([datum[9] for datum in data], dtype="U20", description="Type")
+    t["Membership"] = Column([datum[9] for datum in data], dtype="U20")
+    t["Type"] = Column([datum[10] for datum in data], dtype="U20", description="Type")
     return t
 
 
