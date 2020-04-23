@@ -62,6 +62,7 @@ class Cosmology:
 class Setup:
     name: str
     resolution: Length
+    line_table: str
 
 
 @dataclass
@@ -88,7 +89,7 @@ class Constants:
     specific parameters. Contains sensible defaults and check for unit type
     correctness.
     """
-
+    resolution: Length
     setups: List[Setup]
     fitting: FittingParameters = FittingParameters()
     cosmology: Cosmology = Cosmology()

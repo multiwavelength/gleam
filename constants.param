@@ -16,19 +16,21 @@ cosmology:
     Tcmb0: 2.725 K
 
 # Telescope/instrument setup
-#resolution: 12.5 Angstrom
+resolution: 12.5 Angstrom
 
 setups:
     - name: VIMOS
       resolution: 12.5 Angstrom
-#      #line_list: vimoslines.fits
+      line_table: Main_optical_lines.fits
     - name: MMT
       resolution: 6 Angstrom
+      line_table: rsvao.fits
     - name: KECK
       resolution: 1 Angstrom
+      line_table: Main_optical_lines.fits
     - name: AF2_R316R
       resolution: 8.1 Angstrom
+      line_table: Main_optical_lines.fits
     - name: AF2_R600R
       resolution: 4.4 Angstrom
-    - name: VIMOS
-      resolution: 12.5 Angstrom
+      line_table: Main_optical_lines.fits
