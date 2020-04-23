@@ -11,24 +11,6 @@ from astropy import units as u
 import constants as c
 
 
-def read_fitsimg(hdulist):
-    """ 
-    Reads in a fits image with astropy
-    Input:
-        hdulist: astropy fits image read with astropy fits.open
-    Return: 
-        Astropy image and header
-    """
-
-    try:
-        img = hdulist[1].data
-        hdr = hdulist[1].header
-    except:
-        img = hdulist[0].data
-        hdr = hdulist[0].header
-    return img, hdr
-
-
 def read_fits_table(data_path):
     """
     Reads in a fits able with astropy. It tries to account for the fact that the 
