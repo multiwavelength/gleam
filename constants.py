@@ -6,7 +6,7 @@ __author__ = "Andra Stroe"
 __version__ = "0.1"
 
 import yaml
-from typing import List
+from typing import Dict
 
 from pydantic.dataclasses import dataclass
 from astropy import units as u
@@ -60,7 +60,6 @@ class Cosmology:
 
 @dataclass
 class Setup:
-    name: str
     resolution: Length
     line_table: str
 
@@ -89,8 +88,7 @@ class Constants:
     specific parameters. Contains sensible defaults and check for unit type
     correctness.
     """
-    resolution: Length
-    setups: List[Setup]
+    setups: Dict[str, Setup]
     fitting: FittingParameters = FittingParameters()
     cosmology: Cosmology = Cosmology()
 
@@ -111,7 +109,7 @@ def read_config(config_file) -> Constants:
     return Constants(**config)
 
 
-a = read_config("constants.param")
+a = read_config("constants.yaml")
 
 print(a)
 

@@ -3,7 +3,7 @@ fitting:
     SN_limit: 2 # Signal to noise limit for a detection
     tolerance: 13.0 Angstrom # Tolerance for considering emission lines part of a group and thus fitting them together
     w: 3.0 Angstrom # Range around either side of the Gaussian center to be probed
-    line_width: 20.0 Angstrom # Wavelength range used to mask lines
+    mask_width: 20.0 Angstrom # Wavelength range used to mask lines
     cont_width: 70.0 Angstrom # Range used for selecting continuum left and right of the source
     fwhm_min: 2.0  # Minimum expected FWHM of the line in pixels
     fwhm_max: 15.0  # Maximum expected FWHM of the line in pixels
@@ -16,21 +16,21 @@ cosmology:
     Tcmb0: 2.725 K
 
 # Telescope/instrument setup
-resolution: 12.5 Angstrom
+# resolution: 12.5 Angstrom
 
 setups:
-    - name: VIMOS
+    VIMOS:
       resolution: 12.5 Angstrom
       line_table: Main_optical_lines.fits
-    - name: MMT
+    MMT:
       resolution: 6 Angstrom
       line_table: rsvao.fits
-    - name: KECK
+    KECK:
       resolution: 1 Angstrom
       line_table: Main_optical_lines.fits
-    - name: AF2_R316R
+    AF2_R316R:
       resolution: 8.1 Angstrom
       line_table: Main_optical_lines.fits
-    - name: AF2_R600R
+    AF2_R600R:
       resolution: 4.4 Angstrom
       line_table: Main_optical_lines.fits
