@@ -79,17 +79,17 @@ def read_lol(data_path):
 
 def read_lof(file1):
     """
-    For each cluster, quadrants and extensions, it reads the head file produced 
+    For each sample, quadrants and extensions, it reads the head file produced 
     by specpro, which contains a list of the sources and their properties
     Input:
         data_path: folder location of head file and all the individual spectra
                    ! assumes the name contains "_zinfo.dat" in order to find it
                    and that there is only 1 such file in each folder
         The format of the head file is the following
-        #Column SourceNumber RA DEC Cluster Redshift Confidence Crew Comments
+        #Setup Pointing SourceNumber RA DEC Sample Redshift Confidence Crew Comments
     Return: 
         Astropy Table with measurements of interest: the source number, RA, DEC,
-        the parent cluster, redshift (from specpro) and the z confidence
+        the parent sample, redshift (from specpro) and the z confidence
     """
     data = np.array(np.genfromtxt(file1, dtype="U8,U20,i,f,f,U10,f,f,U2,U20,U20"))
 
@@ -120,8 +120,8 @@ def read_lof(file1):
         dtype="f",
         description="Declination",
     )
-    t["Cluster"] = Column(
-        [datum[5] for datum in data], dtype="U", description="Parent cluster"
+    t["Sample"] = Column(
+        [datum[5] for datum in data], dtype="U", description="Parent sample"
     )
     t["Redshift"] = Column(
         [datum[6] for datum in data], dtype="f", description="Redshift"
@@ -137,11 +137,13 @@ def read_lof(file1):
     return t
 
 
-def naming_convention(data_path, cluster, source_number, type1, mod):
-    return "{}/{}.{}_{}.{:03d}.{}".format(
-        data_path, type1, cluster, mod, source_number.astype(int), cluster
-    )
-
+def naming_convention(data_path, sample, source_number, setup, pointing, mod):
+    """
+    Naming convention for files which starts with type of file and is followed
+    by details about the source and setup, in order: setup, pointing, source
+    number, and parent sample
+    """
+    return f"{data_path}/{mod}.{setup}.{pointing}.{source_number.astype(int):03d}.{sample}"
 
 
     

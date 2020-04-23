@@ -240,11 +240,16 @@ def overview_plot(
 
     # Generate the title of the plot from information on the target
     title = (
-        f"{target['Cluster']} {target['SourceNumber']} " f"z={target['Redshift']:.3}"
+        f"{target['Sample']} {target['Pointing']} {target['SourceNumber']} " f"z={target['Redshift']:.3}"
     )
     # Basename that will be used in the savefile name
     basename = rf.naming_convention(
-        data_path, target["Cluster"], target["SourceNumber"], "linefits", target["Mode"]
+        data_path,
+        target["Sample"],
+        target["SourceNumber"],
+        target["Setup"],
+        target["Pointing"],
+        "linefits",
     )
     Myxlabel = (
         r"$\boldsymbol{\lambda}$ "

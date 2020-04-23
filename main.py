@@ -52,7 +52,7 @@ def run_main(
     """
     print(
         f"Now working in {data_path} "
-        + f'on cluster {target["Cluster"]} '
+        + f'on {target["Sample"]} '
         + f'on source {target["SourceNumber"]} at z={target["Redshift"]:1.3f} '
         + f'of type {target["Type"]}\n'
     )
@@ -62,10 +62,11 @@ def run_main(
         "{}.fits".format(
             rf.naming_convention(
                 data_path,
-                target["Cluster"],
+                target["Sample"],
                 target["SourceNumber"],
+                target["Setup"],
+                target["Pointing"],
                 "spec1d",
-                target["Mode"],
             )
         )
     )
@@ -119,10 +120,11 @@ def run_main(
         outfile = "{}.fits".format(
             rf.naming_convention(
                 data_path,
-                target["Cluster"],
+                target["Sample"],
                 target["SourceNumber"],
+                target["Setup"],
+                target["Pointing"],
                 "linefits",
-                target["Mode"],
             )
         )
         outtable.write(outfile, overwrite=True)
@@ -130,6 +132,6 @@ def run_main(
         print(
             Fore.RED
             + "Warning: no emission line fits in source: {} {}".format(
-                target["Cluster"], target["SourceNumber"]
+                target["Sample"], target["SourceNumber"]
             )
         )
