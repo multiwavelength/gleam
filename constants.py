@@ -6,6 +6,7 @@ __author__ = "Andra Stroe"
 __version__ = "0.1"
 
 import yaml
+from typing import List
 
 from pydantic.dataclasses import dataclass
 from astropy import units as u
@@ -58,6 +59,12 @@ class Cosmology:
 
 
 @dataclass
+class Setup:
+    name: str
+    resolution: Length
+
+
+@dataclass
 class FittingParameters:
     """
     Paramters needed for the fitting of the lines. Contains sensible default 
@@ -81,8 +88,8 @@ class Constants:
     specific parameters. Contains sensible defaults and check for unit type
     correctness.
     """
-    resolution: Length = 6 * u.Angstrom
 
+    setups: List[Setup]
     fitting: FittingParameters = FittingParameters()
     cosmology: Cosmology = Cosmology()
 
