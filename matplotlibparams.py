@@ -51,7 +51,7 @@ plt.rcParams.update({"font.size": 15})
 plt.rcParams["axes.titlesize"] = 30
 
 plt.rcParams["figure.figsize"] = 20, 10
-plt.rcParams['savefig.dpi'] = 300
+plt.rcParams["savefig.dpi"] = 300
 #                                                                         #
 #                                                                         #
 #                                                                         #

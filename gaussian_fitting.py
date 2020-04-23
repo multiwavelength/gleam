@@ -28,6 +28,8 @@ from lmfit.model import ModelResult
 
 
 Qty = astropy.units.quantity.Quantity
+
+
 @dataclass
 class RandomVariable:
     value: Qty
@@ -488,7 +490,9 @@ def upper_limit(y, x):
     # Resolution is assumed to be a multiple of the pixel size, e.g. 5
     # Takes SN limit into account
     upper_limit = (
-        c.fitting.SN_limit * so.spectrum_rms(y) * np.sqrt(pixel ** 2 * c.fitting.spectral_resolution)
+        c.fitting.SN_limit
+        * so.spectrum_rms(y)
+        * np.sqrt(pixel ** 2 * c.fitting.spectral_resolution)
     )
     return upper_limit
 
@@ -576,7 +580,9 @@ def model_selection(
         for i, wl in enumerate(wl_line):
             if (i not in wl_subset_indices) and np.sum(
                 ~so.mask_line(
-                    x, wl_line[i], w=1.01 * c.fitting.spectral_resolution * so.resolution(x)
+                    x,
+                    wl_line[i],
+                    w=1.01 * c.fitting.spectral_resolution * so.resolution(x),
                 )
             ) < c.fitting.spectral_resolution:
                 print(Fore.BLUE + f"No spectral coverage on line {wl_line[i]}")
@@ -623,7 +629,9 @@ def model_selection(
             )
             if np.sum(
                 ~so.mask_line(
-                    x, wl_line[i], w=1.01 * c.fitting.spectral_resolution * so.resolution(x)
+                    x,
+                    wl_line[i],
+                    w=1.01 * c.fitting.spectral_resolution * so.resolution(x),
                 )
             )
             < c.fitting.spectral_resolution
@@ -739,7 +747,10 @@ def fit_model(
             f"g{i}_amplitude",
             value=so.height_to_amplitude(
                 max(y.value, key=abs) - np.median(y).value,
-                so.fwhm_to_sigma((c.fitting.fwhm_min * pixel + c.fitting.fwhm_max * pixel).value / 2.0),
+                so.fwhm_to_sigma(
+                    (c.fitting.fwhm_min * pixel + c.fitting.fwhm_max * pixel).value
+                    / 2.0
+                ),
             ),
         )
 

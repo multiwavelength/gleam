@@ -96,9 +96,7 @@ def read_lof(file1):
     # Extract each measurement of interest into a separate Table
     t = QTable()
     t["Setup"] = Column(
-        [datum[0] for datum in data],
-        dtype="U",
-        description="Telescope setup",
+        [datum[0] for datum in data], dtype="U", description="Telescope setup",
     )
     t["Pointing"] = Column(
         [datum[1] for datum in data],
@@ -143,7 +141,6 @@ def naming_convention(data_path, sample, source_number, setup, pointing, mod):
     by details about the source and setup, in order: setup, pointing, source
     number, and parent sample
     """
-    return f"{data_path}/{mod}.{setup}.{pointing}.{source_number.astype(int):03d}.{sample}"
-
-
-    
+    return (
+        f"{data_path}/{mod}.{setup}.{pointing}.{source_number.astype(int):03d}.{sample}"
+    )
