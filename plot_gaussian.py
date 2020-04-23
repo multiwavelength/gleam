@@ -138,7 +138,9 @@ def plot_spectrum(
         Figure in show() or a saved figure in an external png file
     """
     # Set the title to the plot
-    title = f"{target['Sample']} {target['SourceNumber']} " f"z={target['Redshift']:.3}"
+    title = (f"{target['Sample']}\t" + target['Pointing'].replace('_', '\_') +
+             f"\t{target['SourceNumber']}\tz={target['Redshift']:.3}"
+    )
 
     # Set the basename name of the png outfile
     basename = rf.naming_convention(
@@ -203,7 +205,7 @@ def plot_spectrum(
     sub_axes.patch.set_visible(True)
 
     # Add title to the zoomed in axis
-    sub_axes.set_title(r"{}".format(title))
+    sub_axes.set_title(f"{title}")
     ax.set_xlabel(
         r"$\boldsymbol{\lambda}$ "
         + f"({spectrum['wl_rest'].unit.to_string('latex_inline')})",
@@ -243,9 +245,8 @@ def overview_plot(
     """
 
     # Generate the title of the plot from information on the target
-    title = (
-        f"{target['Sample']} {target['Pointing']} {target['SourceNumber']} "
-        f"z={target['Redshift']:.3}"
+    title = (f"{target['Sample']}\t" + target['Pointing'].replace('_', '\_') +
+             f"\t{target['SourceNumber']}\tz={target['Redshift']:.3}"
     )
     # Basename that will be used in the savefile name
     basename = rf.naming_convention(
@@ -366,9 +367,9 @@ def overview_plot(
 
     # Set title, taking into account inset axes, if they exist
     if j == 0:
-        ax.set_title(r"{}".format(title))
+        ax.set_title(f"{title}")
     else:
-        ax.set_title(r"{}".format(title), y=3)
+        ax.set_title(f"{title}", y=3)
 
     # Mark atmosphere absorption
     overplot_sky(ax, target["Redshift"])
