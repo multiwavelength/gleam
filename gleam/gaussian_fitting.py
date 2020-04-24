@@ -106,7 +106,7 @@ class Line:
     @property
     def z_line(self):
         # Redshift calculated from the offset of the absolute wavelength of the
-        # line compare to the one measured fromt the restframe spectrum; Could
+        # line compare to the one measured from the restframe spectrum; Could
         # be caused by imperfect redshift estimation (in case it is
         # systematically measured in more emission lines) or could be velocity
         # offset because of out/inflows

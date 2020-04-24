@@ -31,7 +31,6 @@ def run_source(p):
     (
         extension,
         target,
-        line_list,
         inspect,
         fix_center,
         constrain_center,
@@ -42,7 +41,6 @@ def run_source(p):
     main.run_main(
         extension,
         target,
-        line_list,
         inspect,
         fix_center,
         constrain_center,
@@ -64,9 +62,6 @@ def run_source(p):
     "--head-path",
     default="/home/andra/Desktop/Keep/Cluster_spectroscopy/line_measurements_mydata_2020_newpipeline_test",
 )
-@click.option(
-    "--lines-table",  default='Main_optical_lines.fits' #  default="rsvao.fits"  #
-)
 @click.option("--max-cpu", default=8, type=int)
 def pipeline(
     inspect,
@@ -74,7 +69,6 @@ def pipeline(
     constrain_center,
     bin,
     head_path,
-    lines_table,
     max_cpu,
     verbose,
     ignore_sky_lines,
@@ -83,7 +77,7 @@ def pipeline(
     pipeline = f"{head_path}/pipeline"
     data_path = f"{head_path}/allfluxes"
     final_path = f"{head_path}/measurements"
-    line_list = rf.read_lol(f"{pipeline}/line_lists/{lines_table}")
+    
 
     # Define the folder structure such that we run the main line fitting
     # tool in the right place
@@ -112,7 +106,6 @@ def pipeline(
                         (
                             extension,
                             target,
-                            line_list,
                             inspect,
                             fix_center,
                             constrain_center,

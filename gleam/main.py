@@ -23,7 +23,6 @@ from gleam.constants import a as c
 def run_main(
     data_path,
     target,
-    line_list,
     inspect=False,
     fix_center=False,
     constrain_center=False,
@@ -37,7 +36,6 @@ def run_main(
     Input:
         data_path: location on disk (folder) of the target spectrum 
         target: observed spectrum in specpro format 
-        line_list: list of emission lines to measure; in astropy table format
         inspect: if true, show the plots; otherwise write to disk
         fix_center: fix the centers of the Gaussians to the lab value of the
                     emission line
@@ -77,6 +75,9 @@ def run_main(
 
     # Given its redshift, calculate restframe spectrum
     spectrum = so.add_restframe(spectrum, target["Redshift"])
+
+    # Read in line table
+    line_list = rf.read_lol(c.setups[target["Setup"]].line_table)
 
     # Find groups of nearby lines in the input table that will be fit together
     line_groups = so.group_lines(line_list, c.fitting.tolerance)
