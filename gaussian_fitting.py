@@ -16,11 +16,12 @@ from astropy.table import QTable, Column, hstack
 from astropy.units.quantity import Quantity as Qty
 from colorama import Fore
 from colorama import init
+from astropy.cosmology import FlatLambdaCDM
 
 import plot_gaussian as pg
 import spectra_operations as so
 import constants as config
-from constants import a as c
+from constants import Length
 
 import lmfit
 from lmfit.models import GaussianModel, ConstantModel
@@ -66,6 +67,8 @@ class Line:
     fwhm: RandomVariable
     restwl: float
     z: float
+    cosmo: FlatLambdaCDM
+    resolution: Length
 
     @property
     def flux(self):
@@ -75,7 +78,7 @@ class Line:
     @property
     def luminosity(self):
         # Line luminosity
-        ld = c.cosmology.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
+        ld = self.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
         v = 4.0 * np.pi * ld ** 2 * self.flux.value
         e = 4.0 * np.pi * ld ** 2 * self.flux.error
         return RandomVariable(v, e)
@@ -116,7 +119,7 @@ class Line:
     def velocity_fwhm(self):
         # Deconvolved velocity fwhm
         # Observed resolution at the restframe wavelength
-        resolution = c.resolution / (1 + self.z)
+        resolution = self.resolution / (1 + self.z)
         if (self.fwhm.value ** 2.0 - resolution ** 2.0) < 0:
             return RandomVariable(value=np.nan * u.km / u.s, error=np.nan * u.km / u.s)
         else:
@@ -323,6 +326,7 @@ class NonDetection:
     continuum: RandomVariable
     restwl: float
     z: float
+    cosmo: FlatLambdaCDM
 
     @property
     def flux(self) -> Qty:
@@ -332,7 +336,7 @@ class NonDetection:
     @property
     def luminosity(self) -> Qty:
         # Line luminosity
-        ld = c.cosmology.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
+        ld = self.cosmo.luminosity_distance(self.z).to(10 ** 28 * u.cm)
         v = 4.0 * np.pi * ld ** 2 * self.flux
         return v
 
@@ -475,7 +479,7 @@ def gauss_function(x, a, x0, sigma):
     return a * np.exp(-((x - x0) ** 2) / (2.0 * sigma ** 2.0))
 
 
-def upper_limit(y, x):
+def upper_limit(y, x, SN_limit, spectral_resolution):
     """
     In the case where we do not get a SN*sigma detection, we define a SN*sigma 
     upper limit as per the formula:
@@ -490,14 +494,12 @@ def upper_limit(y, x):
     # Resolution is assumed to be a multiple of the pixel size, e.g. 5
     # Takes SN limit into account
     upper_limit = (
-        c.fitting.SN_limit
-        * so.spectrum_rms(y)
-        * np.sqrt(pixel ** 2 * c.fitting.spectral_resolution)
+        SN_limit * so.spectrum_rms(y) * np.sqrt(pixel ** 2 * spectral_resolution)
     )
     return upper_limit
 
 
-def is_good(model: ModelResult) -> bool:
+def is_good(model: ModelResult, SN_limit) -> bool:
     """
     Test whether the model provided a good fit: i.e. whether all the lines are 
     detected. If the model has no error bars because of a poor fit or if the
@@ -508,8 +510,7 @@ def is_good(model: ModelResult) -> bool:
         return False
     fitparams = model.params
     return all(
-        RandomVariable.from_param(fitparams[f"g{i}_amplitude"]).significance
-        > c.fitting.SN_limit
+        RandomVariable.from_param(fitparams[f"g{i}_amplitude"]).significance > SN_limit
         for i in range(len(model.components) - 1)
     )
 
@@ -529,9 +530,17 @@ def model_selection(
     y,
     ystd,
     wl_line,
-    fix_center=False,
-    constrain_center=False,
-    verbose=False,
+    fix_center,
+    constrain_center,
+    verbose,
+    cont_width,
+    w,
+    fwhm_min,
+    fwhm_max,
+    SN_limit,
+    spectral_resolution,
+    cosmo,
+    resolution,
 ) -> Spectrum:
     """
     Start with the model with the most components (constant + as many 
@@ -557,9 +566,20 @@ def model_selection(
     for wl_subset_indices in subsets(len(wl_line)):
         wl_subset = wl_line[list(wl_subset_indices)]
         model = fit_model(
-            redshift, x, y, ystd, wl_subset, fix_center, constrain_center, verbose
+            redshift,
+            x,
+            y,
+            ystd,
+            wl_subset,
+            fix_center,
+            constrain_center,
+            verbose,
+            cont_width,
+            w,
+            fwhm_min,
+            fwhm_max,
         )
-        if is_good(model):
+        if is_good(model, SN_limit):
             break
         else:
             if verbose == True:
@@ -573,18 +593,16 @@ def model_selection(
     # Calculate upper limit, by subtracting best fit model and then calculating
     # the upper limit from the rms noise on the residuals
     residual = y.value - model.eval(x=x.value)
-    ul = upper_limit(residual, x.value)
+    ul = upper_limit(residual, x.value, SN_limit, spectral_resolution)
 
     # Print a note when the spectrum does not cover one of the lines to be fit
     if verbose == True:
         for i, wl in enumerate(wl_line):
             if (i not in wl_subset_indices) and np.sum(
                 ~so.mask_line(
-                    x,
-                    wl_line[i],
-                    w=1.01 * c.fitting.spectral_resolution * so.resolution(x),
+                    x, wl_line[i], 1.01 * spectral_resolution * so.resolution(x),
                 )
-            ) < c.fitting.spectral_resolution:
+            ) < spectral_resolution:
                 print(Fore.BLUE + f"No spectral coverage on line {wl_line[i]}")
             else:
                 continue
@@ -620,6 +638,8 @@ def model_selection(
                 z=redshift,
                 restwl=wl_line[i],
                 continuum=RandomVariable.from_param(fitparams["c"]) * y.unit,
+                cosmo=cosmo,
+                resolution=resolution,
             )
             if i in wl_subset_indices
             else NoCoverage(
@@ -629,17 +649,16 @@ def model_selection(
             )
             if np.sum(
                 ~so.mask_line(
-                    x,
-                    wl_line[i],
-                    w=1.01 * c.fitting.spectral_resolution * so.resolution(x),
+                    x, wl_line[i], 1.01 * spectral_resolution * so.resolution(x),
                 )
             )
-            < c.fitting.spectral_resolution
+            < spectral_resolution
             else NonDetection(
                 amplitude=ul * x.unit * y.unit,
                 z=redshift,
                 restwl=wl_line[i],
                 continuum=RandomVariable.from_param(fitparams["c"]) * y.unit,
+                cosmo=cosmo,
             )
             for i in range(len(wl_line))
         ],
@@ -651,10 +670,14 @@ def fit_model(
     x,
     y,
     ystd,
-    wl_line: Iterable[Qty],
-    fix_center=False,
-    constrain_center=False,
-    verbose=False,
+    wl_line,
+    fix_center,
+    constrain_center,
+    verbose,
+    cont_width,
+    w,
+    fwhm_min,
+    fwhm_max,
 ) -> ModelResult:
     """
     Fits a number of Gaussians plus a constant continuum to the given data with 
@@ -685,7 +708,7 @@ def fit_model(
 
     # rescale the flux scale to get numbers comparable to the wavelength and
     # avoid numerical instabilities
-    flux_scale = 1.0 / np.std(y).value * c.fitting.cont_width.value
+    flux_scale = 1.0 / np.std(y).value * cont_width.value
     y = y * flux_scale
     ystd = ystd * flux_scale
 
@@ -703,10 +726,7 @@ def fit_model(
     elif constrain_center == True:
         for i, wl in enumerate(wl_line):
             model.set_param_hint(
-                f"g{i}_center",
-                value=wl.value,
-                min=(wl - c.fitting.w).value,
-                max=(wl + c.fitting.w).value,
+                f"g{i}_center", value=wl.value, min=(wl - w).value, max=(wl + w).value,
             )
 
     # If no fixing or constraining is done, then constrain the center to be
@@ -717,8 +737,8 @@ def fit_model(
             model.set_param_hint(
                 f"g{i}_center",
                 value=wl.value,
-                min=(wl - c.fitting.cont_width).value,
-                max=(wl + c.fitting.cont_width).value,
+                min=(wl - cont_width).value,
+                max=(wl + cont_width).value,
             )
 
     # Constrain the FWHM, sigma, height and amplitude to reasonable values which
@@ -729,15 +749,13 @@ def fit_model(
         # FWHM & sigma: average between minimum and maximum expected width
         model.set_param_hint(
             f"g{i}_fwhm",
-            value=(c.fitting.fwhm_min * pixel + c.fitting.fwhm_max * pixel).value / 2.0,
-            min=(c.fitting.fwhm_min * pixel).value,
+            value=(fwhm_min * pixel + fwhm_max * pixel).value / 2.0,
+            min=(fwhm_min * pixel).value,
         )
         model.set_param_hint(
             f"g{i}_sigma",
-            value=so.fwhm_to_sigma(
-                (c.fitting.fwhm_min * pixel + c.fitting.fwhm_max * pixel).value / 2.0
-            ),
-            min=so.fwhm_to_sigma((c.fitting.fwhm_min * pixel).value),
+            value=so.fwhm_to_sigma((fwhm_min * pixel + fwhm_max * pixel).value / 2.0),
+            min=so.fwhm_to_sigma((fwhm_min * pixel).value),
         )
         # Height & amplitude: maximum y value - median of continuum
         model.set_param_hint(
@@ -747,10 +765,7 @@ def fit_model(
             f"g{i}_amplitude",
             value=so.height_to_amplitude(
                 max(y.value, key=abs) - np.median(y).value,
-                so.fwhm_to_sigma(
-                    (c.fitting.fwhm_min * pixel + c.fitting.fwhm_max * pixel).value
-                    / 2.0
-                ),
+                so.fwhm_to_sigma((fwhm_min * pixel + fwhm_max * pixel).value / 2.0),
             ),
         )
 
@@ -812,10 +827,20 @@ def fit_lines(
     spectrum,
     line_list,
     line_groups,
-    fix_center=False,
-    constrain_center=False,
-    verbose=False,
-    ignore_sky_lines=False,
+    fix_center,
+    constrain_center,
+    verbose,
+    ignore_sky_lines,
+    tolerance,
+    cont_width,
+    mask_width,
+    w,
+    fwhm_min,
+    fwhm_max,
+    SN_limit,
+    spectral_resolution,
+    cosmo,
+    resolution,
 ):
     """
     Head function that goes through the list of lines and fits all lines for a 
@@ -841,8 +866,8 @@ def fit_lines(
         select_group = (line_list["wl_vacuum"] > group.beginning) & (
             line_list["wl_vacuum"] < group.ending
         )
-        if (group.ending - c.fitting.tolerance / 2.0 < np.amax(spectrum["wl_rest"])) & (
-            group.beginning + c.fitting.tolerance / 2.0 > np.amin(spectrum["wl_rest"])
+        if (group.ending - tolerance / 2.0 < np.amax(spectrum["wl_rest"])) & (
+            group.beginning + tolerance / 2.0 > np.amin(spectrum["wl_rest"])
         ):
             spectrum_fit, spectrum_line = do_gaussian(
                 line_list[select_group],
@@ -853,6 +878,15 @@ def fit_lines(
                 constrain_center,
                 verbose,
                 ignore_sky_lines,
+                cont_width,
+                mask_width,
+                w,
+                fwhm_min,
+                fwhm_max,
+                SN_limit,
+                spectral_resolution,
+                cosmo,
+                resolution,
             )
             yield spectrum_fit, spectrum_line, line_list[select_group]
 
@@ -862,10 +896,19 @@ def do_gaussian(
     other_lines,
     spectrum,
     target,
-    fix_center=False,
-    constrain_center=False,
-    verbose=False,
-    ignore_sky_lines=False,
+    fix_center,
+    constrain_center,
+    verbose,
+    ignore_sky_lines,
+    cont_width,
+    mask_width,
+    w,
+    fwhm_min,
+    fwhm_max,
+    SN_limit,
+    spectral_resolution,
+    cosmo,
+    resolution,
 ):
     """
     Selects the spectrum around an emission line of interest. Then fits a single
@@ -890,7 +933,13 @@ def do_gaussian(
     """
     # Mask the region around the line
     mask_line = so.select_lines(
-        selected_lines, other_lines, spectrum, target, ignore_sky_lines
+        selected_lines,
+        other_lines,
+        spectrum,
+        target,
+        ignore_sky_lines,
+        cont_width,
+        mask_width,
     )
 
     # Create a new variable that contains the spectrum around the line
@@ -906,6 +955,14 @@ def do_gaussian(
         fix_center,
         constrain_center,
         verbose,
+        cont_width,
+        w,
+        fwhm_min,
+        fwhm_max,
+        SN_limit,
+        spectral_resolution,
+        cosmo,
+        resolution,
     )
 
     return spectrum_fit, spectrum_line

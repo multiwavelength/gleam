@@ -75,7 +75,7 @@ class FittingParameters:
     spectral_resolution: int = 5
     tolerance: Length = 13.0 * u.Angstrom
     w: Length = 3 * u.Angstrom
-    line_width: Length = 20 * u.Angstrom
+    mask_width: Length = 20 * u.Angstrom
     cont_width: Length = 70 * u.Angstrom
     fwhm_min: int = 2
     fwhm_max: int = 15
@@ -88,6 +88,7 @@ class Constants:
     specific parameters. Contains sensible defaults and check for unit type
     correctness.
     """
+
     setups: Dict[str, Setup]
     fitting: FittingParameters = FittingParameters()
     cosmology: Cosmology = Cosmology()
@@ -110,7 +111,5 @@ def read_config(config_file) -> Constants:
 
 
 a = read_config("constants.yaml")
-
-print(a)
 
 SKY = QTable.read("line_lists/Sky_bands.fits")

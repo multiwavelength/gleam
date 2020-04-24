@@ -17,6 +17,7 @@ import read_files as rf
 import gaussian_fitting as gf
 import plot_gaussian as pg
 import spectra_operations as so
+from constants import a as c
 
 
 def run_main(
@@ -78,9 +79,16 @@ def run_main(
     spectrum = so.add_restframe(spectrum, target["Redshift"])
 
     # Find groups of nearby lines in the input table that will be fit together
-    line_groups = so.group_lines(line_list)
+    line_groups = so.group_lines(line_list, c.fitting.tolerance)
 
-    with pg.overview_plot(target, data_path, line_groups, spectrum) as plot_line:
+    with pg.overview_plot(
+        target,
+        data_path,
+        line_groups,
+        spectrum,
+        c.fitting.cont_width,
+        c.fitting.spectral_resolution,
+    ) as plot_line:
         tables = []
         # Set the name to the exported plot in png format
         for spectrum_fit, spectrum_line, lines in gf.fit_lines(
@@ -92,6 +100,16 @@ def run_main(
             constrain_center,
             verbose,
             ignore_sky_lines,
+            c.fitting.tolerance,
+            c.fitting.cont_width,
+            c.fitting.mask_width,
+            c.fitting.w,
+            c.fitting.fwhm_min,
+            c.fitting.fwhm_max,
+            c.fitting.SN_limit,
+            c.fitting.spectral_resolution,
+            c.cosmology.cosmo,
+            c.setups[target["Setup"]].resolution,
         ):
             # Make a plot/fit a spectrum if the line in within the rest-frame
             # spectral coverage of the source
@@ -106,13 +124,15 @@ def run_main(
                 line_list["wl_vacuum"],
                 lines["wl_vacuum"],
                 inspect,
+                c.fitting.cont_width,
+                c.fitting.spectral_resolution,
             )
             if spectrum_fit is not None:
                 for (line_fit, line) in zip(spectrum_fit.lines, lines):
                     tables.append(
                         Table(line_fit.as_fits_table(line), masked=True, copy=False)
                     )
-                plot_line(lines, spectrum_fit)
+                plot_line(lines, spectrum_fit, c.fitting.spectral_resolution)
 
     try:
         outtable = astropy.table.vstack(tables)

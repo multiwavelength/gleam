@@ -18,7 +18,6 @@ from colorama import init
 init(autoreset=True)
 
 import constants as config
-from constants import a as c
 import matplotlib.pyplot as plt
 
 
@@ -138,7 +137,7 @@ def resolution(wl):
     return minimum
 
 
-def mask_line(wl, wl_ref, w=c.fitting.line_width):
+def mask_line(wl, wl_ref, mask_width):
     """
     Masks the spectrum around the listed line, within the width specified
     Input:
@@ -150,8 +149,8 @@ def mask_line(wl, wl_ref, w=c.fitting.line_width):
         mask: mask to be applied to the spectrum such that the spectrum now has 
               the line in question masked away
     """
-    wl_min = wl_ref - w / 2.0
-    wl_max = wl_ref + w / 2.0
+    wl_min = wl_ref - mask_width / 2.0
+    wl_max = wl_ref + mask_width / 2.0
     mask = (wl < wl_min) | (wl > wl_max)
 
     return mask
@@ -266,8 +265,9 @@ def select_lines(
     other_lines,
     spectrum,
     target_info,
-    ignore_sky_lines=False,
-    cont_width=c.fitting.cont_width,
+    ignore_sky_lines,
+    cont_width,
+    mask_width,
 ):
     """
     Masks the spectrum in the vicinity of the line of interest. It should leave 
@@ -299,7 +299,7 @@ def select_lines(
     # mask all lines, but the line we are interested in
     masked_otherlines = np.full(np.shape(wl_rest), True)
     for line in map(QTable, other_lines):
-        mask = mask_line(wl_rest, line["wl_vacuum"])
+        mask = mask_line(wl_rest, line["wl_vacuum"], mask_width)
         masked_otherlines = masked_otherlines & mask
 
     # select the lines of interest
@@ -318,18 +318,18 @@ def select_lines(
     return masked_all
 
 
-def group_lines(line_list, t=c.fitting.tolerance):
+def group_lines(line_list, tolerance):
     """
-    Group together lines within a wavelenght tolerance. These will be fit 
+    Group together lines within a wavelength tolerance. These will be fit 
     together as a sum of Gaussian, rathen than independently.
     Input: 
         line_list: Astropy table containing lines and their properties
-        t: how far from each other can lines be to stil be considered a group. 
+        t: how far from each other can lines be to still be considered a group. 
            tolerance is read from the constants file
     Output:
         Groups of lines of type Component as returned by connected components
     """
-    wl = [(x - t, x + t) for x in line_list["wl_vacuum"]]
+    wl = [(x - tolerance, x + tolerance) for x in line_list["wl_vacuum"]]
     line_groups = connected_components(wl, left, right)
     return line_groups
 
