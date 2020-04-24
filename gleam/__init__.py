@@ -10,8 +10,8 @@ import numpy as np
 from astropy.io import fits
 import click
 
-import main
-import read_files as rf
+import gleam.main
+import gleam.read_files as rf
 
 warnings.filterwarnings("ignore")
 
@@ -65,8 +65,8 @@ def run_source(p):
     default="/home/andra/Desktop/Keep/Cluster_spectroscopy/line_measurements_mydata_2020_newpipeline_test",
 )
 @click.option(
-    "--lines-table", default="rsvao.fits"
-)  # default='Main_optical_lines.fits')
+    "--lines-table",  default='Main_optical_lines.fits' #  default="rsvao.fits"  #
+)
 @click.option("--max-cpu", default=8, type=int)
 def pipeline(
     inspect,
@@ -88,9 +88,9 @@ def pipeline(
     # Define the folder structure such that we run the main line fitting
     # tool in the right place
     unique_sources = []
-    for cluster in glob.glob(f"{data_path}/A2390*"):
-        for quadrant in glob.glob(f"{cluster}/Q7*"):
-            for extension in glob.glob(f"{quadrant}/EXT*"):
+    for cluster in glob.glob(f"{data_path}/A2254*"):
+        for quadrant in glob.glob(f"{cluster}/Q1*"):
+            for extension in glob.glob(f"{quadrant}/EXT1*"):
                 list_of_targets = (
                     f"{extension}/{os.path.basename(cluster)}_"
                     f"{os.path.basename(quadrant)}_"
@@ -100,7 +100,7 @@ def pipeline(
                 targets = rf.read_lof(list_of_targets)
                 for target in targets:
                     # if target['Membership']!='member': continue
-                    if float(target["SourceNumber"]) != 8:
+                    if float(target["SourceNumber"])!= 20:
                         continue
                     # if target["SourceNumber"]!='204': continue
                     # Add all the relevant variable for the running of the

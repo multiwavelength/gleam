@@ -17,8 +17,7 @@ from colorama import init
 
 init(autoreset=True)
 
-import constants as config
-import matplotlib.pyplot as plt
+import gleam.constants as config
 
 
 def average_(x, n):

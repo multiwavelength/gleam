@@ -8,7 +8,7 @@ from astropy.io import fits
 from astropy.table import QTable, Column
 from astropy import units as u
 
-import constants as c
+import gleam.constants as c
 
 
 def read_fits_table(data_path):

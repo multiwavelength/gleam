@@ -13,11 +13,11 @@ from colorama import init
 
 init(autoreset=True)
 
-import read_files as rf
-import gaussian_fitting as gf
-import plot_gaussian as pg
-import spectra_operations as so
-from constants import a as c
+import gleam.read_files as rf
+import gleam.gaussian_fitting as gf
+import gleam.plot_gaussian as pg
+import gleam.spectra_operations as so
+from gleam.constants import a as c
 
 
 def run_main(

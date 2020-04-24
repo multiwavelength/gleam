@@ -7,7 +7,7 @@ from collections import namedtuple
 
 import click
 import numpy as np
-import matplotlibparams
+import gleam.matplotlibparams
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import mark_inset
@@ -19,14 +19,13 @@ from mpl_toolkits.axes_grid1.inset_locator import (
 )
 import astropy
 from astropy import units as u
+from astropy.visualization import quantity_support
 from astropy.table import Table
 
-import read_files as rf
-import gaussian_fitting as gf
-import constants as config
-import spectra_operations as so
-
-from astropy.visualization import quantity_support
+import gleam.read_files as rf
+import gleam.gaussian_fitting as gf
+import gleam.constants as config
+import gleam.spectra_operations as so
 
 quantity_support()
 

@@ -18,15 +18,14 @@ from colorama import Fore
 from colorama import init
 from astropy.cosmology import FlatLambdaCDM
 
-import plot_gaussian as pg
-import spectra_operations as so
-import constants as config
-from constants import Length
-
 import lmfit
 from lmfit.models import GaussianModel, ConstantModel
 from lmfit.model import ModelResult
 
+import gleam.plot_gaussian as pg
+import gleam.spectra_operations as so
+import gleam.constants as config
+from gleam.constants import Length
 
 Qty = astropy.units.quantity.Quantity
 
