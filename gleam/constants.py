@@ -110,6 +110,6 @@ def read_config(config_file) -> Constants:
     return Constants(**config)
 
 
-a = read_config("constants.yaml")
+a = read_config("gleamconfig.yaml")
 
 SKY = QTable.read("line_lists/Sky_bands.fits")
