@@ -488,7 +488,7 @@ def upper_limit(y, x, SN_limit, spectral_resolution):
     """
     # Get width of a pixel in the region of the spectrum probed; in units of
     # Angstrom or such. This is pixel width and not resolution
-    pixel = so.resolution(x)
+    pixel = so.dispersion(x)
     # Resolution is assumed to be a multiple of the pixel size, e.g. 5
     # Takes SN limit into account
     upper_limit = (
@@ -598,7 +598,7 @@ def model_selection(
         for i, wl in enumerate(wl_line):
             if (i not in wl_subset_indices) and np.sum(
                 ~so.mask_line(
-                    x, wl_line[i], 1.01 * spectral_resolution * so.resolution(x),
+                    x, wl_line[i], 1.01 * spectral_resolution * so.dispersion(x),
                 )
             ) < spectral_resolution:
                 print(Fore.BLUE + f"No spectral coverage on line {wl_line[i]}")
@@ -647,7 +647,7 @@ def model_selection(
             )
             if np.sum(
                 ~so.mask_line(
-                    x, wl_line[i], 1.01 * spectral_resolution * so.resolution(x),
+                    x, wl_line[i], 1.01 * spectral_resolution * so.dispersion(x),
                 )
             )
             < spectral_resolution
@@ -741,7 +741,7 @@ def fit_model(
 
     # Constrain the FWHM, sigma, height and amplitude to reasonable values which
     # depend of wavelength pixel size and the continuum
-    pixel = so.resolution(x)
+    pixel = so.dispersion(x)
 
     for i, wl in enumerate(wl_line.value):
         # FWHM & sigma: average between minimum and maximum expected width

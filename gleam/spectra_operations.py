@@ -111,14 +111,14 @@ def reject_outliers(data, m=2):
     return data[mask], mask
 
 
-def resolution(wl):
+def dispersion(wl):
     """
-    Returns the minimum resolution of a 1D spectrum
+    Returns the dispestion (wavelength width per pixel) of a 1D spectrum
     Input:
         wl: 1D wavelength in some units (preferably Astropy
             QTable, such that it has units attached)
     Output:
-        resolution: single minimum value for resolution in the
+        dispersion: single minimum value for dispersion in the spectrum sampled
         
     ! Writes warning if the spectrum in non uniform
     """
@@ -167,7 +167,7 @@ def velocity_resolution(x):
     restframe depending on the input spectrum. This is blind to whether the 
     spectrum has been rest-framed or not
     """
-    wl_res = resolution(x)
+    wl_res = dispersion(x)
     wl_av = np.average(x)
     v_res = wl_res / wl_av * const.c
     return v_res
@@ -296,7 +296,7 @@ def select_lines(
     wl_rest = spectrum["wl_rest"]
     flux = spectrum["flux"]
     # Restframe resolution
-    res_rest = resolution(wl_rest)
+    res_rest = dispersion(wl_rest)
     # mask all lines, but the line we are interested in
     masked_otherlines = np.full(np.shape(wl_rest), True)
     for line in map(QTable, other_lines):

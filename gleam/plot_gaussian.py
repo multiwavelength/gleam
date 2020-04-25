@@ -419,7 +419,7 @@ def plot_gaussian_fit(wl, spectrum_fit, ax, spectral_resolution):
         if isinstance(line_fit, gf.NonDetection) & (
             not isinstance(line_fit, gf.NoCoverage)
         ):
-            s = so.fwhm_to_sigma(so.resolution(wl) * spectral_resolution)
+            s = so.fwhm_to_sigma(so.dispersion(wl) * spectral_resolution)
             gauss_part = gf.gauss_function(
                 wl, so.amplitude_to_height(line_fit.amplitude, s), line_fit.restwl, s
             )
