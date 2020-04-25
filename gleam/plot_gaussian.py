@@ -305,8 +305,8 @@ def overview_plot(
         # Select a small wavelength range around the emission line where to
         # overplot the fit
         select = (
-            spectrum["wl_rest"] < (np.average(line["wl_vacuum"]) + cont_width)
-        ) & (spectrum["wl_rest"] > (np.average(line["wl_vacuum"]) - cont_width))
+            spectrum["wl_rest"] < (np.average(line["wavelength"]) + cont_width)
+        ) & (spectrum["wl_rest"] > (np.average(line["wavelength"]) - cont_width))
 
         # Create a zoomed in axis focusing on each line
         r"""
@@ -343,17 +343,17 @@ def overview_plot(
         )
         axins.set_xlim(
             [
-                np.average(line["wl_vacuum"]) - cont_width,
-                np.average(line["wl_vacuum"]) + cont_width,
+                np.average(line["wavelength"]) - cont_width,
+                np.average(line["wavelength"]) + cont_width,
             ]
         )
         axins.set_ylim(ylims)
 
         # Mark the emission lines fitted
-        [axins.axvline(x=l["wl_vacuum"], color="gray", linestyle="-") for l in line]
+        [axins.axvline(x=l["wavelength"], color="gray", linestyle="-") for l in line]
         texts = [
             axins.text(
-                l["wl_vacuum"].value,
+                l["wavelength"].value,
                 axins.get_ylim()[1] * 1.01,
                 f"{l['latex']}",
                 ha="center",

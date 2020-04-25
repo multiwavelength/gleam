@@ -300,13 +300,13 @@ def select_lines(
     # mask all lines, but the line we are interested in
     masked_otherlines = np.full(np.shape(wl_rest), True)
     for line in map(QTable, other_lines):
-        mask = mask_line(wl_rest, line["wl_vacuum"], mask_width)
+        mask = mask_line(wl_rest, line["wavelength"], mask_width)
         masked_otherlines = masked_otherlines & mask
 
     # select the lines of interest
     select_lines = np.full(np.shape(wl_rest), False)
     for line in map(QTable, selected_lines):
-        mask = select_singleline(wl_rest, line["wl_vacuum"], cont_width)
+        mask = select_singleline(wl_rest, line["wavelength"], cont_width)
         select_lines = select_lines | mask
 
     # decide whether to mask the atmospheric lines
@@ -330,7 +330,7 @@ def group_lines(line_list, tolerance):
     Output:
         Groups of lines of type Component as returned by connected components
     """
-    wl = [(x - tolerance, x + tolerance) for x in line_list["wl_vacuum"]]
+    wl = [(x - tolerance, x + tolerance) for x in line_list["wavelength"]]
     line_groups = connected_components(wl, left, right)
     return line_groups
 

@@ -862,8 +862,8 @@ def fit_lines(
         to them
     """
     for group in line_groups:
-        select_group = (line_list["wl_vacuum"] > group.beginning) & (
-            line_list["wl_vacuum"] < group.ending
+        select_group = (line_list["wavelength"] > group.beginning) & (
+            line_list["wavelength"] < group.ending
         )
         if (group.ending - tolerance / 2.0 < np.amax(spectrum["wl_rest"])) & (
             group.beginning + tolerance / 2.0 > np.amin(spectrum["wl_rest"])
@@ -953,7 +953,7 @@ def do_gaussian(
         spectrum_line["wl_rest"],
         spectrum_line["flux"],
         spectrum_line["stdev"],
-        selected_lines["wl_vacuum"],
+        selected_lines["wavelength"],
         fix_center,
         constrain_center,
         verbose,

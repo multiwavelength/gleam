@@ -30,53 +30,6 @@ def read_fits_table(data_path):
     return data
 
 
-def read_lol(data_path):
-    """
-    Reads the list of lines to measure
-    Input:
-        data_path: file location of the fits file containing the information on
-                   the lines that will be measured
-    ! Assumes a certain structure for this file! See below 
-    Return: 
-        Astropy Table of all the information in the line list file: line name, 
-        wavelength in vacuum, type (whether it is a single of double Gaussian), 
-        (if doublet) separation from the main line and name in Latex format (for 
-        convenience, if plotting the lines somewhere)
-    """
-
-    data = read_fits_table(data_path)
-
-    t = QTable()
-    t["line"] = Column(
-        data.field("Line"),
-        dtype="U",
-        description="Line name, which includes modifier for single or double Gaussian",
-    )
-    t["wl_vacuum"] = Column(
-        data.field("lambda_vacuum"),
-        unit=u.Angstrom,
-        dtype="f",
-        description="Wavelength in vacuum",
-    )
-    t["type"] = Column(
-        data.field("type"), dtype="d", description="Single or double Gaussian"
-    )
-    t["separation"] = Column(
-        data.field("Doublet_sep"),
-        unit=u.Angstrom,
-        dtype="f",
-        description="Separation from the main line, if a doublet",
-    )
-    t["latex"] = Column(
-        data.field("Tex_name"),
-        dtype="U",
-        description="Line name written in latex format, useful for plotting purposes",
-    )
-
-    t.sort("wl_vacuum")
-    return t
-
-
 def read_lof(file1):
     """
     For each sample, quadrants and extensions, it reads the head file produced 

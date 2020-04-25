@@ -73,7 +73,7 @@ def run_main(
     spectrum = so.add_restframe(spectrum, target["Redshift"])
 
     # Read in line table
-    line_list = rf.read_lol(c.setups[target["Setup"]].line_table)
+    line_list = QTable.read(c.setups[target["Setup"]].line_table)
 
     # Read in file with sky bands
     sky = QTable.read(c.sky)
@@ -123,8 +123,8 @@ def run_main(
                 spectrum_fit,
                 lines["line"],
                 line_list["latex"],
-                line_list["wl_vacuum"],
-                lines["wl_vacuum"],
+                line_list["wavelength"],
+                lines["wavelength"],
                 inspect,
                 c.fitting.cont_width,
                 c.fitting.spectral_resolution,
