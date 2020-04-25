@@ -11,25 +11,6 @@ from astropy import units as u
 import gleam.constants as c
 
 
-def read_fits_table(data_path):
-    """
-    Reads in a fits able with astropy. It tries to account for the fact that the 
-    data might be in extenstion 1 or 0.
-    Input:
-        data_path: file location of the fits file containing the information on
-                   the lines that will be measured
-    Return: 
-        Astropy Table
-    """
-
-    hdulist = fits.open(data_path)
-    try:
-        data = hdulist[1].data
-    except:
-        data = hdulist[0].data
-    return data
-
-
 def read_lof(file1):
     """
     For each sample, quadrants and extensions, it reads the head file produced 
