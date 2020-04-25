@@ -73,7 +73,6 @@ class FittingParameters:
     """
 
     SN_limit: float = 2
-    spectral_resolution: int = 5
     tolerance: Length = 13.0 * u.Angstrom
     w: Length = 3 * u.Angstrom
     mask_width: Length = 20 * u.Angstrom

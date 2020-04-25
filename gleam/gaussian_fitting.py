@@ -117,11 +117,10 @@ class Line:
     def velocity_fwhm(self):
         # Deconvolved velocity fwhm
         # Observed resolution at the restframe wavelength
-        resolution = self.resolution / (1 + self.z)
-        if (self.fwhm.value ** 2.0 - resolution ** 2.0) < 0:
+        if (self.fwhm.value ** 2.0 - self.resolution ** 2.0) < 0:
             return RandomVariable(value=np.nan * u.km / u.s, error=np.nan * u.km / u.s)
         else:
-            eff_fwhm = np.sqrt(self.fwhm.value ** 2.0 - resolution ** 2.0)
+            eff_fwhm = np.sqrt(self.fwhm.value ** 2.0 - self.resolution ** 2.0)
             v = const.c.to("km/s") * eff_fwhm / self.restwl
             e = const.c.to("km/s") * self.fwhm.error / self.restwl
             return RandomVariable(value=v, error=e)
@@ -477,7 +476,7 @@ def gauss_function(x, a, x0, sigma):
     return a * np.exp(-((x - x0) ** 2) / (2.0 * sigma ** 2.0))
 
 
-def upper_limit(y, x, SN_limit, spectral_resolution):
+def upper_limit(y, x, SN_limit, rest_spectral_resolution):
     """
     In the case where we do not get a SN*sigma detection, we define a SN*sigma 
     upper limit as per the formula:
@@ -485,14 +484,16 @@ def upper_limit(y, x, SN_limit, spectral_resolution):
     Input:
         y: spectrum in units of flux or such
         x: wavelength
+        SN_limit: signal to noise limit for detections
+        rest_spectral_resolution: restframed FWHM of the instrument
     """
     # Get width of a pixel in the region of the spectrum probed; in units of
-    # Angstrom or such. This is pixel width and not resolution
+    # Angstrom or such. This is pixel width/dispersion and not the resolution
     pixel = so.dispersion(x)
-    # Resolution is assumed to be a multiple of the pixel size, e.g. 5
+
     # Takes SN limit into account
     upper_limit = (
-        SN_limit * so.spectrum_rms(y) * np.sqrt(pixel ** 2 * spectral_resolution)
+        SN_limit * so.spectrum_rms(y) * np.sqrt(pixel * rest_spectral_resolution)
     )
     return upper_limit
 
@@ -536,9 +537,8 @@ def model_selection(
     fwhm_min,
     fwhm_max,
     SN_limit,
-    spectral_resolution,
-    cosmo,
-    resolution,
+    rest_spectral_resolution,
+    cosmo
 ) -> Spectrum:
     """
     Start with the model with the most components (constant + as many 
@@ -591,16 +591,16 @@ def model_selection(
     # Calculate upper limit, by subtracting best fit model and then calculating
     # the upper limit from the rms noise on the residuals
     residual = y.value - model.eval(x=x.value)
-    ul = upper_limit(residual, x.value, SN_limit, spectral_resolution)
+    ul = upper_limit(residual, x.value, SN_limit, rest_spectral_resolution.value)
 
     # Print a note when the spectrum does not cover one of the lines to be fit
     if verbose == True:
         for i, wl in enumerate(wl_line):
             if (i not in wl_subset_indices) and np.sum(
                 ~so.mask_line(
-                    x, wl_line[i], 1.01 * spectral_resolution * so.dispersion(x),
+                    x, wl_line[i], 1.01 * rest_spectral_resolution,
                 )
-            ) < spectral_resolution:
+            ) < rest_spectral_resolution//so.dispersion(x):
                 print(Fore.BLUE + f"No spectral coverage on line {wl_line[i]}")
             else:
                 continue
@@ -637,7 +637,7 @@ def model_selection(
                 restwl=wl_line[i],
                 continuum=RandomVariable.from_param(fitparams["c"]) * y.unit,
                 cosmo=cosmo,
-                resolution=resolution,
+                resolution=rest_spectral_resolution,
             )
             if i in wl_subset_indices
             else NoCoverage(
@@ -647,10 +647,10 @@ def model_selection(
             )
             if np.sum(
                 ~so.mask_line(
-                    x, wl_line[i], 1.01 * spectral_resolution * so.dispersion(x),
+                    x, wl_line[i], 1.01 * rest_spectral_resolution,
                 )
             )
-            < spectral_resolution
+            < rest_spectral_resolution//so.dispersion(x)
             else NonDetection(
                 amplitude=ul * x.unit * y.unit,
                 z=redshift,
@@ -837,9 +837,8 @@ def fit_lines(
     fwhm_min,
     fwhm_max,
     SN_limit,
-    spectral_resolution,
-    cosmo,
-    resolution,
+    rest_spectral_resolution,
+    cosmo
 ):
     """
     Head function that goes through the list of lines and fits all lines for a 
@@ -884,9 +883,8 @@ def fit_lines(
                 fwhm_min,
                 fwhm_max,
                 SN_limit,
-                spectral_resolution,
+                rest_spectral_resolution,
                 cosmo,
-                resolution,
             )
             yield spectrum_fit, spectrum_line, line_list[select_group]
 
@@ -907,9 +905,8 @@ def do_gaussian(
     fwhm_min,
     fwhm_max,
     SN_limit,
-    spectral_resolution,
+    rest_spectral_resolution,
     cosmo,
-    resolution,
 ):
     """
     Selects the spectrum around an emission line of interest. Then fits a single
@@ -962,9 +959,8 @@ def do_gaussian(
         fwhm_min,
         fwhm_max,
         SN_limit,
-        spectral_resolution,
-        cosmo,
-        resolution,
-    )
+        rest_spectral_resolution,
+        cosmo
+        )
 
     return spectrum_fit, spectrum_line

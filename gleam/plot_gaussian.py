@@ -111,7 +111,7 @@ def plot_spectrum(
     fitted_wl,
     inspect,
     cont_width,
-    spectral_resolution,
+    rest_spectral_resolution,
     sky
 ):
     """
@@ -193,10 +193,10 @@ def plot_spectrum(
         sub_axes.axvline(x=line, color="k", linestyle="-")
 
     plot_gaussian_fit(
-        spectrum["wl_rest"][select], spectrum_fit, ax, spectral_resolution
+        spectrum["wl_rest"][select], spectrum_fit, ax, rest_spectral_resolution
     )
     plot_gaussian_fit(
-        spectrum["wl_rest"][select], spectrum_fit, sub_axes, spectral_resolution
+        spectrum["wl_rest"][select], spectrum_fit, sub_axes, rest_spectral_resolution
     )
 
     # Overplot the emission lines of reference
@@ -235,7 +235,7 @@ def plot_spectrum(
 
 @contextmanager
 def overview_plot(
-    target, data_path, line_groups, spectrum, cont_width, spectral_resolution, sky
+    target, data_path, line_groups, spectrum, cont_width, rest_spectral_resolution, sky
 ):
     """
     Overview plot of the spectrum of a single target, with zoom-in plots around
@@ -249,7 +249,7 @@ def overview_plot(
                      plots do we want
         spectrum: spectrum of the source
     """
-
+    print('SPEC RES', rest_spectral_resolution)
     # Generate the title of the plot from information on the target
     title = (
         f"{target['Sample']}\t"
@@ -297,7 +297,7 @@ def overview_plot(
 
     # Function to dynamically add the fits for each emission lines as they are
     # produced/come from a loop
-    def plot_line(line, spectrum_fit, spectral_resolution, sky):
+    def plot_line(line, spectrum_fit, rest_spectral_resolution, sky):
         # Counter j to keep track in which subplot we should plot the emission
         # line
         nonlocal j
@@ -339,7 +339,7 @@ def overview_plot(
 
         # Overplot the gaussian fit to the line in the zoomed-in axis
         plot_gaussian_fit(
-            spectrum["wl_rest"][select], spectrum_fit, axins, spectral_resolution
+            spectrum["wl_rest"][select], spectrum_fit, axins, rest_spectral_resolution
         )
         axins.set_xlim(
             [
@@ -399,7 +399,7 @@ def overview_plot(
     plt.close()
 
 
-def plot_gaussian_fit(wl, spectrum_fit, ax, spectral_resolution):
+def plot_gaussian_fit(wl, spectrum_fit, ax, rest_spectral_resolution):
     """
     Plot the a line fit as a continuum + a Gaussian, whenever the line was 
     detected . Plot a dashed line for upper limits.
@@ -419,7 +419,7 @@ def plot_gaussian_fit(wl, spectrum_fit, ax, spectral_resolution):
         if isinstance(line_fit, gf.NonDetection) & (
             not isinstance(line_fit, gf.NoCoverage)
         ):
-            s = so.fwhm_to_sigma(so.dispersion(wl) * spectral_resolution)
+            s = so.fwhm_to_sigma(rest_spectral_resolution)
             gauss_part = gf.gauss_function(
                 wl, so.amplitude_to_height(line_fit.amplitude, s), line_fit.restwl, s
             )

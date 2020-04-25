@@ -87,7 +87,7 @@ def run_main(
         line_groups,
         spectrum,
         c.fitting.cont_width,
-        c.fitting.spectral_resolution,
+        c.setups[target["Setup"]].resolution/(1+target["Redshift"]),
         sky
     ) as plot_line:
         tables = []
@@ -109,9 +109,8 @@ def run_main(
             c.fitting.fwhm_min,
             c.fitting.fwhm_max,
             c.fitting.SN_limit,
-            c.fitting.spectral_resolution,
+            c.setups[target["Setup"]].resolution/(1+target["Redshift"]),
             c.cosmology.cosmo,
-            c.setups[target["Setup"]].resolution,
         ):
             # Make a plot/fit a spectrum if the line in within the rest-frame
             # spectral coverage of the source
@@ -127,7 +126,7 @@ def run_main(
                 lines["wavelength"],
                 inspect,
                 c.fitting.cont_width,
-                c.fitting.spectral_resolution,
+                c.setups[target["Setup"]].resolution/(1+target["Redshift"]),
                 sky
             )
             if spectrum_fit is not None:
@@ -135,7 +134,7 @@ def run_main(
                     tables.append(
                         Table(line_fit.as_fits_table(line), masked=True, copy=False)
                     )
-                plot_line(lines, spectrum_fit, c.fitting.spectral_resolution, sky)
+                plot_line(lines, spectrum_fit, c.setups[target["Setup"]].resolution/(1+target["Redshift"]), sky)
 
     try:
         outtable = astropy.table.vstack(tables)
