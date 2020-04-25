@@ -24,7 +24,6 @@ from astropy.table import Table
 
 import gleam.read_files as rf
 import gleam.gaussian_fitting as gf
-import gleam.constants as config
 import gleam.spectra_operations as so
 
 quantity_support()
@@ -77,12 +76,13 @@ def overplot_lines(ax, linelabels, lineloc):
     return ax2
 
 
-def overplot_sky(ax, z):
+def overplot_sky(ax, z, sky):
     """
     Overplots sky bands on an already existing plot with axes
     Input:
         ax: matplolib axis
         z: redshift of the source
+        sky: sky bands in QTable format
     Output:
         ax: returns the new axis in case we want to overplot some more stuff on
              top
@@ -95,7 +95,7 @@ def overplot_sky(ax, z):
             facecolor="gray",
             alpha=0.3,
         )
-        for band in config.SKY
+        for band in sky
     ]
 
 
@@ -112,6 +112,7 @@ def plot_spectrum(
     inspect,
     cont_width,
     spectral_resolution,
+    sky
 ):
     """
     Plots spectrum and a fit to a specific line. Overplots the entire line 
@@ -202,8 +203,8 @@ def plot_spectrum(
     ax2 = overplot_lines(ax, line_latex, line_wls)
 
     # Overplot sky bands
-    overplot_sky(ax, target["Redshift"])
-    overplot_sky(sub_axes, target["Redshift"])
+    overplot_sky(ax, target["Redshift"], sky)
+    overplot_sky(sub_axes, target["Redshift"], sky)
 
     sub_axes.set_zorder(ax.get_zorder() + 1)  # put ax in front of ax2
     ax.patch.set_visible(False)  # hide the 'canvas'
@@ -234,7 +235,7 @@ def plot_spectrum(
 
 @contextmanager
 def overview_plot(
-    target, data_path, line_groups, spectrum, cont_width, spectral_resolution
+    target, data_path, line_groups, spectrum, cont_width, spectral_resolution, sky
 ):
     """
     Overview plot of the spectrum of a single target, with zoom-in plots around
@@ -296,7 +297,7 @@ def overview_plot(
 
     # Function to dynamically add the fits for each emission lines as they are
     # produced/come from a loop
-    def plot_line(line, spectrum_fit, spectral_resolution):
+    def plot_line(line, spectrum_fit, spectral_resolution, sky):
         # Counter j to keep track in which subplot we should plot the emission
         # line
         nonlocal j
@@ -370,7 +371,7 @@ def overview_plot(
             axins.set_ylabel(Myylabel)
 
         # Overplot sky
-        overplot_sky(axins, target["Redshift"])
+        overplot_sky(axins, target["Redshift"], sky)
 
         mark_inset(ax, axins, loc1a=4, loc1b=1, loc2a=3, loc2b=2, fc="none", ec="0.5")
 
@@ -386,7 +387,7 @@ def overview_plot(
         ax.set_title(f"{title}", y=3)
 
     # Mark atmosphere absorption
-    overplot_sky(ax, target["Redshift"])
+    overplot_sky(ax, target["Redshift"], sky)
 
     ax.set_ylim(ylims)
 

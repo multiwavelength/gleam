@@ -17,8 +17,6 @@ from colorama import init
 
 init(autoreset=True)
 
-import gleam.constants as config
-
 
 def average_(x, n):
     """
@@ -187,13 +185,15 @@ def restframe_wl(x, z):
     return x / (1.0 + z)
 
 
-def mask_atmosphere(wl, z):
+def mask_atmosphere(wl, z, sky
+):
     """
     Masks the spectrum around prominent optical atmospheric absorption bands
     !!! Assumes spectrum has been restframed !!!
     Input:
         wl: rest-frame wavelength spectrum
         z: redshift of the source; used to restframe the sky lines
+        sky: sky bands in QTable format
     Output:
         mask: mask to be applied to the spectrum such that the spectrum now has 
               the absorption features masked
@@ -201,12 +201,13 @@ def mask_atmosphere(wl, z):
     defined in the constants file
     """
 
+    # mask areas of absorption due to sky 
     absorption = functools.reduce(
         operator.or_,
         (
             (wl > restframe_wl(band["wl_min"], z))
             & (wl < restframe_wl(band["wl_max"], z))
-            for band in config.SKY
+            for band in sky
         ),
     )
 
@@ -264,7 +265,8 @@ def select_lines(
     other_lines,
     spectrum,
     target_info,
-    ignore_sky_lines,
+    sky,
+    mask_sky,
     cont_width,
     mask_width,
 ):
@@ -308,10 +310,10 @@ def select_lines(
         select_lines = select_lines | mask
 
     # decide whether to mask the atmospheric lines
-    if ignore_sky_lines == True:
+    if mask_sky == False:
         masked_all = masked_otherlines & select_lines
     else:
-        masked_atm = mask_atmosphere(wl_rest, z_ref)
+        masked_atm = mask_atmosphere(wl_rest, z_ref, sky)
         masked_all = masked_atm & masked_otherlines & select_lines
 
     return masked_all

@@ -36,7 +36,6 @@ def run_source(p):
         constrain_center,
         bin,
         verbose,
-        ignore_sky_lines,
     ) = p
     main.run_main(
         extension,
@@ -45,7 +44,6 @@ def run_source(p):
         fix_center,
         constrain_center,
         verbose,
-        ignore_sky_lines,
         bin,
     )
 
@@ -57,7 +55,6 @@ def run_source(p):
 @click.option("--constrain-center", is_flag=True)
 @click.option("--bin", default=1)
 @click.option("--verbose", is_flag=True)
-@click.option("--ignore-sky-lines", is_flag=True)
 @click.option(
     "--head-path",
     default="/home/andra/Desktop/Keep/Cluster_spectroscopy/line_measurements_mydata_2020_newpipeline_test",
@@ -70,8 +67,7 @@ def pipeline(
     bin,
     head_path,
     max_cpu,
-    verbose,
-    ignore_sky_lines,
+    verbose
 ):
     # Relative paths
     pipeline = f"{head_path}/pipeline"
@@ -111,7 +107,6 @@ def pipeline(
                             constrain_center,
                             bin,
                             verbose,
-                            ignore_sky_lines,
                         )
                     )
 

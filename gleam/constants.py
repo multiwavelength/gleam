@@ -62,6 +62,7 @@ class Cosmology:
 class Setup:
     resolution: Length
     line_table: str
+    mask_sky: bool
 
 
 @dataclass
@@ -88,7 +89,8 @@ class Constants:
     specific parameters. Contains sensible defaults and check for unit type
     correctness.
     """
-
+    
+    sky: str
     setups: Dict[str, Setup]
     fitting: FittingParameters = FittingParameters()
     cosmology: Cosmology = Cosmology()
@@ -111,5 +113,3 @@ def read_config(config_file) -> Constants:
 
 
 a = read_config("gleamconfig.yaml")
-
-SKY = QTable.read("line_lists/Sky_bands.fits")

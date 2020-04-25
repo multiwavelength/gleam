@@ -24,7 +24,6 @@ from lmfit.model import ModelResult
 
 import gleam.plot_gaussian as pg
 import gleam.spectra_operations as so
-import gleam.constants as config
 from gleam.constants import Length
 
 Qty = astropy.units.quantity.Quantity
@@ -829,7 +828,8 @@ def fit_lines(
     fix_center,
     constrain_center,
     verbose,
-    ignore_sky_lines,
+    sky,
+    mask_sky,
     tolerance,
     cont_width,
     mask_width,
@@ -876,7 +876,8 @@ def fit_lines(
                 fix_center,
                 constrain_center,
                 verbose,
-                ignore_sky_lines,
+                sky,
+                mask_sky,
                 cont_width,
                 mask_width,
                 w,
@@ -898,7 +899,8 @@ def do_gaussian(
     fix_center,
     constrain_center,
     verbose,
-    ignore_sky_lines,
+    sky,
+    mask_sky,
     cont_width,
     mask_width,
     w,
@@ -936,7 +938,8 @@ def do_gaussian(
         other_lines,
         spectrum,
         target,
-        ignore_sky_lines,
+        sky,
+        mask_sky,
         cont_width,
         mask_width,
     )

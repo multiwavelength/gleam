@@ -27,7 +27,6 @@ def run_main(
     fix_center=False,
     constrain_center=False,
     verbose=False,
-    ignore_sky_lines=False,
     bin1=1,
 ):
     """
@@ -42,9 +41,6 @@ def run_main(
         constrain_center: constrain the centers of the Gaussian to a small 
                           region around the expected lab wavelength of the line
         verbose: verbose output of warnings and line fit results
-        ignore_sky_lines: do not mask sky lines, for cases where the processing
-                          of the data was highly successful and emission lines 
-                          can be recovered
         bin1: number of adjacent spectral pixels to be binned
     Output:
         fits of emission lines and plots for each fitted lines
@@ -79,6 +75,9 @@ def run_main(
     # Read in line table
     line_list = rf.read_lol(c.setups[target["Setup"]].line_table)
 
+    # Read in file with sky bands
+    sky = QTable.read(c.sky)
+
     # Find groups of nearby lines in the input table that will be fit together
     line_groups = so.group_lines(line_list, c.fitting.tolerance)
 
@@ -89,6 +88,7 @@ def run_main(
         spectrum,
         c.fitting.cont_width,
         c.fitting.spectral_resolution,
+        sky
     ) as plot_line:
         tables = []
         # Set the name to the exported plot in png format
@@ -100,7 +100,8 @@ def run_main(
             fix_center,
             constrain_center,
             verbose,
-            ignore_sky_lines,
+            sky,
+            c.setups[target["Setup"]].mask_sky,
             c.fitting.tolerance,
             c.fitting.cont_width,
             c.fitting.mask_width,
@@ -127,13 +128,14 @@ def run_main(
                 inspect,
                 c.fitting.cont_width,
                 c.fitting.spectral_resolution,
+                sky
             )
             if spectrum_fit is not None:
                 for (line_fit, line) in zip(spectrum_fit.lines, lines):
                     tables.append(
                         Table(line_fit.as_fits_table(line), masked=True, copy=False)
                     )
-                plot_line(lines, spectrum_fit, c.fitting.spectral_resolution)
+                plot_line(lines, spectrum_fit, c.fitting.spectral_resolution, sky)
 
     try:
         outtable = astropy.table.vstack(tables)
