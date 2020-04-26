@@ -126,7 +126,7 @@ class Constants:
     cosmology: Cosmology = Cosmology()
 
     def __call__(self, setup_name: str) -> Config:
-        if self.setups is None:
+        if self.setups is None or setup_name not in self.setups:
             return Config(
                 sky=self.sky,
                 mask_sky=self.mask_sky,
