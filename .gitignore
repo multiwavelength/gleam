@@ -5,3 +5,4 @@ __pycache__
 .pytest_cache
 .mypy_cache
 select_only_members.py
+gleam.egg-info/
