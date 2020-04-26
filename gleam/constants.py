@@ -6,7 +6,7 @@ __author__ = "Andra Stroe"
 __version__ = "0.1"
 
 import yaml
-from typing import Dict
+from typing import Dict, Optional
 
 from pydantic.dataclasses import dataclass
 from astropy import units as u
@@ -61,8 +61,8 @@ class Cosmology:
 @dataclass
 class Setup:
     resolution: Length
-    line_table: str
     mask_sky: bool
+    line_table: Optional[str] = None
 
 
 @dataclass
@@ -82,17 +82,39 @@ class FittingParameters:
 
 
 @dataclass
+class Config:
+    sky: str
+    mask_sky: bool
+    line_table: str
+    resolution: Length
+    fitting: FittingParameters = FittingParameters()
+    cosmology: Cosmology = Cosmology()
+
+
+@dataclass
 class Constants:
     """
     Constants pertaining to cosmology, to fitting procedures and other telescope
     specific parameters. Contains sensible defaults and check for unit type
     correctness.
     """
-    
+
     sky: str
+    line_table: str
     setups: Dict[str, Setup]
     fitting: FittingParameters = FittingParameters()
     cosmology: Cosmology = Cosmology()
+
+    def __call__(self, setup_name: str) -> Config:
+        setup = self.setups[setup_name]
+        return Config(
+            sky=self.sky,
+            mask_sky=setup.mask_sky,
+            line_table=setup.line_table or self.line_table,
+            resolution=setup.resolution,
+            fitting=self.fitting,
+            cosmology=self.cosmology,
+        )
 
 
 def read_config(config_file) -> Constants:

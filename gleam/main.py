@@ -72,23 +72,26 @@ def run_main(
     # Given its redshift, calculate restframe spectrum
     spectrum = so.add_restframe(spectrum, target["Redshift"])
 
+    # Configuration for curret source
+    config = c(target["Setup"])
+
     # Read in line table
-    line_list = QTable.read(c.setups[target["Setup"]].line_table)
+    line_list = QTable.read(config.line_table)
 
     # Read in file with sky bands
-    sky = QTable.read(c.sky)
+    sky = QTable.read(config.sky)
 
     # Find groups of nearby lines in the input table that will be fit together
-    line_groups = so.group_lines(line_list, c.fitting.tolerance)
+    line_groups = so.group_lines(line_list, config.fitting.tolerance)
 
     with pg.overview_plot(
         target,
         data_path,
         line_groups,
         spectrum,
-        c.fitting.cont_width,
-        c.setups[target["Setup"]].resolution/(1+target["Redshift"]),
-        sky
+        config.fitting.cont_width,
+        config.resolution / (1 + target["Redshift"]),
+        sky,
     ) as plot_line:
         tables = []
         # Set the name to the exported plot in png format
@@ -101,16 +104,16 @@ def run_main(
             constrain_center,
             verbose,
             sky,
-            c.setups[target["Setup"]].mask_sky,
-            c.fitting.tolerance,
-            c.fitting.cont_width,
-            c.fitting.mask_width,
-            c.fitting.w,
-            c.fitting.fwhm_min,
-            c.fitting.fwhm_max,
-            c.fitting.SN_limit,
-            c.setups[target["Setup"]].resolution/(1+target["Redshift"]),
-            c.cosmology.cosmo,
+            config.mask_sky,
+            config.fitting.tolerance,
+            config.fitting.cont_width,
+            config.fitting.mask_width,
+            config.fitting.w,
+            config.fitting.fwhm_min,
+            config.fitting.fwhm_max,
+            config.fitting.SN_limit,
+            config.resolution / (1 + target["Redshift"]),
+            config.cosmology.cosmo,
         ):
             # Make a plot/fit a spectrum if the line in within the rest-frame
             # spectral coverage of the source
@@ -125,16 +128,21 @@ def run_main(
                 line_list["wavelength"],
                 lines["wavelength"],
                 inspect,
-                c.fitting.cont_width,
-                c.setups[target["Setup"]].resolution/(1+target["Redshift"]),
-                sky
+                config.fitting.cont_width,
+                config.resolution / (1 + target["Redshift"]),
+                sky,
             )
             if spectrum_fit is not None:
                 for (line_fit, line) in zip(spectrum_fit.lines, lines):
                     tables.append(
                         Table(line_fit.as_fits_table(line), masked=True, copy=False)
                     )
-                plot_line(lines, spectrum_fit, c.setups[target["Setup"]].resolution/(1+target["Redshift"]), sky)
+                plot_line(
+                    lines,
+                    spectrum_fit,
+                    config.resolution / (1 + target["Redshift"]),
+                    sky,
+                )
 
     try:
         outtable = astropy.table.vstack(tables)
