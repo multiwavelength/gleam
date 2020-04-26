@@ -100,10 +100,10 @@ class Constants:
     correctness.
     """
 
-    sky: str
-    mask_sky: bool
-    line_table: str
-    resolution: str
+    line_table: Optional[str] = None
+    resolution: Optional[str] = None
+    sky: Optional[str] = None
+    mask_sky: Optional[bool] = None
     setups: Optional[Dict[str, Setup]] = None
     fitting: FittingParameters = FittingParameters()
     cosmology: Cosmology = Cosmology()
@@ -111,12 +111,12 @@ class Constants:
     def __call__(self, setup_name: str) -> Config:
         if self.setups is None:
             return Config(
-            sky=self.sky,
-            mask_sky=self.mask_sky,
-            line_table=self.line_table,
-            resolution=self.resolution,
-            fitting=self.fitting,
-            cosmology=self.cosmology,
+                sky=self.sky,
+                mask_sky=self.mask_sky,
+                line_table=self.line_table,
+                resolution=self.resolution,
+                fitting=self.fitting,
+                cosmology=self.cosmology,
             )
         else:
             setup = self.setups[setup_name]
@@ -124,7 +124,9 @@ class Constants:
                 sky=setup.sky or self.sky,
                 mask_sky=self.mask_sky if setup.mask_sky is None else setup.mask_sky,
                 line_table=setup.line_table or self.line_table,
-                resolution=self.resolution if setup.resolution is None else setup.resolution,
+                resolution=self.resolution
+                if setup.resolution is None
+                else setup.resolution,
                 fitting=self.fitting,
                 cosmology=self.cosmology,
             )
@@ -152,5 +154,5 @@ if __name__ == "__main__":
     from devtools import debug
 
     debug(a)
-    debug(a("MMT"))
     debug(a("VIMOS"))
+    debug(a("MMT"))
