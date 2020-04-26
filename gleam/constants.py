@@ -6,7 +6,10 @@ __author__ = "Andra Stroe"
 __version__ = "0.1"
 
 import yaml
-from typing import Dict, Optional
+from typing import Dict, Optional, List
+import operator
+import functools
+
 
 from pydantic.dataclasses import dataclass
 from astropy import units as u
@@ -64,6 +67,7 @@ class Setup:
     resolution: Optional[Length] = None
     mask_sky: Optional[bool] = None
     line_table: Optional[str] = None
+    lines: Optional[List[str]] = None
 
 
 @dataclass
@@ -88,8 +92,20 @@ class Config:
     mask_sky: bool
     line_table: str
     resolution: Length
+    lines: Optional[List[str]] = None
     fitting: FittingParameters = FittingParameters()
     cosmology: Cosmology = Cosmology()
+
+    @property
+    def line_list(self):
+        table = QTable.read(self.line_table)
+        if self.lines is None:
+            return table
+        else:
+            mask = functools.reduce(
+                operator.or_, (table["line"] == line for line in self.lines)
+            )
+            return table[mask]
 
 
 @dataclass
@@ -100,6 +116,7 @@ class Constants:
     correctness.
     """
 
+    lines: Optional[List[str]] = None
     line_table: Optional[str] = None
     resolution: Optional[str] = None
     sky: Optional[str] = None
@@ -117,6 +134,7 @@ class Constants:
                 resolution=self.resolution,
                 fitting=self.fitting,
                 cosmology=self.cosmology,
+                lines=self.lines,
             )
         else:
             setup = self.setups[setup_name]
@@ -129,6 +147,7 @@ class Constants:
                 else setup.resolution,
                 fitting=self.fitting,
                 cosmology=self.cosmology,
+                lines=self.lines if setup.lines is None else setup.lines,
             )
 
 
@@ -155,4 +174,6 @@ if __name__ == "__main__":
 
     debug(a)
     debug(a("VIMOS"))
+    print(a("VIMOS").line_list)
     debug(a("MMT"))
+    print(a("MMT").line_list)

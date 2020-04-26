@@ -76,7 +76,7 @@ def run_main(
     config = c(target["Setup"])
 
     # Read in line table
-    line_list = QTable.read(config.line_table)
+    line_list = config.line_list
 
     # Read in file with sky bands
     sky = QTable.read(config.sky)
