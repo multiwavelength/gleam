@@ -112,7 +112,7 @@ def plot_spectrum(
     inspect,
     cont_width,
     rest_spectral_resolution,
-    sky
+    sky,
 ):
     """
     Plots spectrum and a fit to a specific line. Overplots the entire line 
@@ -249,7 +249,7 @@ def overview_plot(
                      plots do we want
         spectrum: spectrum of the source
     """
-    print('SPEC RES', rest_spectral_resolution)
+
     # Generate the title of the plot from information on the target
     title = (
         f"{target['Sample']}\t"

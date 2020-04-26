@@ -185,8 +185,7 @@ def restframe_wl(x, z):
     return x / (1.0 + z)
 
 
-def mask_atmosphere(wl, z, sky
-):
+def mask_atmosphere(wl, z, sky):
     """
     Masks the spectrum around prominent optical atmospheric absorption bands
     !!! Assumes spectrum has been restframed !!!
@@ -201,7 +200,7 @@ def mask_atmosphere(wl, z, sky
     defined in the constants file
     """
 
-    # mask areas of absorption due to sky 
+    # mask areas of absorption due to sky
     absorption = functools.reduce(
         operator.or_,
         (

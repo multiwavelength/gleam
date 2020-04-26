@@ -28,23 +28,9 @@ def run_source(p):
            interactive inspection of the data and the way the center is being
            fit as well as binning the data   
     """
-    (
-        extension,
-        target,
-        inspect,
-        fix_center,
-        constrain_center,
-        bin,
-        verbose,
-    ) = p
+    (extension, target, inspect, fix_center, constrain_center, bin, verbose,) = p
     main.run_main(
-        extension,
-        target,
-        inspect,
-        fix_center,
-        constrain_center,
-        verbose,
-        bin,
+        extension, target, inspect, fix_center, constrain_center, verbose, bin,
     )
 
 

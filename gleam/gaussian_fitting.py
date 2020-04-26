@@ -538,7 +538,7 @@ def model_selection(
     fwhm_max,
     SN_limit,
     rest_spectral_resolution,
-    cosmo
+    cosmo,
 ) -> Spectrum:
     """
     Start with the model with the most components (constant + as many 
@@ -597,10 +597,8 @@ def model_selection(
     if verbose == True:
         for i, wl in enumerate(wl_line):
             if (i not in wl_subset_indices) and np.sum(
-                ~so.mask_line(
-                    x, wl_line[i], 1.01 * rest_spectral_resolution,
-                )
-            ) < rest_spectral_resolution//so.dispersion(x):
+                ~so.mask_line(x, wl_line[i], 1.01 * rest_spectral_resolution,)
+            ) < rest_spectral_resolution // so.dispersion(x):
                 print(Fore.BLUE + f"No spectral coverage on line {wl_line[i]}")
             else:
                 continue
@@ -645,12 +643,8 @@ def model_selection(
                 restwl=wl_line[i],
                 continuum=RandomVariable.from_param(fitparams["c"]) * y.unit,
             )
-            if np.sum(
-                ~so.mask_line(
-                    x, wl_line[i], 1.01 * rest_spectral_resolution,
-                )
-            )
-            < rest_spectral_resolution//so.dispersion(x)
+            if np.sum(~so.mask_line(x, wl_line[i], 1.01 * rest_spectral_resolution,))
+            < rest_spectral_resolution // so.dispersion(x)
             else NonDetection(
                 amplitude=ul * x.unit * y.unit,
                 z=redshift,
@@ -838,7 +832,7 @@ def fit_lines(
     fwhm_max,
     SN_limit,
     rest_spectral_resolution,
-    cosmo
+    cosmo,
 ):
     """
     Head function that goes through the list of lines and fits all lines for a 
@@ -960,7 +954,7 @@ def do_gaussian(
         fwhm_max,
         SN_limit,
         rest_spectral_resolution,
-        cosmo
-        )
+        cosmo,
+    )
 
     return spectrum_fit, spectrum_line
