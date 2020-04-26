@@ -60,8 +60,9 @@ class Cosmology:
 
 @dataclass
 class Setup:
-    resolution: Length
-    mask_sky: bool
+    sky: Optional[str] = None
+    resolution: Optional[Length] = None
+    mask_sky: Optional[bool] = None
     line_table: Optional[str] = None
 
 
@@ -100,21 +101,33 @@ class Constants:
     """
 
     sky: str
+    mask_sky: bool
     line_table: str
-    setups: Dict[str, Setup]
+    resolution: str
+    setups: Optional[Dict[str, Setup]] = None
     fitting: FittingParameters = FittingParameters()
     cosmology: Cosmology = Cosmology()
 
     def __call__(self, setup_name: str) -> Config:
-        setup = self.setups[setup_name]
-        return Config(
+        if self.setups is None:
+            return Config(
             sky=self.sky,
-            mask_sky=setup.mask_sky,
-            line_table=setup.line_table or self.line_table,
-            resolution=setup.resolution,
+            mask_sky=self.mask_sky,
+            line_table=self.line_table,
+            resolution=self.resolution,
             fitting=self.fitting,
             cosmology=self.cosmology,
-        )
+            )
+        else:
+            setup = self.setups[setup_name]
+            return Config(
+                sky=setup.sky or self.sky,
+                mask_sky=self.mask_sky if setup.mask_sky is None else setup.mask_sky,
+                line_table=setup.line_table or self.line_table,
+                resolution=self.resolution if setup.resolution is None else setup.resolution,
+                fitting=self.fitting,
+                cosmology=self.cosmology,
+            )
 
 
 def read_config(config_file) -> Constants:
@@ -134,3 +147,10 @@ def read_config(config_file) -> Constants:
 
 
 a = read_config("gleamconfig.yaml")
+
+if __name__ == "__main__":
+    from devtools import debug
+
+    debug(a)
+    debug(a("MMT"))
+    debug(a("VIMOS"))
