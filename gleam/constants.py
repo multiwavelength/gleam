@@ -131,6 +131,7 @@ class Config:
     @property
     def line_list(self):
         table = QTable.read(self.line_table)
+        table.sort('wavelength')
         if self.lines is None:
             return table
         else:
