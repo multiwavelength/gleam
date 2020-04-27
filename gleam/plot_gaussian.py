@@ -87,6 +87,8 @@ def overplot_sky(ax, z, sky):
         ax: returns the new axis in case we want to overplot some more stuff on
              top
     """
+    if sky is None:
+        return
     [
         ax.fill_between(
             [so.restframe_wl(band["wl_min"], z), so.restframe_wl(band["wl_max"], z)],
@@ -136,6 +138,7 @@ def plot_spectrum(
     Output:
         Figure in show() or a saved figure in an external png file
     """
+    print("Sky")
     # Set the title to the plot
     title = (
         f"{target['Sample']}\t"

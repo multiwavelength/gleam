@@ -79,7 +79,7 @@ def run_main(
     line_list = config.line_list
 
     # Read in file with sky bands
-    sky = QTable.read(config.sky)
+    sky = config.sky_list
 
     # Find groups of nearby lines in the input table that will be fit together
     line_groups = so.group_lines(line_list, config.fitting.tolerance)
@@ -104,7 +104,6 @@ def run_main(
             constrain_center,
             verbose,
             sky,
-            config.mask_sky,
             config.fitting.tolerance,
             config.fitting.cont_width,
             config.fitting.mask_width,

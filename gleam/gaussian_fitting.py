@@ -823,7 +823,6 @@ def fit_lines(
     constrain_center,
     verbose,
     sky,
-    mask_sky,
     tolerance,
     cont_width,
     mask_width,
@@ -848,8 +847,6 @@ def fit_lines(
         constrain_center: constrain the center of the Gaussian to a narrow 
                           region around the expected position of the line
         verbose: print results of the fit and warnings
-        ignore_sky_lines: do not mask the regions around the expected positions
-                          of the sky lines
     Output:
         Astropy table containing details of emission lines and the Gaussian fits 
         to them
@@ -870,7 +867,6 @@ def fit_lines(
                 constrain_center,
                 verbose,
                 sky,
-                mask_sky,
                 cont_width,
                 mask_width,
                 w,
@@ -892,7 +888,6 @@ def do_gaussian(
     constrain_center,
     verbose,
     sky,
-    mask_sky,
     cont_width,
     mask_width,
     w,
@@ -925,14 +920,7 @@ def do_gaussian(
     """
     # Mask the region around the line
     mask_line = so.select_lines(
-        selected_lines,
-        other_lines,
-        spectrum,
-        target,
-        sky,
-        mask_sky,
-        cont_width,
-        mask_width,
+        selected_lines, other_lines, spectrum, target, sky, cont_width, mask_width,
     )
 
     # Create a new variable that contains the spectrum around the line

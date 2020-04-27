@@ -120,8 +120,8 @@ class FittingParameters(Overridable):
 
 @dataclass
 class Config:
-    sky: str
-    mask_sky: bool
+    sky: Optional[str]
+    mask_sky: Optional[bool]
     line_table: str
     resolution: Length
     lines: Optional[List[str]] = None
@@ -138,6 +138,17 @@ class Config:
                 operator.or_, (table["line"] == line for line in self.lines)
             )
             return table[mask]
+
+    @property
+    def sky_list(self):
+        if self.sky is None:
+            self.mask_sky = False
+            return None
+        else:
+            if self.mask_sky is True:
+                return QTable.read(self.sky)
+            if self.mask_sky is False:
+                return None
 
 
 @dataclass
@@ -204,8 +215,5 @@ a = read_config("gleamconfig.yaml")
 if __name__ == "__main__":
     from devtools import debug
 
-    debug(a)
-    debug(a("VIMOS"))
-    print(a("VIMOS").line_list)
-    debug(a("MMT"))
-    print(a("MMT").line_list)
+    print(a("VIMOS").sky_list)
+    print(a("MMT").sky_list)

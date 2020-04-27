@@ -130,7 +130,7 @@ def dispersion(wl):
     minimum = np.min(diff)
 
     if stdev / average > 10 ** -3:
-        print(Fore.RED + "Warning: non-constant resolution")
+        print(Fore.RED + "Warning: non-constant dispersion")
     return minimum
 
 
@@ -199,7 +199,8 @@ def mask_atmosphere(wl, z, sky):
     Note: the wavelengths of the A band and B band sky absorption areas are 
     defined in the constants file
     """
-
+    if sky is None:
+        return np.ones_like(wl.value).astype(bool)
     # mask areas of absorption due to sky
     absorption = functools.reduce(
         operator.or_,
@@ -260,14 +261,7 @@ def select_singleline(wl_rest, line, cont_width):
 
 
 def select_lines(
-    selected_lines,
-    other_lines,
-    spectrum,
-    target_info,
-    sky,
-    mask_sky,
-    cont_width,
-    mask_width,
+    selected_lines, other_lines, spectrum, target_info, sky, cont_width, mask_width,
 ):
     """
     Masks the spectrum in the vicinity of the line of interest. It should leave 
@@ -281,10 +275,6 @@ def select_lines(
                   wavelength
         target: ancillary information on the source, such as RA, DEC or redshift
                 as produced by read_files.read_lof()
-        ignore_sky_lines: in some cases, when the processing of the data is very
-                          good, the sky lines are very well subtracted and lines
-                          can be recovered; in these cases do not mark the 
-                          regions around the expected position of the sky lines
         cont_width: amount of wavelength coverage on each side of the line that
                     will be taken into account
     Output:
@@ -309,11 +299,8 @@ def select_lines(
         select_lines = select_lines | mask
 
     # decide whether to mask the atmospheric lines
-    if mask_sky == False:
-        masked_all = masked_otherlines & select_lines
-    else:
-        masked_atm = mask_atmosphere(wl_rest, z_ref, sky)
-        masked_all = masked_atm & masked_otherlines & select_lines
+    masked_atm = mask_atmosphere(wl_rest, z_ref, sky)
+    masked_all = masked_atm & masked_otherlines & select_lines
 
     return masked_all
 
