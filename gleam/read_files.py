@@ -44,5 +44,5 @@ def naming_convention(data_path, sample, source_number, setup, pointing, mod):
     number, and parent sample
     """
     return (
-        f"{data_path}/{mod}.{setup}.{pointing}.{source_number.astype(int):03d}.{sample}"
+        f"{data_path}/{mod}.{sample}.{setup}.{pointing}.{source_number.astype(int):03d}"
     )
