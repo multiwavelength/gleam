@@ -6,6 +6,7 @@ __author__ = "Andra Stroe"
 __version__ = "0.1"
 
 import yaml
+from dataclasses import replace, asdict
 from typing import Dict, Optional, List
 import operator
 import functools
@@ -44,6 +45,20 @@ class Temperature(Quantity):
     _equivalent_unit = u.K
 
 
+class Overridable:
+    def override(self, overrides):
+        if overrides is None:
+            return self
+        return replace(
+            self,
+            **{
+                key: value
+                for key, value in asdict(overrides).items()
+                if value is not None
+            }
+        )
+
+
 @dataclass
 class Cosmology:
     """
@@ -62,16 +77,33 @@ class Cosmology:
 
 
 @dataclass
+class FittingParametersOverrides:
+    """
+    Paramters needed for the fitting of the lines. Contains sensible default 
+    values and checks for correct types.
+    """
+
+    SN_limit: Optional[float] = None
+    tolerance: Optional[Length] = None
+    w: Optional[Length] = None
+    mask_width: Optional[Length] = None
+    cont_width: Optional[Length] = None
+    fwhm_min: Optional[int] = None
+    fwhm_max: Optional[int] = None
+
+
+@dataclass
 class Setup:
     sky: Optional[str] = None
     resolution: Optional[Length] = None
     mask_sky: Optional[bool] = None
     line_table: Optional[str] = None
     lines: Optional[List[str]] = None
+    fitting: Optional[FittingParametersOverrides] = None
 
 
 @dataclass
-class FittingParameters:
+class FittingParameters(Overridable):
     """
     Paramters needed for the fitting of the lines. Contains sensible default 
     values and checks for correct types.
@@ -145,7 +177,7 @@ class Constants:
                 resolution=self.resolution
                 if setup.resolution is None
                 else setup.resolution,
-                fitting=self.fitting,
+                fitting=self.fitting.override(setup.fitting),
                 cosmology=self.cosmology,
                 lines=self.lines if setup.lines is None else setup.lines,
             )
