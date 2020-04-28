@@ -21,7 +21,7 @@ from gleam.constants import a as c
 
 
 def run_main(
-    data_path,
+    spectrum_file,
     target,
     inspect=False,
     fix_center=False,
@@ -45,6 +45,8 @@ def run_main(
     Output:
         fits of emission lines and plots for each fitted lines
     """
+
+    data_path = os.path.dirname(spectrum_file)
     print(
         f"Now working in {data_path} "
         + f'on {target["Sample"]} '
@@ -53,18 +55,7 @@ def run_main(
     )
 
     # Read spectrum for the current source from outside file
-    spectrum = QTable.read(
-        "{}.fits".format(
-            rf.naming_convention(
-                data_path,
-                target["Sample"],
-                target["SourceNumber"],
-                target["Setup"],
-                target["Pointing"],
-                "spec1d",
-            )
-        )
-    )
+    spectrum = QTable.read(spectrum_file)
 
     if bin1 > 1:
         spectrum = so.bin_spectrum(spectrum, bin1)

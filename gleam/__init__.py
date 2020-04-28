@@ -96,7 +96,7 @@ def pipeline(inspect, fix_center, constrain_center, bin, max_cpu, verbose, spec_
         target = targets[sample, setup, pointing, source]
         unique_sources.append(
             (
-                os.path.dirname(spectrum_file),
+                spectrum_file,
                 target,
                 inspect,
                 fix_center,
