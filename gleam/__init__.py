@@ -8,10 +8,13 @@ from multiprocessing import Pool
 
 import numpy as np
 from astropy.io import fits
+from astropy.table import vstack
 import click
+from colorama import Fore
 
 import gleam.main
 import gleam.read_files as rf
+from gleam.constants import a as c
 
 warnings.filterwarnings("ignore")
 
@@ -41,63 +44,54 @@ def run_source(p):
 @click.option("--constrain-center", is_flag=True)
 @click.option("--bin", default=1)
 @click.option("--verbose", is_flag=True)
-@click.option(
-    "--head-path",
-    default="/home/andra/Desktop/Keep/Cluster_spectroscopy/line_measurements_mydata_2020_newpipeline_test",
-)
 @click.option("--max-cpu", default=8, type=int)
-def pipeline(
-    inspect,
-    fix_center,
-    constrain_center,
-    bin,
-    head_path,
-    max_cpu,
-    verbose
-):
-    # Relative paths
-    pipeline = f"{head_path}/pipeline"
-    data_path = f"{head_path}/allfluxes"
-    final_path = f"{head_path}/measurements"
-    
+def pipeline(inspect, fix_center, constrain_center, bin, max_cpu, verbose):
+    find_masters = glob.glob(f"{c.path}/**/master*fits", recursive=True)
+    try:
+        targets = vstack(
+            [rf.read_lof(list_of_targets) for list_of_targets in find_masters]
+        )
+        for col in [
+            "Sample",
+            "Setup",
+            "Pointing",
+            "SourceNumber",
+        ]:
+            targets.add_index(col)
+    except ValueError:
+        print(
+            Fore.RED
+            + "Cannot stack master files that contain units with those that don't."
+        )
+        sys.exit("Error!")
 
-    # Define the folder structure such that we run the main line fitting
-    # tool in the right place
+    find_spectra = glob.glob(f"{c.path}/A115/Q1/**/spec1d*fits", recursive=True)
     unique_sources = []
-    for cluster in glob.glob(f"{data_path}/A2254*"):
-        for quadrant in glob.glob(f"{cluster}/Q1*"):
-            for extension in glob.glob(f"{quadrant}/EXT1*"):
-                list_of_targets = (
-                    f"{extension}/{os.path.basename(cluster)}_"
-                    f"{os.path.basename(quadrant)}_"
-                    f"{os.path.basename(extension)}_"
-                    f"zinfo.dat"
-                )
-                targets = rf.read_lof(list_of_targets)
-                for target in targets:
-                    # if target['Membership']!='member': continue
-                    if float(target["SourceNumber"])!= 20:
-                        continue
-                    # if target["SourceNumber"]!='204': continue
-                    # Add all the relevant variable for the running of the
-                    # fitting function to a list in the form of a dictionary
-                    # This is necessary such that all variable are together
-                    # in a single variable for executing the code in a parallel
-                    # manner with Pool
-                    unique_sources.append(
-                        (
-                            extension,
-                            target,
-                            inspect,
-                            fix_center,
-                            constrain_center,
-                            bin,
-                            verbose,
-                        )
-                    )
+    for spectrum_file in find_spectra:
+        _, sample, setup, pointing, source, *_ = os.path.basename(spectrum_file).split(
+            "."
+        )
+        source = int(source)
+        target = (
+            targets.loc["Sample", sample]
+            .loc["Setup", setup]
+            .loc["Pointing", pointing]
+            .loc["SourceNumber", source]
+        )
+        unique_sources.append(
+            (
+                os.path.dirname(spectrum_file),
+                target,
+                inspect,
+                fix_center,
+                constrain_center,
+                bin,
+                verbose,
+            )
+        )
 
     # Set up multithread processing as executing the fitting on different
-    # sources is trivially parallelisable
+    # sources is trivially parallelizable
     nproc = 1 if inspect else max_cpu
     with Pool(nproc) as p:
         p.map(run_source, unique_sources)

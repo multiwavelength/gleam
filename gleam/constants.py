@@ -120,6 +120,7 @@ class FittingParameters(Overridable):
 
 @dataclass
 class Config:
+    path: str
     sky: Optional[str]
     mask_sky: Optional[bool]
     line_table: str
@@ -131,7 +132,7 @@ class Config:
     @property
     def line_list(self):
         table = QTable.read(self.line_table)
-        table.sort('wavelength')
+        table.sort("wavelength")
         if self.lines is None:
             return table
         else:
@@ -160,6 +161,7 @@ class Constants:
     correctness.
     """
 
+    path: str
     lines: Optional[List[str]] = None
     line_table: Optional[str] = None
     resolution: Optional[str] = None
@@ -172,26 +174,28 @@ class Constants:
     def __call__(self, setup_name: str) -> Config:
         if self.setups is None or setup_name not in self.setups:
             return Config(
+                path=self.path,
+                lines=self.lines,
+                line_table=self.line_table,
                 sky=self.sky,
                 mask_sky=self.mask_sky,
-                line_table=self.line_table,
                 resolution=self.resolution,
                 fitting=self.fitting,
                 cosmology=self.cosmology,
-                lines=self.lines,
             )
         else:
             setup = self.setups[setup_name]
             return Config(
+                path=self.path,
+                lines=self.lines if setup.lines is None else setup.lines,
+                line_table=setup.line_table or self.line_table,
                 sky=setup.sky or self.sky,
                 mask_sky=self.mask_sky if setup.mask_sky is None else setup.mask_sky,
-                line_table=setup.line_table or self.line_table,
                 resolution=self.resolution
                 if setup.resolution is None
                 else setup.resolution,
                 fitting=self.fitting.override(setup.fitting),
                 cosmology=self.cosmology,
-                lines=self.lines if setup.lines is None else setup.lines,
             )
 
 
@@ -216,5 +220,8 @@ a = read_config("gleamconfig.yaml")
 if __name__ == "__main__":
     from devtools import debug
 
-    print(a("VIMOS").sky_list)
-    print(a("MMT").sky_list)
+    debug(a("VIMOS"))
+    # print(a("VIMOS").sky_list)
+    # print(a("MMT").sky_list)
+    # print(a("VIMOS").line_list)#.pprint_all()
+    # print(a("MMT").line_list)#.pprint_all()
