@@ -161,7 +161,7 @@ class Constants:
     correctness.
     """
 
-    path: str
+    path: Optional[str] = '.'
     lines: Optional[List[str]] = None
     line_table: Optional[str] = None
     resolution: Optional[str] = None
