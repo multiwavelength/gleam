@@ -138,7 +138,6 @@ def plot_spectrum(
     Output:
         Figure in show() or a saved figure in an external png file
     """
-    print("Sky")
     # Set the title to the plot
     title = (
         f"{target['Sample']}\t"
