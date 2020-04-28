@@ -45,8 +45,9 @@ def run_source(p):
 @click.option("--bin", default=1)
 @click.option("--verbose", is_flag=True)
 @click.option("--max-cpu", default=8, type=int)
-def pipeline(inspect, fix_center, constrain_center, bin, max_cpu, verbose):
-    find_masters = glob.glob(f"{c.path}/**/master*fits", recursive=True)
+@click.option("--spec-path", default="**/spec1d*fits")
+def pipeline(inspect, fix_center, constrain_center, bin, max_cpu, verbose, spec_path):
+    find_masters = glob.glob(f"{c.path}/**/master*dat", recursive=True)
     try:
         targets = vstack(
             [rf.read_lof(list_of_targets) for list_of_targets in find_masters]
@@ -65,7 +66,7 @@ def pipeline(inspect, fix_center, constrain_center, bin, max_cpu, verbose):
         )
         sys.exit("Error!")
 
-    find_spectra = glob.glob(f"{c.path}/**/spec1d*fits", recursive=True)
+    find_spectra = glob.glob(f"{c.path}/{spec_path}", recursive=True)
     unique_sources = []
     for spectrum_file in find_spectra:
         _, sample, setup, pointing, source, *_ = os.path.basename(spectrum_file).split(
