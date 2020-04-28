@@ -5,10 +5,12 @@ import os, sys
 import warnings
 import glob
 from multiprocessing import Pool
+from functools import reduce
+from typing import Tuple
 
 import numpy as np
 from astropy.io import fits
-from astropy.table import vstack
+from astropy.table import vstack, QTable
 import click
 from colorama import Fore
 
@@ -37,6 +39,39 @@ def run_source(p):
     )
 
 
+class Targets:
+    def __init__(self, filter: str) -> None:
+        find_masters = glob.glob(filter, recursive=True)
+        try:
+            targets = vstack(
+                [rf.read_lof(list_of_targets) for list_of_targets in find_masters]
+            )
+            targets["key"] = reduce(
+                np.char.add,
+                (
+                    targets["Sample"],
+                    ".",
+                    targets["Setup"],
+                    ".",
+                    targets["Pointing"],
+                    ".",
+                    targets["SourceNumber"].astype(str),
+                ),
+            )
+            targets.add_index("key")
+            self._targets: QTable = targets
+        except ValueError:
+            print(
+                Fore.RED
+                + "Cannot stack master files that contain units with those that don't."
+            )
+            sys.exit("Error!")
+
+    def __getitem__(self, key: Tuple[str, str, str, int]):
+        sample, setup, pointing, source = key
+        return self._targets.loc[f"{sample}.{setup}.{pointing}.{int(source)}"]
+
+
 # Define command line arguments
 @click.command()
 @click.option("--inspect", is_flag=True)
@@ -47,38 +82,18 @@ def run_source(p):
 @click.option("--max-cpu", default=8, type=int)
 @click.option("--spec-path", default="**/spec1d*fits")
 def pipeline(inspect, fix_center, constrain_center, bin, max_cpu, verbose, spec_path):
-    find_masters = glob.glob(f"{c.path}/**/master*dat", recursive=True)
-    try:
-        targets = vstack(
-            [rf.read_lof(list_of_targets) for list_of_targets in find_masters]
-        )
-        for col in [
-            "Sample",
-            "Setup",
-            "Pointing",
-            "SourceNumber",
-        ]:
-            targets.add_index(col)
-    except ValueError:
-        print(
-            Fore.RED
-            + "Cannot stack master files that contain units with those that don't."
-        )
-        sys.exit("Error!")
+    targets = Targets(f"{c.path}/**/master*dat")
 
     find_spectra = glob.glob(f"{c.path}/{spec_path}", recursive=True)
     unique_sources = []
+
     for spectrum_file in find_spectra:
         _, sample, setup, pointing, source, *_ = os.path.basename(spectrum_file).split(
             "."
         )
         source = int(source)
-        target = (
-            targets.loc["Sample", sample]
-            .loc["Setup", setup]
-            .loc["Pointing", pointing]
-            .loc["SourceNumber", source]
-        )
+
+        target = targets[sample, setup, pointing, source]
         unique_sources.append(
             (
                 os.path.dirname(spectrum_file),
