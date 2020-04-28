@@ -42,6 +42,9 @@ def run_source(p):
 class Targets:
     def __init__(self, filter: str) -> None:
         find_masters = glob.glob(filter, recursive=True)
+        if not find_masters:
+            sys.exit(Fore.RED
+                + "Error! Cannot find any master files.")
         try:
             targets = vstack(
                 [rf.read_lof(list_of_targets) for list_of_targets in find_masters]
@@ -61,11 +64,7 @@ class Targets:
             targets.add_index("key")
             self._targets: QTable = targets
         except ValueError:
-            print(
-                Fore.RED
-                + "Cannot stack master files that contain units with those that don't."
-            )
-            sys.exit("Error!")
+            sys.exit("Error! Cannot stack master files that contain units with those that don't.")
 
     def __getitem__(self, key: Tuple[str, str, str, int]):
         sample, setup, pointing, source = key
