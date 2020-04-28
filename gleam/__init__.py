@@ -65,7 +65,7 @@ def pipeline(inspect, fix_center, constrain_center, bin, max_cpu, verbose):
         )
         sys.exit("Error!")
 
-    find_spectra = glob.glob(f"{c.path}/A115/Q1/**/spec1d*fits", recursive=True)
+    find_spectra = glob.glob(f"{c.path}/**/spec1d*fits", recursive=True)
     unique_sources = []
     for spectrum_file in find_spectra:
         _, sample, setup, pointing, source, *_ = os.path.basename(spectrum_file).split(
