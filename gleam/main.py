@@ -23,18 +23,18 @@ from gleam.constants import a as c
 def run_main(
     spectrum_file,
     target,
-    inspect=False,
-    fix_center=False,
-    constrain_center=False,
-    verbose=False,
-    bin1=1,
+    inspect,
+    fix_center,
+    constrain_center,
+    verbose,
+    bin1,
 ):
     """
     For a target/galaxy, read the spectrum and perform the line fitting for each 
     line within the list of lines
     Input:
-        data_path: location on disk (folder) of the target spectrum 
-        target: observed spectrum in specpro format 
+        spectrum_path: location on disk (folder) of the target spectrum 
+        target: Astropy row with target properties 
         inspect: if true, show the plots; otherwise write to disk
         fix_center: fix the centers of the Gaussians to the lab value of the
                     emission line

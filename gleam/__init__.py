@@ -43,8 +43,7 @@ class Targets:
     def __init__(self, filter: str) -> None:
         find_masters = glob.glob(filter, recursive=True)
         if not find_masters:
-            sys.exit(Fore.RED
-                + "Error! Cannot find any master files.")
+            sys.exit(Fore.RED + "Error! Cannot find any master files.")
         try:
             targets = vstack(
                 [rf.read_lof(list_of_targets) for list_of_targets in find_masters]
@@ -64,7 +63,9 @@ class Targets:
             targets.add_index("key")
             self._targets: QTable = targets
         except ValueError:
-            sys.exit("Error! Cannot stack master files that contain units with those that don't.")
+            sys.exit(
+                "Error! Cannot stack master files that contain units with those that don't."
+            )
 
     def __getitem__(self, key: Tuple[str, str, str, int]):
         sample, setup, pointing, source = key
@@ -100,8 +101,8 @@ def pipeline(inspect, fix_center, constrain_center, bin, max_cpu, verbose, spec_
                 inspect,
                 fix_center,
                 constrain_center,
-                bin,
                 verbose,
+                bin,
             )
         )
 
@@ -109,7 +110,7 @@ def pipeline(inspect, fix_center, constrain_center, bin, max_cpu, verbose, spec_
     # sources is trivially parallelizable
     nproc = 1 if inspect else max_cpu
     with Pool(nproc) as p:
-        p.map(run_source, unique_sources)
+        p.starmap(main.run_main, unique_sources)
 
 
 if __name__ == "__main__":
