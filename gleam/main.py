@@ -2,6 +2,7 @@ __author__ = "Andra Stroe"
 __version__ = "0.1"
 
 import os, sys
+from contextlib import contextmanager
 
 import numpy as np
 import astropy
@@ -20,10 +21,15 @@ import gleam.spectra_operations as so
 from gleam.constants import a as c
 
 
+@contextmanager
+def fake():
+    yield lambda *_: None
+
 def run_main(
     spectrum_file,
     target,
     inspect,
+    plot,
     fix_center,
     constrain_center,
     verbose,
@@ -75,7 +81,7 @@ def run_main(
     # Find groups of nearby lines in the input table that will be fit together
     line_groups = so.group_lines(line_list, config.fitting.tolerance)
 
-    with pg.overview_plot(
+    overview = pg.overview_plot(
         target,
         data_path,
         line_groups,
@@ -83,7 +89,8 @@ def run_main(
         config.fitting.cont_width,
         config.resolution / (1 + target["Redshift"]),
         sky,
-    ) as plot_line:
+    ) if plot else fake()
+    with overview as plot_line:
         tables = []
         # Set the name to the exported plot in png format
         for spectrum_fit, spectrum_line, lines in gf.fit_lines(
@@ -107,21 +114,22 @@ def run_main(
         ):
             # Make a plot/fit a spectrum if the line in within the rest-frame
             # spectral coverage of the source
-            pg.plot_spectrum(
-                data_path,
-                target,
-                spectrum,
-                spectrum_line,
-                spectrum_fit,
-                lines["line"],
-                line_list["latex"],
-                line_list["wavelength"],
-                lines["wavelength"],
-                inspect,
-                config.fitting.cont_width,
-                config.resolution / (1 + target["Redshift"]),
-                sky,
-            )
+            if plot:
+                pg.plot_spectrum(
+                    data_path,
+                    target,
+                    spectrum,
+                    spectrum_line,
+                    spectrum_fit,
+                    lines["line"],
+                    line_list["latex"],
+                    line_list["wavelength"],
+                    lines["wavelength"],
+                    inspect,
+                    config.fitting.cont_width,
+                    config.resolution / (1 + target["Redshift"]),
+                    sky,
+                )
             if spectrum_fit is not None:
                 for (line_fit, line) in zip(spectrum_fit.lines, lines):
                     tables.append(

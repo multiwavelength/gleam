@@ -75,13 +75,14 @@ class Targets:
 # Define command line arguments
 @click.command()
 @click.option("--inspect", is_flag=True)
+@click.option("--plot", is_flag=True)
 @click.option("--fix-center", is_flag=True)
 @click.option("--constrain-center", is_flag=True)
 @click.option("--bin", default=1)
 @click.option("--verbose", is_flag=True)
 @click.option("--max-cpu", default=8, type=int)
 @click.option("--spec-path", default="**/spec1d*fits")
-def pipeline(inspect, fix_center, constrain_center, bin, max_cpu, verbose, spec_path):
+def pipeline(inspect, plot, fix_center, constrain_center, bin, max_cpu, verbose, spec_path):
     targets = Targets(f"{c.path}/**/master*dat")
 
     find_spectra = glob.glob(f"{c.path}/{spec_path}", recursive=True)
@@ -99,6 +100,7 @@ def pipeline(inspect, fix_center, constrain_center, bin, max_cpu, verbose, spec_
                 spectrum_file,
                 target,
                 inspect,
+                plot,
                 fix_center,
                 constrain_center,
                 verbose,
