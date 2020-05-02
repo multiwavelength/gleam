@@ -113,6 +113,17 @@ version = "4.4.2"
 
 [[package]]
 category = "dev"
+description = "Dev tools for python"
+name = "devtools"
+optional = false
+python-versions = ">=3.5"
+version = "0.5.1"
+
+[package.extras]
+pygments = ["Pygments (>=2.2.0)"]
+
+[[package]]
+category = "dev"
 description = "IPython: Productive Interactive Computing"
 name = "ipython"
 optional = false
@@ -432,8 +443,8 @@ python-versions = "*"
 version = "0.1.9"
 
 [metadata]
-content-hash = "e7f67ae639490d88ea5bf9735ae88827f18bb3c66a056b96543d820bd72bbc27"
-python-versions = "^3.7"
+content-hash = "af4d4fcbd138c79a602d12afd10bdeab4c1ba5a4b441c179753c932e47711618"
+python-versions = "^3.8"
 
 [metadata.files]
 appdirs = [
@@ -491,6 +502,10 @@ cycler = [
 decorator = [
     {file = "decorator-4.4.2-py2.py3-none-any.whl", hash = "sha256:41fa54c2a0cc4ba648be4fd43cff00aedf5b9465c9bf18d64325bc225f08f760"},
     {file = "decorator-4.4.2.tar.gz", hash = "sha256:e3a62f0520172440ca0dcc823749319382e377f37f140a0b99ef45fecb84bfe7"},
+]
+devtools = [
+    {file = "devtools-0.5.1-py35.py36-none-any.whl", hash = "sha256:7a1f7db6ade0a71840ca4014d75dd72390aed2ef04e39e2b2445af7b3a3f4679"},
+    {file = "devtools-0.5.1.tar.gz", hash = "sha256:51ca8d2e15b8a862875a4837db2bafbc6cda409c069e960aec3f4bbd91fe9c08"},
 ]
 ipython = [
     {file = "ipython-7.13.0-py3-none-any.whl", hash = "sha256:eb8d075de37f678424527b5ef6ea23f7b80240ca031c2dd6de5879d687a65333"},

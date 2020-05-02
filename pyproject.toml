@@ -5,7 +5,7 @@ description = "Galaxy Line Emission and Absorption Modelling"
 authors = ["Your Name <you@example.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 lmfit = "^1.0.0"
 matplotlib = "^3.2.1"
 astropy = "^4.0.1"
@@ -19,6 +19,7 @@ pyyaml = "^5.3.1"
 mypy = "^0.770"
 black = "^19.10b0"
 ipython = "^7.13.0"
+devtools = "^0.5.1"
 
 [tool.poetry.scripts]
 gleam = 'gleam:pipeline'
