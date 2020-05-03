@@ -161,30 +161,6 @@ def spectrum_rms(y):
     return rms
 
 
-def velocity_resolution(x):
-    """
-    Get the velocity resolution of a piece of spectrum; might be observed or
-    restframe depending on the input spectrum. This is blind to whether the 
-    spectrum has been rest-framed or not
-    """
-    wl_res = dispersion(x)
-    wl_av = np.average(x)
-    v_res = wl_res / wl_av * const.c
-    return v_res
-
-
-def restframe_wl(x, z):
-    """
-    Transform a given spectrum x into the restframe, given the redshift
-    Input:
-        x: observed wavelengths of a spectrum, in Angstrom or nm for example
-        z: redshift
-    Return:
-        restframe spectrum
-    """
-    return x / (1.0 + z)
-
-
 def mask_atmosphere(wl, z, sky):
     """
     Masks the spectrum around prominent optical atmospheric absorption bands
@@ -215,17 +191,16 @@ def mask_atmosphere(wl, z, sky):
     return without_absorption
 
 
-def restframe_spectrum(wl, z):
+def restframe_wl(x, z):
     """
-    Transform a spectrum into the restframe give its redshift
+    Transform a given spectrum x into the restframe, given the redshift
     Input:
-        wl: wavelength with unit preferably specified
-        z: redshift, determined externally (e.g. specpro)
-    Output:
-        wl_rest: restframe spectrum
+        x: observed wavelengths of a spectrum, in Angstrom or nm for example
+        z: redshift
+    Return:
+        restframe spectrum
     """
-    wl_rest = wl / (1.0 + z)
-    return wl_rest
+    return x / (1.0 + z)
 
 
 def add_restframe(spectrum, z):
@@ -237,7 +212,7 @@ def add_restframe(spectrum, z):
     Output:
         spectrum with the new added restframe wavelength column
     """
-    spectrum.add_column(restframe_spectrum(spectrum["wl"], z), name="wl_rest")
+    spectrum.add_column(restframe_wl(spectrum["wl"], z), name="wl_rest")
     return spectrum
 
 
