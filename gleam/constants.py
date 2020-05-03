@@ -136,7 +136,6 @@ class Config:
     resolution: Length
     lines: Union[AllLines, List[str]] = "all"
     fitting: FittingParameters = FittingParameters()
-    path: str = "."
     cosmology: Cosmology = Cosmology()
 
     @property
@@ -171,7 +170,6 @@ class Constants:
     correctness.
     """
 
-    path: Optional[str] = None
     cosmology: Optional[Cosmology] = None
 
     globals: ConfigOverrides = ConfigOverrides()
@@ -186,7 +184,7 @@ class Constants:
             extra, self.sources.get(f"{sample}.{setup_name}.{pointing}.{source_number}")
         )
         return override(
-            Config(**asdict(extra)), {"path": self.path, "cosmology": self.cosmology}
+            Config(**asdict(extra)), {"cosmology": self.cosmology}
         )
 
 

@@ -16,7 +16,6 @@ from colorama import Fore
 
 import gleam.main
 import gleam.read_files as rf
-from gleam.constants import a as c
 
 warnings.filterwarnings("ignore")
 
@@ -64,12 +63,13 @@ class Targets:
             self._targets: QTable = targets
         except ValueError:
             sys.exit(
-                "Error! Cannot stack master files that contain units with those that don't."
+                Fore.RED
+                + "Error! Cannot stack master files that contain units with those that don't."
             )
 
     def __getitem__(self, key: Tuple[str, str, str, int]):
         sample, setup, pointing, source = key
-        return self._targets.loc[f"{sample}.{setup}.{pointing}.{int(source)}"]
+        return self._targets.loc[f"{sample}.{setup}.{pointing}.{source}"]
 
 
 # Define command line arguments
@@ -81,11 +81,16 @@ class Targets:
 @click.option("--bin", default=1)
 @click.option("--verbose", is_flag=True)
 @click.option("--max-cpu", default=8, type=int)
-@click.option("--spec-path", default="**/spec1d*fits")
-def pipeline(inspect, plot, fix_center, constrain_center, bin, max_cpu, verbose, spec_path):
-    targets = Targets(f"{c.path}/**/master*dat")
+@click.option("--path", default=".")
+@click.option("--spectra")
+def pipeline(
+    inspect, plot, fix_center, constrain_center, bin, max_cpu, verbose, path, spectra
+):
+    targets = Targets(f"{path}/**/master*dat")
+    if spectra is None:
+        spectra = f"{path}/**/spec1d*fits"
 
-    find_spectra = glob.glob(f"{c.path}/{spec_path}", recursive=True)
+    find_spectra = glob.glob(f"{spectra}", recursive=True)
     unique_sources = []
 
     for spectrum_file in find_spectra:
@@ -94,7 +99,14 @@ def pipeline(inspect, plot, fix_center, constrain_center, bin, max_cpu, verbose,
         )
         source = int(source)
 
-        target = targets[sample, setup, pointing, source]
+        try:
+            target = targets[sample, setup, pointing, source]
+        except KeyError:
+            print(
+                Fore.RED
+                + f"Error! Cannot find source {sample}.{setup}.{pointing}.{source} in any master file."
+            )
+            continue
         unique_sources.append(
             (
                 spectrum_file,
