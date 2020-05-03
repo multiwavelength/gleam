@@ -6,8 +6,8 @@ __author__ = "Andra Stroe"
 __version__ = "0.1"
 
 import yaml
-from dataclasses import replace, asdict
-from typing import Dict, Optional, List
+from dataclasses import replace, asdict, is_dataclass, field
+from typing import Dict, Optional, List, Union, Literal
 import operator
 import functools
 
@@ -16,6 +16,9 @@ from pydantic.dataclasses import dataclass
 from astropy import units as u
 from astropy.table import QTable
 from astropy.cosmology import FlatLambdaCDM
+
+
+AllLines = Literal["all"]
 
 
 class Quantity(u.SpecificTypeQuantity):
@@ -45,18 +48,25 @@ class Temperature(Quantity):
     _equivalent_unit = u.K
 
 
-class Overridable:
-    def override(self, overrides):
-        if overrides is None:
-            return self
-        return replace(
-            self,
+def override(basic, overrides):
+    type_b = type(basic)
+    if overrides is None:
+        return basic
+    if is_dataclass(basic):
+        basic = asdict(basic)
+    if is_dataclass(overrides):
+        overrides = asdict(overrides)
+    return type_b(
+        **{
+            **basic,
+            **{key: value for key, value in overrides.items() if value is not None},
             **{
-                key: value
-                for key, value in asdict(overrides).items()
-                if value is not None
-            }
-        )
+                key: override(value, overrides.get(key))
+                for key, value in basic.items()
+                if isinstance(value, dict)
+            },
+        }
+    )
 
 
 @dataclass
@@ -93,17 +103,7 @@ class FittingParametersOverrides:
 
 
 @dataclass
-class Setup:
-    sky: Optional[str] = None
-    resolution: Optional[Length] = None
-    mask_sky: Optional[bool] = None
-    line_table: Optional[str] = None
-    lines: Optional[List[str]] = None
-    fitting: Optional[FittingParametersOverrides] = None
-
-
-@dataclass
-class FittingParameters(Overridable):
+class FittingParameters:
     """
     Paramters needed for the fitting of the lines. Contains sensible default 
     values and checks for correct types.
@@ -119,21 +119,31 @@ class FittingParameters(Overridable):
 
 
 @dataclass
+class ConfigOverrides:
+    sky: Optional[str] = None
+    mask_sky: Optional[str] = None
+    line_table: Optional[str] = None
+    resolution: Optional[Length] = None
+    lines: Union[AllLines, None, List[str]] = None
+    fitting: Optional[FittingParametersOverrides] = None
+
+
+@dataclass
 class Config:
-    path: str
-    sky: Optional[str]
-    mask_sky: Optional[bool]
+    sky: str
+    mask_sky: bool
     line_table: str
     resolution: Length
-    lines: Optional[List[str]] = None
+    lines: Union[AllLines, List[str]] = "all"
     fitting: FittingParameters = FittingParameters()
+    path: str = "."
     cosmology: Cosmology = Cosmology()
 
     @property
     def line_list(self):
         table = QTable.read(self.line_table)
         table.sort("wavelength")
-        if self.lines is None:
+        if self.lines == "all":
             return table
         else:
             mask = functools.reduce(
@@ -161,42 +171,23 @@ class Constants:
     correctness.
     """
 
-    path: Optional[str] = '.'
-    lines: Optional[List[str]] = None
-    line_table: Optional[str] = None
-    resolution: Optional[str] = None
-    sky: Optional[str] = None
-    mask_sky: Optional[bool] = None
-    setups: Optional[Dict[str, Setup]] = None
-    fitting: FittingParameters = FittingParameters()
-    cosmology: Cosmology = Cosmology()
+    path: Optional[str] = None
+    cosmology: Optional[Cosmology] = None
 
-    def __call__(self, setup_name: str) -> Config:
-        if self.setups is None or setup_name not in self.setups:
-            return Config(
-                path=self.path,
-                lines=self.lines,
-                line_table=self.line_table,
-                sky=self.sky,
-                mask_sky=self.mask_sky,
-                resolution=self.resolution,
-                fitting=self.fitting,
-                cosmology=self.cosmology,
-            )
-        else:
-            setup = self.setups[setup_name]
-            return Config(
-                path=self.path,
-                lines=self.lines if setup.lines is None else setup.lines,
-                line_table=setup.line_table or self.line_table,
-                sky=setup.sky or self.sky,
-                mask_sky=self.mask_sky if setup.mask_sky is None else setup.mask_sky,
-                resolution=self.resolution
-                if setup.resolution is None
-                else setup.resolution,
-                fitting=self.fitting.override(setup.fitting),
-                cosmology=self.cosmology,
-            )
+    globals: ConfigOverrides = ConfigOverrides()
+    setups: Dict[str, ConfigOverrides] = field(default_factory=dict)
+    sources: Dict[str, ConfigOverrides] = field(default_factory=dict)
+
+    def __call__(
+        self, sample: str, setup_name: str, pointing: str, source_number: int,
+    ) -> Config:
+        extra = override(self.globals, self.setups.get(setup_name))
+        extra = override(
+            extra, self.sources.get(f"{sample}.{setup_name}.{pointing}.{source_number}")
+        )
+        return override(
+            Config(**asdict(extra)), {"path": self.path, "cosmology": self.cosmology}
+        )
 
 
 def read_config(config_file) -> Constants:
@@ -216,12 +207,3 @@ def read_config(config_file) -> Constants:
 
 
 a = read_config("gleamconfig.yaml")
-
-if __name__ == "__main__":
-    from devtools import debug
-
-    debug(a("VIMOS"))
-    # print(a("VIMOS").sky_list)
-    # print(a("MMT").sky_list)
-    # print(a("VIMOS").line_list)#.pprint_all()
-    # print(a("MMT").line_list)#.pprint_all()
