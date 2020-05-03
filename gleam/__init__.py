@@ -76,16 +76,12 @@ class Targets:
 @click.command()
 @click.option("--inspect", is_flag=True)
 @click.option("--plot", is_flag=True)
-@click.option("--fix-center", is_flag=True)
-@click.option("--constrain-center", is_flag=True)
 @click.option("--bin", default=1)
 @click.option("--verbose", is_flag=True)
 @click.option("--max-cpu", default=8, type=int)
 @click.option("--path", default=".")
 @click.option("--spectra")
-def pipeline(
-    inspect, plot, fix_center, constrain_center, bin, max_cpu, verbose, path, spectra
-):
+def pipeline(inspect, plot, bin, max_cpu, verbose, path, spectra):
     targets = Targets(f"{path}/**/master*dat")
     if spectra is None:
         spectra = f"{path}/**/spec1d*fits"
@@ -107,18 +103,7 @@ def pipeline(
                 + f"Error! Cannot find source {sample}.{setup}.{pointing}.{source} in any master file."
             )
             continue
-        unique_sources.append(
-            (
-                spectrum_file,
-                target,
-                inspect,
-                plot,
-                fix_center,
-                constrain_center,
-                verbose,
-                bin,
-            )
-        )
+        unique_sources.append((spectrum_file, target, inspect, plot, verbose, bin,))
 
     # Set up multithread processing as executing the fitting on different
     # sources is trivially parallelizable

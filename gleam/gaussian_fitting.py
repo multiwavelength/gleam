@@ -529,8 +529,7 @@ def model_selection(
     y,
     ystd,
     wl_line,
-    fix_center,
-    constrain_center,
+    center_constraint,
     verbose,
     cont_width,
     w,
@@ -569,8 +568,7 @@ def model_selection(
             y,
             ystd,
             wl_subset,
-            fix_center,
-            constrain_center,
+            center_constraint,
             verbose,
             cont_width,
             w,
@@ -663,8 +661,7 @@ def fit_model(
     y,
     ystd,
     wl_line,
-    fix_center,
-    constrain_center,
+    center_constraint,
     verbose,
     cont_width,
     w,
@@ -709,13 +706,13 @@ def fit_model(
 
     # fix the center of the Gaussian for sources where the normal fit does not
     # want to work
-    if fix_center == True:
+    if center_constraint == "fixed":
         for i in range(len(wl_line)):
             model.set_param_hint(f"g{i}_center", vary=False)
 
     # Constrain the center within a small range around the expected wavelength
     # of the emission line
-    elif constrain_center == True:
+    elif center_constraint == "constrained":
         for i, wl in enumerate(wl_line):
             model.set_param_hint(
                 f"g{i}_center", value=wl.value, min=(wl - w).value, max=(wl + w).value,
@@ -819,8 +816,7 @@ def fit_lines(
     spectrum,
     line_list,
     line_groups,
-    fix_center,
-    constrain_center,
+    center_constraint,
     verbose,
     sky,
     tolerance,
@@ -863,8 +859,7 @@ def fit_lines(
                 line_list[~select_group],
                 spectrum,
                 target,
-                fix_center,
-                constrain_center,
+                center_constraint,
                 verbose,
                 sky,
                 cont_width,
@@ -884,8 +879,7 @@ def do_gaussian(
     other_lines,
     spectrum,
     target,
-    fix_center,
-    constrain_center,
+    center_constraint,
     verbose,
     sky,
     cont_width,
@@ -933,8 +927,7 @@ def do_gaussian(
         spectrum_line["flux"],
         spectrum_line["stdev"],
         selected_lines["wavelength"],
-        fix_center,
-        constrain_center,
+        center_constraint,
         verbose,
         cont_width,
         w,

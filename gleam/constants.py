@@ -19,6 +19,7 @@ from astropy.cosmology import FlatLambdaCDM
 
 
 AllLines = Literal["all"]
+CenterConstraint = Literal["free", "constrained", "fixed"]
 
 
 class Quantity(u.SpecificTypeQuantity):
@@ -103,6 +104,7 @@ class FittingParametersOverrides:
     cont_width: Optional[Length] = None
     fwhm_min: Optional[int] = None
     fwhm_max: Optional[int] = None
+    center: Optional[CenterConstraint] = None
 
 
 @dataclass
@@ -119,6 +121,7 @@ class FittingParameters:
     cont_width: Length = 70 * u.Angstrom
     fwhm_min: int = 2
     fwhm_max: int = 15
+    center: CenterConstraint = "free"
 
 
 @dataclass
@@ -182,13 +185,18 @@ class Constants:
     def __call__(
         self, sample: str, setup_name: str, pointing: str, source_number: int,
     ) -> Config:
-        extra = override({}, self.globals)
-        extra = override(extra, self.setups.get(setup_name))
-        extra = override(
-            extra, self.sources.get(f"{sample}.{setup_name}.{pointing}.{source_number}")
+        extra = functools.reduce(
+            override,
+            [
+                {},
+                self.globals,
+                self.setups.get(setup_name),
+                self.sources.get(f"{sample}.{setup_name}.{pointing}.{source_number}"),
+                {"cosmology": self.cosmology},
+            ],
         )
 
-        return override(Config(**extra), {"cosmology": self.cosmology})
+        return Config(**extra)
 
 
 def read_config(config_file) -> Constants:

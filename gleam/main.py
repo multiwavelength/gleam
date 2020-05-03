@@ -27,7 +27,7 @@ def fake():
 
 
 def run_main(
-    spectrum_file, target, inspect, plot, fix_center, constrain_center, verbose, bin1,
+    spectrum_file, target, inspect, plot, verbose, bin1,
 ):
     """
     For a target/galaxy, read the spectrum and perform the line fitting for each 
@@ -98,8 +98,7 @@ def run_main(
             spectrum,
             line_list,
             line_groups,
-            fix_center,
-            constrain_center,
+            config.fitting.center,
             verbose,
             sky,
             config.fitting.tolerance,
