@@ -50,14 +50,32 @@ class Temperature(Quantity):
 
 
 def override(basic, overrides):
+    """
+    Function to override parameters inside a dictionary or a dataclass. Only
+    items set in overrides will replace their corresponding items in basic. 
+    Function recursively goes inside each item if they are dict and replaces 
+    items inside (element by element).
+    Input:
+        basic: reference object which we want to override
+        overrides: object used to override elements inside basic.
+    Return:
+        dict with values from basic replaced with values in overrides, where 
+        they are set.
+    """
+    # Is the reference object is empty set it to an empty dict. This is needed
+    # to correctly override unset parameters
     if basic is None:
         basic = {}
+    # If no overrides are set, just return the reference objct
     if overrides is None:
         return basic
+    # Convert inputs to dict.
     if is_dataclass(basic):
         basic = asdict(basic)
     if is_dataclass(overrides):
         overrides = asdict(overrides)
+    # Return the override dict, with items replaced with their values from
+    # overrides, when they are None.
     return {
         **basic,
         **{
@@ -93,8 +111,9 @@ class Cosmology:
 @dataclass
 class FittingParametersOverrides:
     """
-    Paramters needed for the fitting of the lines. Contains sensible default 
-    values and checks for correct types.
+    Class to hold overrides for fitting parameters. The overrides can come from
+    setups or individual sources. If no overrides are set, then the fitting
+    parameters are set to the defaults in the FittingParameters class.
     """
 
     SN_limit: Optional[float] = None
@@ -126,6 +145,13 @@ class FittingParameters:
 
 @dataclass
 class ConfigOverrides:
+    """
+    Different configuration overrides. The overrides can come from setups or 
+    individual sources. If no overrides are set, then the parameters are set to 
+    the defaults and values (if the object is mandatory and no default can be
+    set) in the Config class.
+    """
+
     sky: Optional[str] = None
     mask_sky: Optional[str] = None
     line_table: Optional[str] = None
@@ -136,6 +162,10 @@ class ConfigOverrides:
 
 @dataclass
 class Config:
+    """
+    An entire configuration, customizable per telescope and per source.
+    """
+
     sky: str
     mask_sky: bool
     line_table: str
@@ -146,6 +176,14 @@ class Config:
 
     @property
     def line_list(self):
+        """
+        Return a QTable containing the lines to be fit for each source.
+        Input:
+            self.line_table: Fits table on disk
+            self.lines: Which lines from the table to select
+        Output:
+            QTable
+        """
         table = QTable.read(self.line_table)
         table.sort("wavelength")
         if self.lines == "all":
@@ -158,10 +196,23 @@ class Config:
 
     @property
     def sky_list(self):
+        """
+        Return a sky table of regions contaminated by sky emission/absorption 
+        that should be masked or None if not masking is necessary.
+        Input:
+            self.line_table: Fits table on disk
+            self.mask_sky: Should the wavelengths affected by sky be masked in the
+            fitting.
+        Output:
+            QTable
+        """
+        # If no sky fits table is set, then no sky lines will be masked
         if self.sky is None:
             self.mask_sky = False
             return None
         else:
+            # If sky fits table exits, decide whether to mask or not based on
+            # user preferences.
             if self.mask_sky is True:
                 return QTable.read(self.sky)
             if self.mask_sky is False:
@@ -172,8 +223,8 @@ class Config:
 class Constants:
     """
     Constants pertaining to cosmology, to fitting procedures and other telescope
-    specific parameters. Contains sensible defaults and check for unit type
-    correctness.
+    or source specific parameters. Contains sensible defaults and check for unit 
+    type correctness.
     """
 
     cosmology: Optional[Cosmology] = None
@@ -185,6 +236,10 @@ class Constants:
     def __call__(
         self, sample: str, setup_name: str, pointing: str, source_number: int,
     ) -> Config:
+        # Override the defaults with values set in the used configuration file.
+        # First override with any global values, then with telescope specific
+        # values and then with any source specific values. Cosmology is fixed
+        # for the entire project.
         extra = functools.reduce(
             override,
             [
@@ -213,4 +268,3 @@ def read_config(config_file) -> Constants:
     """
     config = yaml.safe_load(open(config_file).read())
     return Constants(**config)
-    
