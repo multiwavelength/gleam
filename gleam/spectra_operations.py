@@ -115,8 +115,8 @@ def dispersion(wl):
     """
     Returns the dispestion (wavelength width per pixel) of a 1D spectrum
     Input:
-        wl: 1D wavelength in some units (preferably Astropy
-            QTable, such that it has units attached)
+        wl: 1D wavelength in some units (preferably Astropy QTable, such that it 
+        has units attached)
     Output:
         dispersion: single minimum value for dispersion in the spectrum sampled
         
@@ -273,7 +273,7 @@ def select_lines(
         mask = select_singleline(wl_rest, line["wavelength"], cont_width)
         select_lines = select_lines | mask
 
-    # decide whether to mask the atmospheric lines
+    # mask the atmospheric lines, if masking them is enabled
     masked_atm = mask_atmosphere(wl_rest, z_ref, sky)
     masked_all = masked_atm & masked_otherlines & select_lines
 
