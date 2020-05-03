@@ -21,24 +21,6 @@ import gleam.constants as c
 warnings.filterwarnings("ignore")
 
 
-def run_source(p):
-    """
-    Convenience function that runs the fitting on a single source. This is 
-    needed for the implementation of the multi-threading. The function Pool 
-    takes only one parameter, which is contained in the dictionary "p"
-    Input:
-        p: dictionary that contains the folder name where the data is, the table
-           that contains all the details on the source, the line list table that
-           will be fit, and a number of click parameters controlling the 
-           interactive inspection of the data and the way the center is being
-           fit as well as binning the data   
-    """
-    (extension, target, inspect, fix_center, constrain_center, bin, verbose,) = p
-    main.run_main(
-        extension, target, inspect, fix_center, constrain_center, verbose, bin,
-    )
-
-
 class Targets:
     def __init__(self, filter: str) -> None:
         find_masters = glob.glob(filter, recursive=True)
