@@ -213,6 +213,4 @@ def read_config(config_file) -> Constants:
     """
     config = yaml.safe_load(open(config_file).read())
     return Constants(**config)
-
-
-a = read_config("gleamconfig.yaml")
+    

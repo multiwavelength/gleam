@@ -18,7 +18,6 @@ import gleam.read_files as rf
 import gleam.gaussian_fitting as gf
 import gleam.plot_gaussian as pg
 import gleam.spectra_operations as so
-from gleam.constants import a as c
 
 
 @contextmanager
@@ -27,7 +26,7 @@ def fake():
 
 
 def run_main(
-    spectrum_file, target, inspect, plot, verbose, bin1,
+    spectrum_file, target, inspect, plot, verbose, bin1, c
 ):
     """
     For a target/galaxy, read the spectrum and perform the line fitting for each 
