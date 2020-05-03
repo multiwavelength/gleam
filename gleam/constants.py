@@ -49,24 +49,27 @@ class Temperature(Quantity):
 
 
 def override(basic, overrides):
-    type_b = type(basic)
+    if basic is None:
+        basic = {}
     if overrides is None:
         return basic
     if is_dataclass(basic):
         basic = asdict(basic)
     if is_dataclass(overrides):
         overrides = asdict(overrides)
-    return type_b(
+    return {
+        **basic,
         **{
-            **basic,
-            **{key: value for key, value in overrides.items() if value is not None},
-            **{
-                key: override(value, overrides.get(key))
-                for key, value in basic.items()
-                if isinstance(value, dict)
-            },
-        }
-    )
+            key: value
+            for key, value in overrides.items()
+            if value is not None and not isinstance(value, dict)
+        },
+        **{
+            key: override(basic.get(key), value)
+            for key, value in overrides.items()
+            if isinstance(value, dict)
+        },
+    }
 
 
 @dataclass
@@ -179,13 +182,13 @@ class Constants:
     def __call__(
         self, sample: str, setup_name: str, pointing: str, source_number: int,
     ) -> Config:
-        extra = override(self.globals, self.setups.get(setup_name))
+        extra = override({}, self.globals)
+        extra = override(extra, self.setups.get(setup_name))
         extra = override(
             extra, self.sources.get(f"{sample}.{setup_name}.{pointing}.{source_number}")
         )
-        return override(
-            Config(**asdict(extra)), {"cosmology": self.cosmology}
-        )
+
+        return override(Config(**extra), {"cosmology": self.cosmology})
 
 
 def read_config(config_file) -> Constants:
