@@ -4,7 +4,8 @@ Galaxy Line Emission &amp; Absorption Modelling
 
 ## What is gleam?
 
-**gleam** is a Python package for fitting Gaussian models to emission and absorption lines in large samples of 1D galaxy spectra. **gleam** is tailored to work well without much human interaction on optical and infrared spectra in a wide range of instrument setups and signal-to-noise regimes.
+**gleam** is a Python package for fitting Gaussian models to emission and absorption lines in large samples of 1D galaxy spectra. **gleam** is tailored to work well without much human interaction on optical and infrared spectra in a wide range of instrument setups and signal-to-noise regimes. **gleam** will create a fits table with Gaussian line measurements, including central wavelength,
+width, height and amplitude, as well as estimated for the continuum under the line and the line flux, luminosity, equivalent width and velocity width. **gleam** will also, optionally, make plots of the spectrum with fitted lines overlays.
 
 ## Features
 
@@ -17,7 +18,7 @@ Galaxy Line Emission &amp; Absorption Modelling
 - Uses LMFIT to perform the fitting and report errors on fit parameters.
 - Simple installation with pip.
 
-## How to run
+## How to run and output
 
 **gleam** fits lines in 1D spectra using redshift information from a master file and several other parameters from a central configuration file.
 
@@ -28,6 +29,10 @@ To run **gleam**, the following are needed:
 - A line catalog, in fits table format
 - (Optional) A sky absorption/emission catalog, in fits table format
 Details on the input files can be found further down.
+
+The outputs of **gleam** include:
+- A fits table with line measurements for each source
+- (Optional) Plots of the spectrum with overplotted line fits and upper limits.
 
 To run the **gleam** using the defaults, you can type:
 ```
@@ -258,6 +263,29 @@ the following columns:
 |-|-|-|
 | Aband | 7586.0 | 7658.0 |
 | Bband | 6864.0 | 6945.0 |
+
+## Output
+
+For each of the sources in your sample, **gleam** will produce a table with all of the line fits and upper limits (if possible with units derived from the input data). Each line fitted is represented in a separate row, with all the corresponding line fit details contained in different column. The table contains information from the expected wavelength of the line and the redshift of the source, to emission line fir parameters and line fluxes and equivalent width. 
+
+All of the output files will start with "linefits" and follow the naming convention described above.
+- Line fits table: "linefits.Sample.Setup.Pointing.SourceNumber.fits"
+
+A description of the columns can be found below.
+
+| line| wavelength |	latex |	z	| zline |	zline_err	| zoffset	| zoffset_err | cont |	cont_err |	wl |	wl_err |	height	| height_err	| sigma	| sigma_err	|amplitude |	amplitude_err |	flux |	flux_err|	luminosity |	luminosity_err |	EWrest	| EWrest_err |	FWHM|	FWHM_err|	v |	v_err |	detected	|covered |
+|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-	|-|
+Ha	| 6564.614 |	H$\boldsymbol{\alpha}$ |	0.26284 |	0.2629235|	3.3654374E-5 |	8.3521445E-5 |	3.3654374E-5 |	0.0012948853	| 1.11991896E-4 |	6565.162	| 0.22092798	| 0.017354544	| 0.001047185	| 2.9371586	|0.2215329 |	0.12777047	| 0.008491282	| 0.12777047	| 0.008491282	| 0.27209833	| 0.018082924	| 98.673195	| 10.762495 |	6.9164796	| 0.5216701	| 118.18059	| 23.823605 |	true |	true|
+
+## Plots
+
+If plotting is enabled, **gleam** produces two types of figures: an figure showing the entire spectrum with zoom-ins on the emission line fits. The second type of plots are focused on each line fit. Areas masked by sky are shaded gray for clarity.
+
+- Spectrum plot with the fitted lines overlaid: "linefits.Sample.Setup.Pointing.SourceNumber.png"
+- Spectrum plot zooming in on Halpha and NII1: "linefits.Sample.Setup.Pointing.SourceNumber.Ha.NII1.png"
+
+*NOTE*: Plotting high quality figures makes **gleam** very slow (a factor of at least 15 slower than without it). Matplotlib with Latex has some memory leak issues, which can cause **gleam** to slowly consume all the memory. I recommend avoiding batch processing
+more than 500 sources when also creating plots.
 
 ## Installation requirements
 
