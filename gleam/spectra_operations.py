@@ -130,7 +130,7 @@ def dispersion(wl):
     minimum = np.min(diff)
 
     if stdev / average > 10 ** -3:
-        print(Fore.RED + "Warning: non-constant dispersion")
+        print(Fore.YELLOW + "Warning: non-constant dispersion")
     return minimum
 
 
