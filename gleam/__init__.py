@@ -22,6 +22,9 @@ warnings.filterwarnings("ignore")
 
 
 class Targets:
+    """
+    Read and stack all master files found into a single table.
+    """
     def __init__(self, filter: str) -> None:
         find_masters = glob.glob(filter, recursive=True)
         if not find_masters:
@@ -51,11 +54,27 @@ class Targets:
             )
 
     def __getitem__(self, key: Tuple[str, str, str, int]):
+        """
+        Select a unique row of source properties matching the unique identifies
+        of each source, ie its sample, setup, pointing and source number. 
+        Input:
+            tuple with key identifiers of a source
+        Return:
+            a unique table row with properties of the selected source
+        """
         sample, setup, pointing, source = key
         return self._targets.loc[f"{sample}.{setup}.{pointing}.{source}"]
 
 
 def find_source_properties(find_spectra, targets):
+    """
+    For a sample of sources, find matches in the master file.
+    Input:
+        find_spectra: globbed list of spectrum file names
+        targets: stack of master files
+    Return:
+        unique combination of spectrum and its corresponding properties
+    """
     for spectrum_file in find_spectra:
         # Get unique sample, setup, pointing and source names
         _, sample, setup, pointing, source, *_ = os.path.basename(spectrum_file).split(
@@ -84,14 +103,14 @@ def find_source_properties(find_spectra, targets):
 
 # Define command line arguments
 @click.command()
-@click.option("--path", default=".")
-@click.option("--spectra")
-@click.option("--config", default="gleamconfig.yaml")
-@click.option("--plot", is_flag=True)
-@click.option("--inspect", is_flag=True)
-@click.option("--verbose", is_flag=True)
-@click.option("--bin", default=1)
-@click.option("--max-cpu", default=8, type=int)
+@click.option("--path", default=".", help='Path to recursively look for master files and spectra. See --spectra for overrides.')
+@click.option("--spectra", help='Filter for spectra file paths. e.g. "./**/spec1d.Cosmos.Keck.P1.*.fits" to select all sources in the Cosmos sample observed with Keck in pointing P1.')
+@click.option("--config", default="gleamconfig.yaml", help='Configuration file in YAML format.')
+@click.option("--plot", is_flag=True, help='Save plots of spectrum with emission lines fits next to the corresponding spectrum file.')
+@click.option("--inspect", is_flag=True, help='Show interactive plots.')
+@click.option("--verbose", is_flag=True, help='Print full output from LMFIT.')
+@click.option("--bin", default=1, help='Bin the spectrum before fitting.')
+@click.option("--max-cpu", default=8, type=int, help='Number of threads.')
 def pipeline(path, spectra, config, plot, inspect, verbose, bin, max_cpu):
     # Read configuration file
     config = c.read_config(config)

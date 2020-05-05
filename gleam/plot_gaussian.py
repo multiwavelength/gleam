@@ -4,6 +4,7 @@ __version__ = "0.1"
 import os, sys
 from contextlib import contextmanager
 from collections import namedtuple
+import gc
 
 import click
 import numpy as np
@@ -91,7 +92,10 @@ def overplot_sky(ax, z, sky):
         return
     [
         ax.fill_between(
-            [so.restframe_wl(band["wl_min"], z), so.restframe_wl(band["wl_max"], z)],
+            [
+                so.restframe_wl(band["wavelength_min"], z),
+                so.restframe_wl(band["wavelength_max"], z),
+            ],
             ax.get_ylim()[0],
             ax.get_ylim()[1],
             facecolor="gray",
@@ -135,6 +139,8 @@ def plot_spectrum(
         plot_fit: do you want to plot only the observed spectrum or overplot the
                   fit to the spectrum
         cont_width: wavelength to the left and right of the line that we will plot
+        rest_spectral_resolution: restframed FWHM of the instrument
+        sky: sky regions to be masked    
     Output:
         Figure in show() or a saved figure in an external png file
     """
@@ -232,7 +238,9 @@ def plot_spectrum(
             pass
     if not inspect:
         fig.savefig(f"{basename}.png", format="png", bbox_inches="tight")
+    fig.clf()
     plt.close(fig)
+    gc.collect()
 
 
 @contextmanager
@@ -250,6 +258,9 @@ def overview_plot(
         line_groups: how many groups of lines are there, i.e. how many zoom-in 
                      plots do we want
         spectrum: spectrum of the source
+        cont_width: wavelength to the left and right of the line that we will plot
+        rest_spectral_resolution: restframed FWHM of the instrument
+        sky: sky regions to be masked
     """
 
     # Generate the title of the plot from information on the target
@@ -311,13 +322,6 @@ def overview_plot(
         ) & (spectrum["wl_rest"] > (np.average(line["wavelength"]) - cont_width))
 
         # Create a zoomed in axis focusing on each line
-        r"""
-        # This preserves the ratios between the x and y axis because it is a
-        # proper zoomed in axis
-        axins = zoomed_inset_axes(ax, 2, loc='lower left',
-                bbox_to_anchor=(0+j/(No_plots-1), 1.05),
-                bbox_transform=ax.transAxes)
-        """
         # Semi-random x-y ratio that does not match the main plot, but better
         # shows the lines
 
@@ -398,13 +402,15 @@ def overview_plot(
     ax.set_ylabel(Myylabel)
     # Save the figure under the above-decided name
     plt.savefig(f"{basename}.png", format="png", bbox_inches="tight")
+    fig.clf()
     plt.close()
+    gc.collect()
 
 
 def plot_gaussian_fit(wl, spectrum_fit, ax, rest_spectral_resolution):
     """
     Plot the a line fit as a continuum + a Gaussian, whenever the line was 
-    detected . Plot a dashed line for upper limits.
+    detected. Plot a dashed line for upper limits.
     """
     for line_fit in spectrum_fit.lines:
         # Plot detections

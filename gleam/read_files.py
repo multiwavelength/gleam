@@ -19,11 +19,11 @@ def read_lof(file1):
     Input:
         file1: master file in ascii or fits format
         The format of the head file is the following
-        # Setup Pointing SourceNumber RA DEC Sample Redshift Confidence Initials Membership   Type
+        # Setup Pointing SourceNumber Sample Redshift
     Return: 
-        Astropy Table with measurements of interest: the source number, RA, DEC,
-        the parent sample, redshift (from specpro) and the z confidence. Throws
-        error if the file is not of the right type.
+        Astropy Table with measurements of interest: the source number, the 
+        parent sample, the telescope/instrument and pointing and the redshift. 
+        Throws error if the file is not of the right type.
     """
     try:
         table = QTable.read(file1, format="fits")
@@ -40,8 +40,8 @@ def read_lof(file1):
 def naming_convention(data_path, sample, source_number, setup, pointing, mod):
     """
     Naming convention for files which starts with type of file and is followed
-    by details about the source and setup, in order: setup, pointing, source
-    number, and parent sample
+    by details about the source and setup, in order: parent sample, setup, 
+    pointing and source number. 
     """
     return (
         f"{data_path}/{mod}.{sample}.{setup}.{pointing}.{source_number.astype(int):03d}"
