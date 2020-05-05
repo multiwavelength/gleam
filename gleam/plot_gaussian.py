@@ -4,6 +4,7 @@ __version__ = "0.1"
 import os, sys
 from contextlib import contextmanager
 from collections import namedtuple
+import gc
 
 import click
 import numpy as np
@@ -91,7 +92,10 @@ def overplot_sky(ax, z, sky):
         return
     [
         ax.fill_between(
-            [so.restframe_wl(band["wavelength_min"], z), so.restframe_wl(band["wavelength_max"], z)],
+            [
+                so.restframe_wl(band["wavelength_min"], z),
+                so.restframe_wl(band["wavelength_max"], z),
+            ],
             ax.get_ylim()[0],
             ax.get_ylim()[1],
             facecolor="gray",
@@ -232,7 +236,9 @@ def plot_spectrum(
             pass
     if not inspect:
         fig.savefig(f"{basename}.png", format="png", bbox_inches="tight")
+    fig.clf()
     plt.close(fig)
+    gc.collect()
 
 
 @contextmanager
@@ -311,13 +317,6 @@ def overview_plot(
         ) & (spectrum["wl_rest"] > (np.average(line["wavelength"]) - cont_width))
 
         # Create a zoomed in axis focusing on each line
-        r"""
-        # This preserves the ratios between the x and y axis because it is a
-        # proper zoomed in axis
-        axins = zoomed_inset_axes(ax, 2, loc='lower left',
-                bbox_to_anchor=(0+j/(No_plots-1), 1.05),
-                bbox_transform=ax.transAxes)
-        """
         # Semi-random x-y ratio that does not match the main plot, but better
         # shows the lines
 
@@ -398,7 +397,9 @@ def overview_plot(
     ax.set_ylabel(Myylabel)
     # Save the figure under the above-decided name
     plt.savefig(f"{basename}.png", format="png", bbox_inches="tight")
+    fig.clf()
     plt.close()
+    gc.collect()
 
 
 def plot_gaussian_fit(wl, spectrum_fit, ax, rest_spectral_resolution):
