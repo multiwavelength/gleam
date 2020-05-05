@@ -16,7 +16,7 @@ from pydantic.dataclasses import dataclass
 from astropy import units as u
 from astropy.table import QTable
 from astropy.cosmology import FlatLambdaCDM
-
+from colorama import Fore
 
 AllLines = Literal["all"]
 CenterConstraint = Literal["free", "constrained", "fixed"]
@@ -166,10 +166,10 @@ class Config:
     An entire configuration, customizable per telescope and per source.
     """
 
-    sky: str
-    mask_sky: bool
     line_table: str
     resolution: Length
+    sky: Optional[str] = None
+    mask_sky: bool = False
     lines: Union[AllLines, List[str]] = "all"
     fitting: FittingParameters = FittingParameters()
     cosmology: Cosmology = Cosmology()
@@ -208,6 +208,11 @@ class Config:
         """
         # If no sky fits table is set, then no sky lines will be masked
         if self.sky is None:
+            if self.mask_sky == True:
+                print(
+                Fore.YELLOW
+                + f"Warning: You want to mask the sky, but no valid sky catalog was set. Sky will not be masked."
+            )
             self.mask_sky = False
             return None
         else:
