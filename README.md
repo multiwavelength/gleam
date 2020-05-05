@@ -266,6 +266,7 @@ the following columns:
 
 ## Output
 
+### Line fits tables
 For each of the sources in your sample, **gleam** will produce a table with all of the line fits and upper limits (if possible with units derived from the input data). Each line fitted is represented in a separate row, with all the corresponding line fit details contained in different column. The table contains information from the expected wavelength of the line and the redshift of the source, to emission line fir parameters and line fluxes and equivalent width. 
 
 All of the output files will start with "linefits" and follow the naming convention described above.
@@ -313,7 +314,7 @@ A description of each column:
 - **detected**: True if line is detected, False if non-detection.
 - **covered**: True if line is covered by the spectrum. False is coverage is missing at the location of the lines, ie fits or upper limits are not possible.
 
-## Plots
+### Plots
 
 If plotting is enabled, **gleam** produces two types of figures: an figure showing the entire spectrum with zoom-ins on the emission line fits. The second type of plots are focused on each line fit. Areas masked by sky are shaded gray for clarity.
 
