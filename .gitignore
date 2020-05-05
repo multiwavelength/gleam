@@ -4,5 +4,5 @@ __pycache__
 .vscode
 .pytest_cache
 .mypy_cache
-select_only_members.py
 gleam.egg-info/
+*tar.gz
