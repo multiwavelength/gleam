@@ -149,7 +149,7 @@ def run_main(spectrum_file, target, inspect, plot, verbose, bin1, c):
         outtable.write(outfile, overwrite=True)
     except:
         print(
-            Fore.Yellow
+            Fore.YELLOW
             + f"Warning: no emission line fits in "
             + f'on {target["Sample"]} in {target["Setup"]} + {target["Pointing"]} '
             + f'on source {target["SourceNumber"]} at z={target["Redshift"]:1.3f}.'
