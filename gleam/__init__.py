@@ -84,14 +84,14 @@ def find_source_properties(find_spectra, targets):
 
 # Define command line arguments
 @click.command()
-@click.option("--path", default=".")
-@click.option("--spectra")
-@click.option("--config", default="gleamconfig.yaml")
-@click.option("--plot", is_flag=True)
-@click.option("--inspect", is_flag=True)
-@click.option("--verbose", is_flag=True)
-@click.option("--bin", default=1)
-@click.option("--max-cpu", default=8, type=int)
+@click.option("--path", default=".", help='Path to recursively look for master files and spectra. See --spectra for overrides.')
+@click.option("--spectra", help='Filter for spectra file paths. e.g. "./**/spec1d.Cosmos.Keck.P1.*.fits" to select all sources in the Cosmos sample observed with Keck in pointing P1.')
+@click.option("--config", default="gleamconfig.yaml", help='Configuration file in YAML format.')
+@click.option("--plot", is_flag=True, help='Save plots of spectrum with emission lines fits next to the corresponding spectrum file.')
+@click.option("--inspect", is_flag=True, help='Show interactive plots.')
+@click.option("--verbose", is_flag=True, help='Print full output from LMFIT.')
+@click.option("--bin", default=1, help='Bin the spectrum before fitting.')
+@click.option("--max-cpu", default=8, type=int, help='Number of threads.')
 def pipeline(path, spectra, config, plot, inspect, verbose, bin, max_cpu):
     # Read configuration file
     config = c.read_config(config)
