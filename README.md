@@ -218,10 +218,6 @@ fitting:
   mask_width: 20.0 Angstrom
   # Range used for selecting continuum left and right of   the source
   cont_width: 70.0 Angstrom
-  # Minimum expected FWHM of the line in pixels
-  fwhm_min: 2.0
-  # Maximum expected FWHM of the line in pixels
-  fwhm_max: 15.0
   # Constraints on the center of each gaussian. The options are:
   # - free: (default) the center can be anywhere within the fitting range
   # - constrained: the center must be within a distance of `w` from the expected

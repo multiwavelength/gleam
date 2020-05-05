@@ -121,8 +121,6 @@ class FittingParametersOverrides:
     w: Optional[Length] = None
     mask_width: Optional[Length] = None
     cont_width: Optional[Length] = None
-    fwhm_min: Optional[int] = None
-    fwhm_max: Optional[int] = None
     center: Optional[CenterConstraint] = None
 
 
@@ -138,8 +136,6 @@ class FittingParameters:
     w: Length = 3 * u.Angstrom
     mask_width: Length = 20 * u.Angstrom
     cont_width: Length = 70 * u.Angstrom
-    fwhm_min: int = 2
-    fwhm_max: int = 15
     center: CenterConstraint = "free"
 
 

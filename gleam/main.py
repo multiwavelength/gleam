@@ -101,8 +101,6 @@ def run_main(spectrum_file, target, inspect, plot, verbose, bin1, c):
             config.fitting.cont_width,
             config.fitting.mask_width,
             config.fitting.w,
-            config.fitting.fwhm_min,
-            config.fitting.fwhm_max,
             config.fitting.SN_limit,
             config.resolution / (1 + target["Redshift"]),
             config.cosmology.cosmo,
