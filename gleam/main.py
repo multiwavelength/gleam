@@ -30,15 +30,13 @@ def run_main(spectrum_file, target, inspect, plot, verbose, bin1, c):
     For a target/galaxy, read the spectrum and perform the line fitting for each 
     line within the list of lines
     Input:
-        spectrum_path: location on disk (folder) of the target spectrum 
+        spectrum_file: target spectrum file
         target: Astropy row with target properties 
         inspect: if true, show the plots; otherwise write to disk
-        fix_center: fix the centers of the Gaussians to the lab value of the
-                    emission line
-        constrain_center: constrain the centers of the Gaussian to a small 
-                          region around the expected lab wavelength of the line
-        verbose: verbose output of warnings and line fit results
+        plot: plot figures to disk
+        verbose: print full lmfit output
         bin1: number of adjacent spectral pixels to be binned
+        c: full configuration file
     Output:
         fits of emission lines and plots for each fitted lines
     """
@@ -46,7 +44,7 @@ def run_main(spectrum_file, target, inspect, plot, verbose, bin1, c):
     data_path = os.path.dirname(spectrum_file)
     print(
         f"Now working in {data_path} "
-        + f'on {target["Sample"]} '
+        + f'on {target["Sample"]} in {target["Setup"]} + {target["Pointing"]} '
         + f'on source {target["SourceNumber"]} at z={target["Redshift"]:1.3f}.'
     )
 
@@ -151,8 +149,8 @@ def run_main(spectrum_file, target, inspect, plot, verbose, bin1, c):
         outtable.write(outfile, overwrite=True)
     except:
         print(
-            Fore.RED
-            + "Warning: no emission line fits in source: {} {}".format(
-                target["Sample"], target["SourceNumber"]
-            )
+            Fore.Yellow
+            + f"Warning: no emission line fits in "
+            + f'on {target["Sample"]} in {target["Setup"]} + {target["Pointing"]} '
+            + f'on source {target["SourceNumber"]} at z={target["Redshift"]:1.3f}.'
         )

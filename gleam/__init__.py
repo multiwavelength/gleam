@@ -22,6 +22,9 @@ warnings.filterwarnings("ignore")
 
 
 class Targets:
+    """
+    Read and stack all master files found into a single table.
+    """
     def __init__(self, filter: str) -> None:
         find_masters = glob.glob(filter, recursive=True)
         if not find_masters:
@@ -51,11 +54,27 @@ class Targets:
             )
 
     def __getitem__(self, key: Tuple[str, str, str, int]):
+        """
+        Select a unique row of source properties matching the unique identifies
+        of each source, ie its sample, setup, pointing and source number. 
+        Input:
+            tuple with key identifiers of a source
+        Return:
+            a unique table row with properties of the selected source
+        """
         sample, setup, pointing, source = key
         return self._targets.loc[f"{sample}.{setup}.{pointing}.{source}"]
 
 
 def find_source_properties(find_spectra, targets):
+    """
+    For a sample of sources, find matches in the master file.
+    Input:
+        find_spectra: globbed list of spectrum file names
+        targets: stack of master files
+    Return:
+        unique combination of spectrum and its corresponding properties
+    """
     for spectrum_file in find_spectra:
         # Get unique sample, setup, pointing and source names
         _, sample, setup, pointing, source, *_ = os.path.basename(spectrum_file).split(

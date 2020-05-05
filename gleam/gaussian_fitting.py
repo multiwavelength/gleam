@@ -539,8 +539,8 @@ def model_selection(
 ) -> Spectrum:
     """
     Start with the model with the most components (constant + as many 
-    Gaussians as emission lines) and find the simplest model that well 
-    described the data. In case the model does not work (i.e. 1 line or more is
+    Gaussians as emission/absorption lines) and find the simplest model that well 
+    describes the data. In case the model does not work (i.e. 1 line or more is
     non-detected), the search removes that component and attempts to fit a model
     with fewer Gaussians until it finds a fit. For all non-detected lines, an
     upper limit is estimated.
@@ -551,10 +551,20 @@ def model_selection(
         ystd: errors on y, usually a stdev of the flux
         wl_line: wavelengths of the lines to be fit; could be a single line or 
                  multiple lines; usually a singlet or a doublet
-        fix_center: fix the center of the Gaussian in the fit
-        constrain_center: constrain the center of the Gaussian to a narrow 
-                          region around the expected position of the line
-        verbose: print results of the fit
+        center_constraint: fix, constrain or let free the centers of the Gaussians
+                           when fitting
+        verbose: print full lmfit output
+        sky: sky contaminated areas to mask. If None, nothing will be masked
+        cont_width: the amount left and right of the lines used for continuum
+                    estimation
+        mask_width: if another line B falls within the region selected for 
+                    fitting line A, how big of a wavelength region should be 
+                    covered for B
+        w: region to be probed left and right of the starting wavelength solution
+           when fitting the Gaussian
+        SN_limit: signal to noise limit for detections
+        rest_spectral_resolution: restframed FWHM of the instrument
+        cosmo: cosmological parameters
     Return:
         Spectrum with continuum, detected lines and upper limits
     """
@@ -675,10 +685,20 @@ def fit_model(
         ystd: errors on y, usually a stdev of the flux
         wl_line: wavelengths of the lines to be fit; could be a single line or 
                  multiple lines; usually a singlet or a doublet
-        fix_center: fix the center of the Gaussian in the fit
-        constrain_center: constrain the center of the Gaussian to a narrow 
-                          region around the expected position of the line
-        verbose: print results of the fit
+        center_constraint: fix, constrain or let free the centers of the Gaussians
+                           when fitting
+        verbose: print full lmfit output
+        sky: sky contaminated areas to mask. If None, nothing will be masked
+        cont_width: the amount left and right of the lines used for continuum
+                    estimation
+        mask_width: if another line B falls within the region selected for 
+                    fitting line A, how big of a wavelength region should be 
+                    covered for B
+        w: region to be probed left and right of the starting wavelength solution
+           when fitting the Gaussian
+        SN_limit: signal to noise limit for detections
+        rest_spectral_resolution: restframed FWHM of the instrument
+        cosmo: cosmological parameters
     Output:
         parameter fits of the Gaussian(s) + continuum
     """
@@ -833,10 +853,20 @@ def fit_lines(
         line_groups: Astropy list of lines that will be fit, connected into 
                      groups based on proximity; The grouped lines will be fit
                      together as a sum of Gaussians
-        fix_center: fix the center of the Gaussian in the fit
-        constrain_center: constrain the center of the Gaussian to a narrow 
-                          region around the expected position of the line
-        verbose: print results of the fit and warnings
+        center_constraint: fix, constrain or let free the centers of the Gaussians
+                           when fitting
+        verbose: print full lmfit output
+        sky: sky contaminated areas to mask. If None, nothing will be masked
+        cont_width: the amount left and right of the lines used for continuum
+                    estimation
+        mask_width: if another line B falls within the region selected for 
+                    fitting line A, how big of a wavelength region should be 
+                    covered for B
+        w: region to be probed left and right of the starting wavelength solution
+           when fitting the Gaussian
+        SN_limit: signal to noise limit for detections
+        rest_spectral_resolution: restframed FWHM of the instrument
+        cosmo: cosmological parameters
     Output:
         Astropy table containing details of emission lines and the Gaussian fits 
         to them
@@ -892,18 +922,25 @@ def do_gaussian(
     Gaussian plus a constant continuum to the given data with the package `lmfit'
     !!! Assumes the spectrum is restframe !!!
     Input:
-        x: usually a wavelength
-        y: usually a flux
-        ystd: errors on y, usually a stdev of the flux
-        wl_line: wavelength of the line to be fit
-        c, peak_sigma, peak_amplitude: some reasonable guesses for the constant,
-            the sigma of the peak and the amplitude of the peak
-        fix_center: fix the center of the Gaussian in the fit
-        constrain_center: constrain the center of the Gaussian to a narrow 
-                          region around the expected position of the line
-        verbose: print results of the fit and warnings
-        ignore_sky_lines: do not mask the regions around the expected positions
-                          of the sky lines
+        selected_lines: lines to be fit jointly
+        other_lines: other lines in the catalog. Is used to mask other lines 
+                     that might contaminate the continuum estimation.
+        spectrum: fits table containing, the wavelength, flux and error of flux
+        target: fits row with properties of the source, esp. its redshift
+        center_constraint: fix, constrain or let free the centers of the Gaussians
+                           when fitting
+        verbose: print full lmfit output
+        sky: sky contaminated areas to mask. If None, nothing will be masked
+        cont_width: the amount left and right of the lines used for continuum
+                    estimation
+        mask_width: if another line B falls within the region selected for 
+                    fitting line A, how big of a wavelength region should be 
+                    covered for B
+        w: region to be probed left and right of the starting wavelength solution
+           when fitting the Gaussian
+        SN_limit: signal to noise limit for detections
+        rest_spectral_resolution: restframed FWHM of the instrument
+        cosmo: cosmological parameters
     Output:
         spectrum_fit: parameters of the fit around the doublet
         spectrum_line: extracted spectrum around the lines    

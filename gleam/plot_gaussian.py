@@ -139,6 +139,8 @@ def plot_spectrum(
         plot_fit: do you want to plot only the observed spectrum or overplot the
                   fit to the spectrum
         cont_width: wavelength to the left and right of the line that we will plot
+        rest_spectral_resolution: restframed FWHM of the instrument
+        sky: sky regions to be masked    
     Output:
         Figure in show() or a saved figure in an external png file
     """
@@ -256,6 +258,9 @@ def overview_plot(
         line_groups: how many groups of lines are there, i.e. how many zoom-in 
                      plots do we want
         spectrum: spectrum of the source
+        cont_width: wavelength to the left and right of the line that we will plot
+        rest_spectral_resolution: restframed FWHM of the instrument
+        sky: sky regions to be masked
     """
 
     # Generate the title of the plot from information on the target
@@ -405,7 +410,7 @@ def overview_plot(
 def plot_gaussian_fit(wl, spectrum_fit, ax, rest_spectral_resolution):
     """
     Plot the a line fit as a continuum + a Gaussian, whenever the line was 
-    detected . Plot a dashed line for upper limits.
+    detected. Plot a dashed line for upper limits.
     """
     for line_fit in spectrum_fit.lines:
         # Plot detections

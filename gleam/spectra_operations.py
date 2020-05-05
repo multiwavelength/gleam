@@ -140,8 +140,7 @@ def mask_line(wl, wl_ref, mask_width):
     Input:
         wl: spectrum to be masked; preferable has unit
         wl_ref: reference wavelength that we want to mask; preferably has unit
-        res_elem: number of resolution elements over which to masks lines nearby
-        res: spectral resolution; preferably with unit
+        mask_width: width to be used for masking the line
     Output:
         mask: mask to be applied to the spectrum such that the spectrum now has 
               the line in question masked away

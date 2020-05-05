@@ -4,6 +4,10 @@ matplotlib.use("TkAgg")
 from matplotlib import rc
 import matplotlib.pyplot as plt
 
+"""
+Some reasonable plotting parameters. Feel free to change as per your taste.
+"""
+
 plt.rc("text", usetex=True)
 plt.rcParams["text.latex.preamble"] = [
     r"\usepackage{amsmath}",
