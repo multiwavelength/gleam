@@ -121,7 +121,7 @@ def pipeline(path, spectra, config, plot, inspect, verbose, bin, max_cpu):
     # Find all the spectrum files
     if spectra is None:
         spectra = f"{path}/**/spec1d*fits"
-    find_spectra = glob.glob(f"{spectra}", recursive=True)
+    find_spectra = sorted(glob.glob(f"{spectra}", recursive=True))
 
     # Make a list of all sources with their properties
     unique_sources = (
