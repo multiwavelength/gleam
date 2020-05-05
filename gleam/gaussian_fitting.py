@@ -668,7 +668,7 @@ def fit_model(
     w,
     fwhm_min,
     fwhm_max,
-    rest_spectral_resolution
+    rest_spectral_resolution,
 ) -> ModelResult:
     """
     Fits a number of Gaussians plus a constant continuum to the given data with 
@@ -741,12 +741,12 @@ def fit_model(
         model.set_param_hint(
             f"g{i}_fwhm",
             value=rest_spectral_resolution.value,
-            min=rest_spectral_resolution.value/4,
+            min=rest_spectral_resolution.value / 4,
         )
         model.set_param_hint(
             f"g{i}_sigma",
             value=so.fwhm_to_sigma(rest_spectral_resolution.value),
-            min=so.fwhm_to_sigma(rest_spectral_resolution.value/4),
+            min=so.fwhm_to_sigma(rest_spectral_resolution.value / 4),
         )
         # Height & amplitude: maximum y value - median of continuum
         model.set_param_hint(
@@ -853,9 +853,15 @@ def fit_lines(
         select_group = (line_list["wavelength"] > group.beginning) & (
             line_list["wavelength"] < group.ending
         )
-        if (group.ending - tolerance / 2.0 < np.amax(spectrum["wl_rest"])) & (
-            group.beginning + tolerance / 2.0 > np.amin(spectrum["wl_rest"])
+        if (
+            (line_list["wavelength"][select_group] < np.amin(spectrum["wl_rest"])).all()
+            == True
+        ) | (
+            (line_list["wavelength"][select_group] > np.amax(spectrum["wl_rest"])).all()
+            == True
         ):
+            continue
+        else:
             spectrum_fit, spectrum_line = do_gaussian(
                 line_list[select_group],
                 line_list[~select_group],
