@@ -118,11 +118,16 @@ specify parameters at three different levels.
    setup. What setups mean is entirely up to you. In general, you would use this
    level to capture differences between telescopes or instruments, such as the
    spectral resolution. The configuration parameters specified at this level
-   supersede the the global configuration and the built-in defaults.
-3. The per-source level allows you to customize the parameters for each and
+   supersede the the global configuration and the built-in defaults. Note that
+   the setup name needs to match that in the corresponding sources.
+3. The per-source level (named `sources`) allows you to customize the parameters for each and
    every source. While this can be very helpful to account for some particularly
    troublesome cases, it should be used sporadically both due to the associated
-   typing burden as well as in the spirit of keeping the results comparable.
+   typing burden as well as in the spirit of keeping the results comparable. The
+   naming convention of the source should be in line with the input spectrum
+   file, without the 'spec1d' and '.fits'. For example: 
+   - Example source within sources: "Sample.Setup.Pointing.SourceNumber"
+
 
 The full structure of the configuration file is:
 
@@ -155,7 +160,7 @@ overrides.
 Here are the parameters that can be overridden at either the global, setup or
 source level. 
 
-#####  Sky bands to be masked. 
+#####  Sky bands to be masked 
 
 There are two parameters that you can use to control whether the fitting should
 ignore portions of the spectrum where sky bands may not have been reliably
