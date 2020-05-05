@@ -1,6 +1,7 @@
 # gleam
 Galaxy Line Emission &amp; Absorption Modelling
 
+
 ## What is gleam?
 
 **gleam** is a Python package for fitting Gaussian models to emission and absorption lines in large samples of 1D galaxy spectra. **gleam** is tailored to work well without much human interaction on optical and infrared spectra in a wide range of instrument setups and signal-to-noise regimes.
@@ -263,6 +264,7 @@ the following columns:
 - Python 3.8
 - pip ^20.0
 - (Optional, but recommended) Latex, when plotting.
+
 
 ## How to install
 ```
