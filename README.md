@@ -48,7 +48,11 @@ An example dataset is contained within the git repository. To download it,
 either use the download button or in the terminal:
 ```
 wget https://github.com/multiwavelength/gleam/raw/master/example.tar.gz
+<<<<<<< HEAD
 ```
+=======
+'''
+>>>>>>> a498989330bf020d5099413ba8d2b89e625754bb
 
 ## Input data and configuration file
 
