@@ -293,7 +293,6 @@ Ha	| 6564.614 |	H$\boldsymbol{\alpha}$ |	0.26284 |	0.2629235|	3.3654374E-5 |
 |-	|-	|-	|-	|-	|-	|
 |	6.9164796	| 0.5216701	| 118.18059	| 23.823605 |	true |	true|
 
-
 ## Plots
 
 If plotting is enabled, **gleam** produces two types of figures: an figure showing the entire spectrum with zoom-ins on the emission line fits. The second type of plots are focused on each line fit. Areas masked by sky are shaded gray for clarity.
