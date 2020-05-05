@@ -34,7 +34,7 @@ The outputs of **gleam** include:
 - A fits table with line measurements for each source
 - (Optional) Plots of the spectrum with overplotted line fits and upper limits.
 
-To run the **gleam** using the defaults, you can type:
+To run the **gleam** using the defaults, you can type in the terminal:
 ```
 gleam
 ```
@@ -42,6 +42,12 @@ gleam
 **gleam** has a number of optional command line arguments. For details type:
 ```
 gleam --help
+```
+ 
+An example dataset is contained within the git repository. To download it, 
+either use the download button or in the terminal:
+```
+wget https://github.com/multiwavelength/gleam/raw/master/example.tar.gz
 ```
 
 ## Input data and configuration file
