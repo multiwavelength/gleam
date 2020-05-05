@@ -25,9 +25,7 @@ def fake():
     yield lambda *_: None
 
 
-def run_main(
-    spectrum_file, target, inspect, plot, verbose, bin1, c
-):
+def run_main(spectrum_file, target, inspect, plot, verbose, bin1, c):
     """
     For a target/galaxy, read the spectrum and perform the line fitting for each 
     line within the list of lines
@@ -49,8 +47,7 @@ def run_main(
     print(
         f"Now working in {data_path} "
         + f'on {target["Sample"]} '
-        + f'on source {target["SourceNumber"]} at z={target["Redshift"]:1.3f} '
-        + f'of type {target["Type"]}\n'
+        + f'on source {target["SourceNumber"]} at z={target["Redshift"]:1.3f}.'
     )
 
     # Read spectrum for the current source from outside file
