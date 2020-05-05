@@ -16,27 +16,9 @@ from colorama import Fore
 
 import gleam.main
 import gleam.read_files as rf
-from gleam.constants import a as c
+import gleam.constants as c
 
 warnings.filterwarnings("ignore")
-
-
-def run_source(p):
-    """
-    Convenience function that runs the fitting on a single source. This is 
-    needed for the implementation of the multi-threading. The function Pool 
-    takes only one parameter, which is contained in the dictionary "p"
-    Input:
-        p: dictionary that contains the folder name where the data is, the table
-           that contains all the details on the source, the line list table that
-           will be fit, and a number of click parameters controlling the 
-           interactive inspection of the data and the way the center is being
-           fit as well as binning the data   
-    """
-    (extension, target, inspect, fix_center, constrain_center, bin, verbose,) = p
-    main.run_main(
-        extension, target, inspect, fix_center, constrain_center, verbose, bin,
-    )
 
 
 class Targets:
@@ -64,49 +46,69 @@ class Targets:
             self._targets: QTable = targets
         except ValueError:
             sys.exit(
-                "Error! Cannot stack master files that contain units with those that don't."
+                Fore.RED
+                + "Error! Cannot stack master files that contain units with those that don't."
             )
 
     def __getitem__(self, key: Tuple[str, str, str, int]):
         sample, setup, pointing, source = key
-        return self._targets.loc[f"{sample}.{setup}.{pointing}.{int(source)}"]
+        return self._targets.loc[f"{sample}.{setup}.{pointing}.{source}"]
 
 
-# Define command line arguments
-@click.command()
-@click.option("--inspect", is_flag=True)
-@click.option("--plot", is_flag=True)
-@click.option("--fix-center", is_flag=True)
-@click.option("--constrain-center", is_flag=True)
-@click.option("--bin", default=1)
-@click.option("--verbose", is_flag=True)
-@click.option("--max-cpu", default=8, type=int)
-@click.option("--spec-path", default="**/spec1d*fits")
-def pipeline(inspect, plot, fix_center, constrain_center, bin, max_cpu, verbose, spec_path):
-    targets = Targets(f"{c.path}/**/master*dat")
-
-    find_spectra = glob.glob(f"{c.path}/{spec_path}", recursive=True)
-    unique_sources = []
-
+def find_source_properties(find_spectra, targets):
     for spectrum_file in find_spectra:
+        # Get unique sample, setup, pointing and source names
         _, sample, setup, pointing, source, *_ = os.path.basename(spectrum_file).split(
             "."
         )
         source = int(source)
 
-        target = targets[sample, setup, pointing, source]
-        unique_sources.append(
-            (
-                spectrum_file,
-                target,
-                inspect,
-                plot,
-                fix_center,
-                constrain_center,
-                verbose,
-                bin,
+        # Find source is master file
+        try:
+            target = targets[sample, setup, pointing, source]
+        except KeyError:
+            print(
+                Fore.RED
+                + f"Error! Cannot find source {sample}.{setup}.{pointing}.{source} in any master file. Skipping."
             )
-        )
+            continue
+        if isinstance(target, QTable):
+            print(type(target))
+            print(
+                Fore.RED
+                + f"Error! Source {sample}.{setup}.{pointing}.{source} appears in multiple master files. Skipping."
+            )
+            continue
+        yield (spectrum_file, target)
+
+
+# Define command line arguments
+@click.command()
+@click.option("--path", default=".")
+@click.option("--spectra")
+@click.option("--config", default="gleamconfig.yaml")
+@click.option("--plot", is_flag=True)
+@click.option("--inspect", is_flag=True)
+@click.option("--verbose", is_flag=True)
+@click.option("--bin", default=1)
+@click.option("--max-cpu", default=8, type=int)
+def pipeline(path, spectra, config, plot, inspect, verbose, bin, max_cpu):
+    # Read configuration file
+    config = c.read_config(config)
+
+    # Find all the master files as the targets inside them
+    targets = Targets(f"{path}/**/master*dat")
+
+    # Find all the spectrum files
+    if spectra is None:
+        spectra = f"{path}/**/spec1d*fits"
+    find_spectra = glob.glob(f"{spectra}", recursive=True)
+
+    # Make a list of all sources with their properties
+    unique_sources = (
+        (*unique_source, inspect, plot, verbose, bin, config)
+        for unique_source in find_source_properties(find_spectra, targets)
+    )
 
     # Set up multithread processing as executing the fitting on different
     # sources is trivially parallelizable

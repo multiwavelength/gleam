@@ -18,22 +18,15 @@ import gleam.read_files as rf
 import gleam.gaussian_fitting as gf
 import gleam.plot_gaussian as pg
 import gleam.spectra_operations as so
-from gleam.constants import a as c
 
 
 @contextmanager
 def fake():
     yield lambda *_: None
 
+
 def run_main(
-    spectrum_file,
-    target,
-    inspect,
-    plot,
-    fix_center,
-    constrain_center,
-    verbose,
-    bin1,
+    spectrum_file, target, inspect, plot, verbose, bin1, c
 ):
     """
     For a target/galaxy, read the spectrum and perform the line fitting for each 
@@ -70,7 +63,9 @@ def run_main(
     spectrum = so.add_restframe(spectrum, target["Redshift"])
 
     # Configuration for curret source
-    config = c(target["Setup"])
+    config = c(
+        target["Sample"], target["Setup"], target["Pointing"], target["SourceNumber"]
+    )
 
     # Read in line table
     line_list = config.line_list
@@ -81,15 +76,19 @@ def run_main(
     # Find groups of nearby lines in the input table that will be fit together
     line_groups = so.group_lines(line_list, config.fitting.tolerance)
 
-    overview = pg.overview_plot(
-        target,
-        data_path,
-        line_groups,
-        spectrum,
-        config.fitting.cont_width,
-        config.resolution / (1 + target["Redshift"]),
-        sky,
-    ) if plot else fake()
+    overview = (
+        pg.overview_plot(
+            target,
+            data_path,
+            line_groups,
+            spectrum,
+            config.fitting.cont_width,
+            config.resolution / (1 + target["Redshift"]),
+            sky,
+        )
+        if plot
+        else fake()
+    )
     with overview as plot_line:
         tables = []
         # Set the name to the exported plot in png format
@@ -98,8 +97,7 @@ def run_main(
             spectrum,
             line_list,
             line_groups,
-            fix_center,
-            constrain_center,
+            config.fitting.center,
             verbose,
             sky,
             config.fitting.tolerance,

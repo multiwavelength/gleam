@@ -115,8 +115,8 @@ def dispersion(wl):
     """
     Returns the dispestion (wavelength width per pixel) of a 1D spectrum
     Input:
-        wl: 1D wavelength in some units (preferably Astropy
-            QTable, such that it has units attached)
+        wl: 1D wavelength in some units (preferably Astropy QTable, such that it 
+        has units attached)
     Output:
         dispersion: single minimum value for dispersion in the spectrum sampled
         
@@ -161,30 +161,6 @@ def spectrum_rms(y):
     return rms
 
 
-def velocity_resolution(x):
-    """
-    Get the velocity resolution of a piece of spectrum; might be observed or
-    restframe depending on the input spectrum. This is blind to whether the 
-    spectrum has been rest-framed or not
-    """
-    wl_res = dispersion(x)
-    wl_av = np.average(x)
-    v_res = wl_res / wl_av * const.c
-    return v_res
-
-
-def restframe_wl(x, z):
-    """
-    Transform a given spectrum x into the restframe, given the redshift
-    Input:
-        x: observed wavelengths of a spectrum, in Angstrom or nm for example
-        z: redshift
-    Return:
-        restframe spectrum
-    """
-    return x / (1.0 + z)
-
-
 def mask_atmosphere(wl, z, sky):
     """
     Masks the spectrum around prominent optical atmospheric absorption bands
@@ -215,17 +191,16 @@ def mask_atmosphere(wl, z, sky):
     return without_absorption
 
 
-def restframe_spectrum(wl, z):
+def restframe_wl(x, z):
     """
-    Transform a spectrum into the restframe give its redshift
+    Transform a given spectrum x into the restframe, given the redshift
     Input:
-        wl: wavelength with unit preferably specified
-        z: redshift, determined externally (e.g. specpro)
-    Output:
-        wl_rest: restframe spectrum
+        x: observed wavelengths of a spectrum, in Angstrom or nm for example
+        z: redshift
+    Return:
+        restframe spectrum
     """
-    wl_rest = wl / (1.0 + z)
-    return wl_rest
+    return x / (1.0 + z)
 
 
 def add_restframe(spectrum, z):
@@ -237,7 +212,7 @@ def add_restframe(spectrum, z):
     Output:
         spectrum with the new added restframe wavelength column
     """
-    spectrum.add_column(restframe_spectrum(spectrum["wl"], z), name="wl_rest")
+    spectrum.add_column(restframe_wl(spectrum["wl"], z), name="wl_rest")
     return spectrum
 
 
@@ -298,7 +273,7 @@ def select_lines(
         mask = select_singleline(wl_rest, line["wavelength"], cont_width)
         select_lines = select_lines | mask
 
-    # decide whether to mask the atmospheric lines
+    # mask the atmospheric lines, if masking them is enabled
     masked_atm = mask_atmosphere(wl_rest, z_ref, sky)
     masked_all = masked_atm & masked_otherlines & select_lines
 
@@ -373,56 +348,3 @@ def left(x):
 
 def right(x):
     return x[1]
-
-
-def test_cc():
-    a = ((0, 5), (3, 9), (16, 22), (20, 26), (25, 31))
-
-    comps = connected_components(a, left, right)
-    print(comps)
-    expected = [
-        Component(segments=[(0, 5), (3, 9)], beginning=0, ending=9),
-        Component(segments=[(16, 22), (20, 26), (25, 31)], beginning=16, ending=31),
-    ]
-    assert expected == comps
-
-
-def test_cc2():
-    a = ((0, 4), (1, 2), (3, 6), (5, 7))
-
-    comps = connected_components(a, left, right)
-    print(comps)
-    expected = [
-        Component(segments=[(0, 4), (1, 2), (3, 6), (5, 7)], beginning=0, ending=7)
-    ]
-    assert expected == comps
-
-
-def test_cc3():
-    a = ((0, 2), (5, 7), (1, 4), (8, 9), (3, 6))
-
-    comps = connected_components(a, left, right)
-    print(comps)
-    expected = [
-        Component(segments=[(0, 2), (1, 4), (3, 6), (5, 7)], beginning=0, ending=7),
-        Component(segments=[(8, 9)], beginning=8, ending=9),
-    ]
-    assert expected == comps
-
-
-def test_cc4():
-    a = ()
-
-    comps = connected_components(a, left, right)
-    print(comps)
-    expected = []
-    assert expected == comps
-
-
-def test_cc5():
-    a = ((0, 2),)
-
-    comps = connected_components(a, left, right)
-    print(comps)
-    expected = [Component(segments=[(0, 2)], beginning=0, ending=2)]
-    assert expected == comps

@@ -432,8 +432,8 @@ python-versions = "*"
 version = "0.1.9"
 
 [metadata]
-content-hash = "e7f67ae639490d88ea5bf9735ae88827f18bb3c66a056b96543d820bd72bbc27"
-python-versions = "^3.7"
+content-hash = "5654a0ebc58a30342ead8c4e074e6b1d8102ea8b9d62ac49bad1a4143175e9cf"
+python-versions = "^3.8"
 
 [metadata.files]
 appdirs = [

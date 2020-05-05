@@ -529,8 +529,7 @@ def model_selection(
     y,
     ystd,
     wl_line,
-    fix_center,
-    constrain_center,
+    center_constraint,
     verbose,
     cont_width,
     w,
@@ -569,13 +568,13 @@ def model_selection(
             y,
             ystd,
             wl_subset,
-            fix_center,
-            constrain_center,
+            center_constraint,
             verbose,
             cont_width,
             w,
             fwhm_min,
             fwhm_max,
+            rest_spectral_resolution,
         )
         if is_good(model, SN_limit):
             break
@@ -663,13 +662,13 @@ def fit_model(
     y,
     ystd,
     wl_line,
-    fix_center,
-    constrain_center,
+    center_constraint,
     verbose,
     cont_width,
     w,
     fwhm_min,
     fwhm_max,
+    rest_spectral_resolution
 ) -> ModelResult:
     """
     Fits a number of Gaussians plus a constant continuum to the given data with 
@@ -709,13 +708,13 @@ def fit_model(
 
     # fix the center of the Gaussian for sources where the normal fit does not
     # want to work
-    if fix_center == True:
+    if center_constraint == "fixed":
         for i in range(len(wl_line)):
             model.set_param_hint(f"g{i}_center", vary=False)
 
     # Constrain the center within a small range around the expected wavelength
     # of the emission line
-    elif constrain_center == True:
+    elif center_constraint == "constrained":
         for i, wl in enumerate(wl_line):
             model.set_param_hint(
                 f"g{i}_center", value=wl.value, min=(wl - w).value, max=(wl + w).value,
@@ -741,13 +740,13 @@ def fit_model(
         # FWHM & sigma: average between minimum and maximum expected width
         model.set_param_hint(
             f"g{i}_fwhm",
-            value=(fwhm_min * pixel + fwhm_max * pixel).value / 2.0,
-            min=(fwhm_min * pixel).value,
+            value=rest_spectral_resolution.value,
+            min=rest_spectral_resolution.value/4,
         )
         model.set_param_hint(
             f"g{i}_sigma",
-            value=so.fwhm_to_sigma((fwhm_min * pixel + fwhm_max * pixel).value / 2.0),
-            min=so.fwhm_to_sigma((fwhm_min * pixel).value),
+            value=so.fwhm_to_sigma(rest_spectral_resolution.value),
+            min=so.fwhm_to_sigma(rest_spectral_resolution.value/4),
         )
         # Height & amplitude: maximum y value - median of continuum
         model.set_param_hint(
@@ -757,7 +756,7 @@ def fit_model(
             f"g{i}_amplitude",
             value=so.height_to_amplitude(
                 max(y.value, key=abs) - np.median(y).value,
-                so.fwhm_to_sigma((fwhm_min * pixel + fwhm_max * pixel).value / 2.0),
+                so.fwhm_to_sigma(rest_spectral_resolution.value),
             ),
         )
 
@@ -819,8 +818,7 @@ def fit_lines(
     spectrum,
     line_list,
     line_groups,
-    fix_center,
-    constrain_center,
+    center_constraint,
     verbose,
     sky,
     tolerance,
@@ -863,8 +861,7 @@ def fit_lines(
                 line_list[~select_group],
                 spectrum,
                 target,
-                fix_center,
-                constrain_center,
+                center_constraint,
                 verbose,
                 sky,
                 cont_width,
@@ -884,8 +881,7 @@ def do_gaussian(
     other_lines,
     spectrum,
     target,
-    fix_center,
-    constrain_center,
+    center_constraint,
     verbose,
     sky,
     cont_width,
@@ -933,8 +929,7 @@ def do_gaussian(
         spectrum_line["flux"],
         spectrum_line["stdev"],
         selected_lines["wavelength"],
-        fix_center,
-        constrain_center,
+        center_constraint,
         verbose,
         cont_width,
         w,
