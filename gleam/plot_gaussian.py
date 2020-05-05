@@ -91,7 +91,7 @@ def overplot_sky(ax, z, sky):
         return
     [
         ax.fill_between(
-            [so.restframe_wl(band["wl_min"], z), so.restframe_wl(band["wl_max"], z)],
+            [so.restframe_wl(band["wavelength_min"], z), so.restframe_wl(band["wavelength_max"], z)],
             ax.get_ylim()[0],
             ax.get_ylim()[1],
             facecolor="gray",

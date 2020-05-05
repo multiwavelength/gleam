@@ -181,8 +181,8 @@ def mask_atmosphere(wl, z, sky):
     absorption = functools.reduce(
         operator.or_,
         (
-            (wl > restframe_wl(band["wl_min"], z))
-            & (wl < restframe_wl(band["wl_max"], z))
+            (wl > restframe_wl(band["wavelength_min"], z))
+            & (wl < restframe_wl(band["wavelength_max"], z))
             for band in sky
         ),
     )
