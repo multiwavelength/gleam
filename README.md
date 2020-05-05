@@ -60,11 +60,11 @@ The master file can be in fits format or ASCII format (with commented header), b
 | Keck  | P1       | 123          | Cosmos | 1.2303   |
 
 Column descriptions:
-- Setup: the telescope, instrument or mode the source was observed with (must match with setup in the spectrum name)
-- Pointing: usually multiple pointings or configurations are observed (must match with pointing in the spectrum name),
-- SourceNumber: a unique identifier for the source, within a single setup+pointing combination (must match with source number in the spectrum name),
-- Sample: parent sample for the source, e.g. if part of a single galaxy cluster or a famous field,
-- Redshift: redshift for the source, ideally correct to within 0.0001.
+- **Setup**: the telescope, instrument or mode the source was observed with (must match with setup in the spectrum name)
+- **Pointing**: usually multiple pointings or configurations are observed (must match with pointing in the spectrum name),
+- **SourceNumber**: a unique identifier for the source, within a single setup+pointing combination (must match with source number in the spectrum name),
+- **Sample**: parent sample for the source, e.g. if part of a single galaxy cluster or a famous field,
+- **Redshift**: redshift for the source, ideally correct to within 0.0001.
 
 Master file names need to start with the word "master":
 - Example master file name: "master.Sample.Setup.Pointing.fits" or "master.Sample.Setup.Pointing.dat"
@@ -294,24 +294,24 @@ Ha	| 6564.614 |	H$\boldsymbol{\alpha}$ |	0.26284 |	0.2629235|	3.3654374E-5 |
 |	6.9164796	| 0.5216701	| 118.18059	| 23.823605 |	true |	true|
 
 A description of each column:
-- line: Name of the line, from the input line table
-- wavelength: Rest wavelength of the line
-- latex: Name of the line in Latex format
-- z: Redshift of the source, from the input master file
-- zline, zline_err: Redshift derived from this particular line and its error. If missing, the line was either not detected or is not covered by the spectrum.
-- zoffset, zoffset_err: Offset between the systemic source redshift and this line. If missing, the line was either not detected or is not covered by the spectrum.
-- cont, cont_err: Continuum estimation around the line and its error. Contains units, if input spectrum has units. If value is missing, line is not covered by the spectrum. If only error, it is an upper limit.
-- wl, wl_err: Central wavelength of the line and its error, estimated from the Gaussian fit. Contains units, if input spectrum has units. Missing for nondetections and lines without spectral coverage.
-- height, height_err: Height of the line and its error, estimated from the Gaussian fit. Contains units, if input spectrum has units. Missing for nondetections and lines without spectral coverage.
-- sigma, sigma_err: Sigma of the line and its error, estimated from the Gaussian fit. Contains units, if input spectrum has units. Missing for nondetections and lines without spectral coverage.
-- amplitude, amplitude_err: Amplitude of the line and its error, estimated from the Gaussian fit. Contains units, if input spectrum has units. If value is missing, line is not covered by the spectrum. If only error, it is an upper limit.
-- flux, flux_err: Flux of the line and its error. Contains units, if input spectrum has units. If value is missing, line is not covered by the spectrum. If only error, it is an upper limit.
-- luminosity, luminosity_err: Luminosity of the line and its error. Contains units, if input spectrum has units. If value is missing, line is not covered by the spectrum. If only error, it is an upper limit.
-- EWrest, EWrest_err: Rest-frame equivalent width of the line and its error. Contains units, if input spectrum has units. If value is missing, line is not covered by the spectrum. If only error, it is an upper limit.
-- FWHM, FWHM_err: Deconvolved full-width-at-half-maximum width, in wavelength units and its error. A value is reported only if line is resolved.
-- v, v_err: Deconvolved full-width-at-half-maximum velocity width, in wavelength units and its error. A value is reported only if line is resolved.
-- detected: True if line is detected, False if non-detection.
-- covered: True if line is covered by the spectrum. False is coverage is missing at the location of the lines, ie fits or upper limits are not possible.
+- **line**: Name of the line, from the input line table
+- **wavelength**: Rest wavelength of the line
+- **latex**: Name of the line in Latex format
+- **z**: Redshift of the source, from the input master file
+- **zline, zline_err**: Redshift derived from this particular line and its error. If missing, the line was either not detected or is not covered by the spectrum.
+- **zoffset, zoffset_err**: Offset between the systemic source redshift and this line. If missing, the line was either not detected or is not covered by the spectrum.
+- **cont, cont_err**: Continuum estimation around the line and its error. Contains units, if input spectrum has units. If value is missing, line is not covered by the spectrum. If only error, it is an upper limit.
+- **wl, wl_err**: Central wavelength of the line and its error, estimated from the Gaussian fit. Contains units, if input spectrum has units. Missing for nondetections and lines without spectral coverage.
+- **height, height_err**: Height of the line and its error, estimated from the Gaussian fit. Contains units, if input spectrum has units. Missing for nondetections and lines without spectral coverage.
+- **sigma, sigma_err**: Sigma of the line and its error, estimated from the Gaussian fit. Contains units, if input spectrum has units. Missing for nondetections and lines without spectral coverage.
+- **amplitude, amplitude_err**: Amplitude of the line and its error, estimated from the Gaussian fit. Contains units, if input spectrum has units. If value is missing, line is not covered by the spectrum. If only error, it is an upper limit.
+- **flux, flux_err**: Flux of the line and its error. Contains units, if input spectrum has units. If value is missing, line is not covered by the spectrum. If only error, it is an upper limit.
+- **luminosity, luminosity_err**: Luminosity of the line and its error. Contains units, if input spectrum has units. If value is missing, line is not covered by the spectrum. If only error, it is an upper limit.
+- **EWrest, EWrest_err**: Rest-frame equivalent width of the line and its error. Contains units, if input spectrum has units. If value is missing, line is not covered by the spectrum. If only error, it is an upper limit.
+- **FWHM, FWHM_err**: Deconvolved full-width-at-half-maximum width, in wavelength units and its error. A value is reported only if line is resolved.
+- **v, v_err**: Deconvolved full-width-at-half-maximum velocity width, in wavelength units and its error. A value is reported only if line is resolved.
+- **detected**: True if line is detected, False if non-detection.
+- **covered**: True if line is covered by the spectrum. False is coverage is missing at the location of the lines, ie fits or upper limits are not possible.
 
 ## Plots
 
