@@ -1,0 +1,67 @@
+# This is an example of a configuration file for gleam. The format used is YAML,
+# a human-readable language. Note, that in YAML indentation is important, so I 
+# recommend using 2 space as indentation between levels!
+
+# Global configurations
+# We will let many of the fitting parameters to the internal defaults
+globals:
+  # Note if instrument resolution is not listed here, if must appear under setups of sources. 
+  # path to file containing the lines to be fit
+  line_table: line_lists/Main_optical_lines.fits
+  # Select a subset of lines to fit
+  lines:
+    - OII
+    - Hb 
+    - OIII4
+    - OIII5  
+    - Ha
+    - NII1
+    - SII1
+    - SII2
+  # Path to file containing the sky lines
+  sky: line_lists/Sky_bands.fits 
+  # Whether or not the sky bands in the "sky" parameter should be masked
+  mask_sky: True 
+  # Let's constrain the center and set the continuum width to 40 Anstrom, but 
+  # let the other fitting parameters to the internal defaults.
+  fitting:
+    cont_width: 40 Angstrom
+    center: constrained
+
+
+# Telescope/instrument specific setups
+setups:
+  # VIMOS is not among our source, but why not have it here anyway?
+  VIMOS:
+    # VIMOS does not have a great resolution
+    resolution: 12.5 Angstrom
+    # Here we override the internal default of gleam with 60 Angstrom
+    fitting:
+      cont_width: 60 Angstrom
+  # A particular setup for the AF2 instrument on WHT
+  WHT_R316R:
+    resolution: 8.1 Angstrom
+    # This is definitely too small, but we will override again in our source ;)
+    fitting:
+      cont_width: 20 Angstrom
+
+
+# Some source-specific overrides
+sources:
+  # Name of the source to override. Note naming convetion.
+  A773.WHT_R316R.Q1_EXT1.008:
+    # For this source we want to fit all the lines in the input line_table. We
+    # need to specify 'all' here!
+    lines: all
+    # Override the continuum with to 70 Angstrom
+    fitting:
+      # Much more reasonable value here!
+      cont_width: 70 Angstrom
+
+# The cosmological parameters, which are fixed for the entire project. You can 
+# set them from here to your preferred value.
+#cosmology:
+#   H0: 75 km / (Mpc s)
+#   Om0: 0.3
+#   Tcmb0: 2.725 K
+
