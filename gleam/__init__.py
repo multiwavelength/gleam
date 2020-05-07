@@ -110,8 +110,8 @@ def find_source_properties(find_spectra, targets):
 @click.option("--inspect", is_flag=True, help='Show interactive plots.')
 @click.option("--verbose", is_flag=True, help='Print full output from LMFIT.')
 @click.option("--bin", default=1, help='Bin the spectrum before fitting.')
-@click.option("--max-cpu", default=8, type=int, help='Number of threads.')
-def pipeline(path, spectra, config, plot, inspect, verbose, bin, max_cpu):
+@click.option("--nproc", default=8, type=int, help='Number of threads.')
+def pipeline(path, spectra, config, plot, inspect, verbose, bin, nproc):
     # Read configuration file
     config = c.read_config(config)
 
@@ -131,7 +131,7 @@ def pipeline(path, spectra, config, plot, inspect, verbose, bin, max_cpu):
 
     # Set up multithread processing as executing the fitting on different
     # sources is trivially parallelizable
-    nproc = 1 if inspect else max_cpu
+    nproc = 1 if inspect else nproc
     with Pool(nproc) as p:
         p.starmap(main.run_main, unique_sources)
 
