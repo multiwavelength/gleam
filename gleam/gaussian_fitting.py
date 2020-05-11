@@ -462,18 +462,18 @@ class Spectrum:
     continuum: RandomVariable
 
 
-def gauss_function(x, a, x0, sigma):
+def gauss_function(x, h, x0, sigma):
     """
     Returns the 1D Gaussian over a given range
     Input:
         x: range over which the function will be calculated
-        a: amplitude of the Gaussian
+        h: height of the Gaussian
         x0: center on x of the Gaussian
         sigma: sigma of the Gaussian
     Output:
         1D Gaussian function
     """
-    return a * np.exp(-((x - x0) ** 2) / (2.0 * sigma ** 2.0))
+    return h * np.exp(-((x - x0) ** 2) / (2.0 * sigma ** 2.0))
 
 
 def upper_limit(y, x, SN_limit, rest_spectral_resolution):
