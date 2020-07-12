@@ -6,8 +6,8 @@ __author__ = "Andra Stroe"
 __version__ = "0.1"
 
 import yaml
-from dataclasses import replace, asdict, is_dataclass, field
-from typing import Dict, Optional, List, Union, Literal
+from dataclasses import replace, asdict, is_dataclass, field, dataclass as dat
+from typing import Dict, Optional, List, Union, Literal, NamedTuple
 import operator
 import functools
 
@@ -36,6 +36,21 @@ class Quantity(u.SpecificTypeQuantity):
     def validate(cls, v):
         return cls(v)
 
+@dat(frozen=True, eq=True, unsafe_hash=True)
+class SourceIdentifier:
+    sample: str
+    setup: str
+    pointing: str
+    source: int
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+    
+    @classmethod
+    def validate(cls, v):
+        sample, setup, pointing, source = v.split('.')
+        return cls(sample, setup, pointing, int(source))
 
 class Length(Quantity):
     _equivalent_unit = u.m
@@ -232,7 +247,7 @@ class Constants:
 
     globals: ConfigOverrides = ConfigOverrides()
     setups: Dict[str, ConfigOverrides] = field(default_factory=dict)
-    sources: Dict[str, ConfigOverrides] = field(default_factory=dict)
+    sources: Dict[SourceIdentifier, ConfigOverrides] = field(default_factory=dict)
 
     def __call__(
         self, sample: str, setup_name: str, pointing: str, source_number: int,
@@ -247,7 +262,7 @@ class Constants:
                 {},
                 self.globals,
                 self.setups.get(setup_name),
-                self.sources.get(f"{sample}.{setup_name}.{pointing}.{source_number}"),
+                self.sources.get(SourceIdentifier(sample, setup_name, pointing, source_number)),
                 {"cosmology": self.cosmology},
             ],
         )
