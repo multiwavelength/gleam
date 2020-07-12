@@ -133,7 +133,7 @@ def pipeline(path, spectra, config, plot, inspect, verbose, bin, nproc):
     # sources is trivially parallelizable
     nproc = 1 if inspect else nproc
     with Pool(nproc) as p:
-        p.starmap(main.run_main, unique_sources)
+        p.starmap(gleam.main.run_main, unique_sources)
 
 
 if __name__ == "__main__":
