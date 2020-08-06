@@ -1,6 +1,7 @@
 # gleam
 Galaxy Line Emission &amp; Absorption Modelling
 
+[![DOI](https://zenodo.org/badge/230828355.svg)](https://zenodo.org/badge/latestdoi/230828355)
 
 ## What is gleam?
 
