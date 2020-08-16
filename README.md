@@ -190,7 +190,7 @@ mask_sky: True
 
 By default (i.e. if no `sky` or `mask_sky` overrides are applied to a source),
 there is no sky masking and the entire spectrum is used. In order for masking to
-take place, `sky` myst be set appropriately and `mask_sky` must be set to `True`.
+take place, `sky` must be set appropriately and `mask_sky` must be set to `True`.
 
 Note that the two overrides don't need to be specified at the same level. For
 example, you might want to specify `sky` at the `global` level and then just set
