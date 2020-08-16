@@ -275,7 +275,7 @@ the following columns:
 ## Output
 
 ### Line fits tables
-For each of the sources in your sample, **gleam** will produce a table with all of the line fits and upper limits (if possible with units derived from the input data). Each line fitted is represented in a separate row, with all the corresponding line fit details contained in different column. The table contains information from the expected wavelength of the line and the redshift of the source, to emission line fit parameters and line fluxes and equivalent width. 
+For each of the sources in your sample, **gleam** will produce a table with all of the line fits and upper limits (if possible with units derived from the input data). Each line fitted is represented in a separate row, with all the corresponding line fit details contained in different column. The table contains information from the expected wavelength of the line and the redshift of the source, to emission line fit parameters, line fluxes and equivalent widths. 
 
 All of the output files will start with "linefits" and follow the naming convention described above.
 - Line fits table: "linefits.Sample.Setup.Pointing.SourceNumber.fits"
