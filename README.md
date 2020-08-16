@@ -324,7 +324,7 @@ A description of each column:
 
 ### Plots
 
-If plotting is enabled, **gleam** produces two types of figures: an figure showing the entire spectrum with zoom-ins on the emission line fits. The second type of plots are focused on each line fit. Areas masked by sky are shaded gray for clarity.
+If plotting is enabled, **gleam** produces two types of figures: a figure showing the entire spectrum with zoom-ins on the emission line fits. The second type of plots are focused on each line fit. Areas masked by sky are shaded gray for clarity.
 
 - Spectrum plot with the fitted lines overlaid: "linefits.Sample.Setup.Pointing.SourceNumber.png"
 - Spectrum plot zooming in on Halpha and NII1: "linefits.Sample.Setup.Pointing.SourceNumber.Ha.NII1.png"
