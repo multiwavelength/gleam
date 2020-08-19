@@ -835,7 +835,6 @@ def fit_lines(
     center_constraint,
     verbose,
     sky,
-    tolerance,
     cont_width,
     mask_width,
     w,

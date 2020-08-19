@@ -95,7 +95,6 @@ def run_main(spectrum_file, target, inspect, plot, verbose, bin1, c):
             config.fitting.center,
             verbose,
             sky,
-            config.fitting.tolerance,
             config.fitting.cont_width,
             config.fitting.mask_width,
             config.fitting.w,
