@@ -1,11 +1,12 @@
 # gleam
 Galaxy Line Emission &amp; Absorption Modelling
 
+[![DOI](https://zenodo.org/badge/230828355.svg)](https://zenodo.org/badge/latestdoi/230828355)
 
 ## What is gleam?
 
 **gleam** is a Python package for fitting Gaussian models to emission and absorption lines in large samples of 1D galaxy spectra. **gleam** is tailored to work well without much human interaction on optical and infrared spectra in a wide range of instrument setups and signal-to-noise regimes. **gleam** will create a fits table with Gaussian line measurements, including central wavelength,
-width, height and amplitude, as well as estimated for the continuum under the line and the line flux, luminosity, equivalent width and velocity width. **gleam** will also, optionally, make plots of the spectrum with fitted lines overlaid.
+width, height and amplitude, as well as estimates for the continuum under the line and the line flux, luminosity, equivalent width and velocity width. **gleam** will also, optionally, make plots of the spectrum with fitted lines overlaid.
 
 ## Features
 
@@ -189,7 +190,7 @@ mask_sky: True
 
 By default (i.e. if no `sky` or `mask_sky` overrides are applied to a source),
 there is no sky masking and the entire spectrum is used. In order for masking to
-take place, `sky` myst be set appropriately and `mask_sky` must be set to `True`.
+take place, `sky` must be set appropriately and `mask_sky` must be set to `True`.
 
 Note that the two overrides don't need to be specified at the same level. For
 example, you might want to specify `sky` at the `global` level and then just set
@@ -274,7 +275,7 @@ the following columns:
 ## Output
 
 ### Line fits tables
-For each of the sources in your sample, **gleam** will produce a table with all of the line fits and upper limits (if possible with units derived from the input data). Each line fitted is represented in a separate row, with all the corresponding line fit details contained in different column. The table contains information from the expected wavelength of the line and the redshift of the source, to emission line fir parameters and line fluxes and equivalent width. 
+For each of the sources in your sample, **gleam** will produce a table with all of the line fits and upper limits (if possible with units derived from the input data). Each line fitted is represented in a separate row, with all the corresponding line fit details contained in different column. The table contains information from the expected wavelength of the line and the redshift of the source, to emission line fit parameters, line fluxes and equivalent widths. 
 
 All of the output files will start with "linefits" and follow the naming convention described above.
 - Line fits table: "linefits.Sample.Setup.Pointing.SourceNumber.fits"
@@ -323,7 +324,7 @@ A description of each column:
 
 ### Plots
 
-If plotting is enabled, **gleam** produces two types of figures: an figure showing the entire spectrum with zoom-ins on the emission line fits. The second type of plots are focused on each line fit. Areas masked by sky are shaded gray for clarity.
+If plotting is enabled, **gleam** produces two types of figures: a figure showing the entire spectrum with zoom-ins on the emission line fits. The second type of plots are focused on each line fit. Areas masked by sky are shaded gray for clarity.
 
 - Spectrum plot with the fitted lines overlaid: "linefits.Sample.Setup.Pointing.SourceNumber.png"
 - Spectrum plot zooming in on Halpha and NII1: "linefits.Sample.Setup.Pointing.SourceNumber.Ha.NII1.png"
