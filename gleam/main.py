@@ -69,7 +69,7 @@ def run_main(spectrum_file, target, inspect, plot, verbose, bin1, c):
     sky = config.sky_list
 
     # Find groups of nearby lines in the input table that will be fit together
-    line_groups = so.group_lines(line_list, config.fitting.tolerance)
+    line_groups = so.group_lines(line_list, config.fitting.tolerance/2.)
 
     overview = (
         pg.overview_plot(

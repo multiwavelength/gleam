@@ -147,7 +147,7 @@ class FittingParameters:
     """
 
     SN_limit: float = 2
-    tolerance: Length = 13.0 * u.Angstrom
+    tolerance: Length = 26.0 * u.Angstrom
     w: Length = 3 * u.Angstrom
     mask_width: Length = 20 * u.Angstrom
     cont_width: Length = 70 * u.Angstrom
