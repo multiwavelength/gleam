@@ -227,8 +227,8 @@ overridden at any of the three levels (global, per-setup and per-source).
 fitting:
   # Signal to noise limit for a detection
   SN_limit: 2
-  # Tolerance for considering emission lines part of a   group and thus fitting them together
-  tolerance: 13.0 Angstrom
+  # Tolerance for considering emission lines part of a group and thus fitting them together
+  tolerance: 26.0 Angstrom
   # Range around either side of the Gaussian center to be probed
   w: 3.0 Angstrom
   # Wavelength range used to mask lines
