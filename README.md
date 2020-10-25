@@ -70,7 +70,7 @@ Column descriptions:
 - **Setup**: the telescope, instrument or mode the source was observed with (must match with setup in the spectrum name)
 - **Pointing**: usually multiple pointings or configurations are observed (must match with pointing in the spectrum name),
 - **SourceNumber**: a unique identifier for the source, within a single setup+pointing combination (must match with source number in the spectrum name),
-- **Sample**: parent sample for the source, e.g. if part of a single galaxy cluster or a famous field,
+- **Sample**: parent sample for the source, e.g. if part of a single galaxy cluster or a famous field (must match with sample in the spectrum name),
 - **Redshift**: redshift for the source, ideally correct to within 0.0001.
 
 Master file names need to start with the word "master":
