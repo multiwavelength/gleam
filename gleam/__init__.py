@@ -23,15 +23,15 @@ warnings.filterwarnings("ignore")
 
 class Targets:
     """
-    Read and stack all master files found into a single table.
+    Read and stack all metadata files found into a single table.
     """
     def __init__(self, filter: str) -> None:
-        find_masters = glob.glob(filter, recursive=True)
-        if not find_masters:
-            sys.exit(Fore.RED + "Error! Cannot find any master files.")
+        find_meta = glob.glob(filter, recursive=True)
+        if not find_meta:
+            sys.exit(Fore.RED + "Error! Cannot find any metadata files.")
         try:
             targets = vstack(
-                [rf.read_lof(list_of_targets) for list_of_targets in find_masters]
+                [rf.read_lof(list_of_targets) for list_of_targets in find_meta]
             )
             targets["key"] = reduce(
                 np.char.add,
@@ -50,7 +50,7 @@ class Targets:
         except ValueError:
             sys.exit(
                 Fore.RED
-                + "Error! Cannot stack master files that contain units with those that don't."
+                + "Error! Cannot stack metadata files that contain units with those that don't."
             )
 
     def __getitem__(self, key: Tuple[str, str, str, int]):
@@ -68,10 +68,10 @@ class Targets:
 
 def find_source_properties(find_spectra, targets):
     """
-    For a sample of sources, find matches in the master file.
+    For a sample of sources, find matches in the metadata file.
     Input:
         find_spectra: globbed list of spectrum file names
-        targets: stack of master files
+        targets: stack of metadata files
     Return:
         unique combination of spectrum and its corresponding properties
     """
@@ -82,20 +82,20 @@ def find_source_properties(find_spectra, targets):
         )
         source = int(source)
 
-        # Find source is master file
+        # Find source is metadata file
         try:
             target = targets[sample, setup, pointing, source]
         except KeyError:
             print(
                 Fore.RED
-                + f"Error! Cannot find source {sample}.{setup}.{pointing}.{source} in any master file. Skipping."
+                + f"Error! Cannot find source {sample}.{setup}.{pointing}.{source} in any metadata file. Skipping."
             )
             continue
         if isinstance(target, QTable):
             print(type(target))
             print(
                 Fore.RED
-                + f"Error! Source {sample}.{setup}.{pointing}.{source} appears in multiple master files. Skipping."
+                + f"Error! Source {sample}.{setup}.{pointing}.{source} appears in multiple metadata files. Skipping."
             )
             continue
         yield (spectrum_file, target)
@@ -103,7 +103,7 @@ def find_source_properties(find_spectra, targets):
 
 # Define command line arguments
 @click.command()
-@click.option("--path", default=".", help='Path to recursively look for master files and spectra. See --spectra for overrides.')
+@click.option("--path", default=".", help='Path to recursively look for metadata files and spectra. See --spectra for overrides.')
 @click.option("--spectra", help='Filter for spectra file paths. e.g. "./**/spec1d.Cosmos.Keck.P1.*.fits" to select all sources in the Cosmos sample observed with Keck in pointing P1.')
 @click.option("--config", default="gleamconfig.yaml", help='Configuration file in YAML format.')
 @click.option("--plot", is_flag=True, help='Save plots of spectrum with emission lines fits next to the corresponding spectrum file.')
@@ -115,8 +115,8 @@ def pipeline(path, spectra, config, plot, inspect, verbose, bin, nproc):
     # Read configuration file
     config = c.read_config(config)
 
-    # Find all the master files as the targets inside them
-    targets = Targets(f"{path}/**/master*dat")
+    # Find all the metadata files as the targets inside them
+    targets = Targets(f"{path}/**/meta.*")
 
     # Find all the spectrum files
     if spectra is None:

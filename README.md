@@ -21,11 +21,11 @@ width, height and amplitude, as well as estimates for the continuum under the li
 
 ## How to run and output
 
-**gleam** fits lines in 1D spectra using redshift information from a master file and several other parameters from a central configuration file.
+**gleam** fits lines in 1D spectra using redshift information from a metadata file and several other parameters from a central configuration file.
 
 To run **gleam**, the following are needed:
 - A set of 1D spectra, in fits table format
-- A set of master files, in fits table or ASCII format, where details of each source are listed
+- A set of metadata files, in fits table or ASCII format, where details of each source are listed
 - A configuration file, in YAML format, to specify line lists and fitting constraints
 - A line catalog, in fits table format
 - (Optional) A sky absorption/emission catalog, in fits table format
@@ -48,19 +48,19 @@ gleam --help
 An example dataset is contained within the git repository. To download it, 
 either use the download button or in the terminal:
 ```
-wget https://github.com/multiwavelength/gleam/raw/master/example.tar.gz
+wget https://github.com/multiwavelength/gleam/raw/main/example.tar.gz
 ```
 
 ## Input data and configuration file
 
 ### The input spectra
-The input spectra should be in fits format, ideally with units in the headers. They should contain 3 columns: the observed wavelength, the flux and the error. In order to identify source across the spectra and the master files, a naming convention needs to be followed:
-- Spectrum name: "spec1d.Sample.Setup.Pointing.SourceNumber.fits"
+The input spectra should be in fits format, ideally with units in the headers. They should contain 3 columns: the observed wavelength, the flux and the error. In order to identify source across the spectra and the metadata files, a naming convention needs to be followed:
+- `spec1d.Sample.Setup.Pointing.SourceNumber.fits`
 
-### Master file
-The master file contains information about individual sources in the project, such as the setup and pointing they were observed with, the source number to identify them and their redshift. The master file is used to pull information about each source. You can have a single master file or multiple ones, as long as sources are unique between them.
+### Metadata file
+The metadata file contains information about individual sources in the project, such as the setup and pointing they were observed with, the source number to identify them and their redshift. The metadata file is used to pull information about each source. You can have a single metadata file or multiple ones, as long as sources are unique between them.
 
-The master file can be in fits format or ASCII format (with commented header), but should contain the following columns:
+The metadata file can be in fits format or ASCII format (with commented header), but should contain the following columns:
 
 | Setup | Pointing | SourceNumber | Sample | Redshift |
 |-------|----------|--------------|--------|----------| 
@@ -73,8 +73,10 @@ Column descriptions:
 - **Sample**: parent sample for the source, e.g. if part of a single galaxy cluster or a famous field (must match with sample in the spectrum name),
 - **Redshift**: redshift for the source, ideally correct to within 0.0001.
 
-Master file names need to start with the word "master":
-- Example master file name: "master.Sample.Setup.Pointing.fits" or "master.Sample.Setup.Pointing.dat"
+Metadata files must start with "meta.":
+  - `meta.Sample.Setup.Pointing.fits`
+  - `meta.Sample.Setup.Pointing.dat`
+  - `meta.fits`
 
 ### Configuration file
 
@@ -306,7 +308,7 @@ A description of each column:
 - **line**: Name of the line, from the input line table
 - **wavelength**: Rest wavelength of the line
 - **latex**: Name of the line in Latex format
-- **z**: Redshift of the source, from the input master file
+- **z**: Redshift of the source, from the input metadata file
 - **zline, zline_err**: Redshift derived from this particular line and its error. If missing, the line was either not detected or is not covered by the spectrum.
 - **zoffset, zoffset_err**: Offset between the systemic source redshift and this line. If missing, the line was either not detected or is not covered by the spectrum.
 - **cont, cont_err**: Continuum estimation around the line and its error. Contains units, if input spectrum has units. If value is missing, line is not covered by the spectrum. If only error, it is an upper limit.
