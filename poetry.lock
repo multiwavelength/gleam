@@ -351,6 +351,17 @@ python-versions = "*"
 version = "2020.4.4"
 
 [[package]]
+category = "dev"
+description = "a python refactoring library..."
+name = "rope"
+optional = false
+python-versions = "*"
+version = "0.18.0"
+
+[package.extras]
+dev = ["pytest"]
+
+[[package]]
 category = "main"
 description = "SciPy: Scientific Library for Python"
 name = "scipy"
@@ -432,7 +443,7 @@ python-versions = "*"
 version = "0.1.9"
 
 [metadata]
-content-hash = "5654a0ebc58a30342ead8c4e074e6b1d8102ea8b9d62ac49bad1a4143175e9cf"
+content-hash = "bf8e86c2d3beec24a4e0bb7bbf7545b2833dcf75321743d329af002f3e7e4c2a"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -674,6 +685,9 @@ regex = [
     {file = "regex-2020.4.4-cp38-cp38-win32.whl", hash = "sha256:2a3bf8b48f8e37c3a40bb3f854bf0121c194e69a650b209628d951190b862de3"},
     {file = "regex-2020.4.4-cp38-cp38-win_amd64.whl", hash = "sha256:5bfed051dbff32fd8945eccca70f5e22b55e4148d2a8a45141a3b053d6455ae3"},
     {file = "regex-2020.4.4.tar.gz", hash = "sha256:295badf61a51add2d428a46b8580309c520d8b26e769868b922750cf3ce67142"},
+]
+rope = [
+    {file = "rope-0.18.0.tar.gz", hash = "sha256:786b5c38c530d4846aa68a42604f61b4e69a493390e3ca11b88df0fbfdc3ed04"},
 ]
 scipy = [
     {file = "scipy-1.4.1-cp35-cp35m-macosx_10_6_intel.whl", hash = "sha256:c5cac0c0387272ee0e789e94a570ac51deb01c796b37fb2aad1fb13f85e2f97d"},

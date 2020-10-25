@@ -14,10 +14,10 @@ import gleam.constants as c
 
 
 def read_lof(file1):
-    """For each sample, telescope setup and pointing, it reads the master file, 
+    """For each sample, telescope setup and pointing, it reads the metadata file, 
     which contains a list of the sources and their properties.
     Input:
-        file1: master file in ascii or fits format
+        file1: metadata file in ascii or fits format
         The format of the head file is the following
         # Setup Pointing SourceNumber Sample Redshift
     Return: 
@@ -33,7 +33,7 @@ def read_lof(file1):
             table = QTable.read(file1, format="ascii.commented_header")
             return table
         except:
-            print(Fore.RED + "Cannot find master redshift file")
+            print(Fore.RED + "Cannot find metadata redshift file")
             sys.exit("Error!")
 
 
