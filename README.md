@@ -80,7 +80,7 @@ Metadata files must start with "meta.":
 
 ### Configuration file
 
-The configuration file enables the user to customize the fitting at 4 levels: use the gleam defaults as much as possible, use a global set of parameters for an entire project, specify a number of telescope/instrument specific overrides or even specify overrides for individual sources.
+The configuration file enables the user to customize the fitting at 4 levels: use the **gleam** defaults as much as possible, use a global set of parameters for an entire project, specify a number of telescope/instrument specific overrides or even specify overrides for individual sources.
 
 A minimal working configuration example:
 ```yaml
