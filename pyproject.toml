@@ -1,8 +1,11 @@
 [tool.poetry]
-name = "gleam"
-version = "0.1.0"
+name = "astro-gleam"
+version = "1.0.0"
 description = "Galaxy Line Emission and Absorption Modelling"
-authors = ["Your Name <you@example.com>"]
+authors = ["Andra Stroe", "Victor-Nicolae Savu"]
+packages = [
+    { include = "gleam" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
