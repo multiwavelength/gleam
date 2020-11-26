@@ -4,7 +4,7 @@ Thank you for taking the time to contribute to **gleam**!
 
 ### Join
 
-The **gleam** community follows the [Astropy code of conduct](https://www.astropy.org/code_of_conduct.html).
+The **gleam** community follows the [Astropy Community Code of Conduct](https://www.astropy.org/code_of_conduct.html).
 If you have read it, then you know that the most important contribution is to treat others with respect.
 
 ### Share
