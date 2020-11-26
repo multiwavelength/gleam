@@ -342,7 +342,18 @@ more than 500 sources when also creating plots.
 
 
 ## How to install
+### From pypi
+The recommended way to get `gleam` is from the Python Package Index (PyPI). The package is named `astro-gleam` on PyPI:
+
+```
+pip install astro-gleam
+```
+
+### From source
+In rare cases, when you need to install a version that is not published on PyPI, you can install `gleam` directly from the source repository:
+
 ```
 pip install git+https://github.com/multiwavelength/gleam
 ```
 
+You can learn about what options are available when installing from source by reading the [official documentation](https://packaging.python.org/tutorials/installing-packages/#installing-from-vcs).
