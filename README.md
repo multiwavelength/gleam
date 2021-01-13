@@ -29,6 +29,7 @@ To run **gleam**, the following are needed:
 - A configuration file, in YAML format, to specify line lists and fitting constraints
 - A line catalog, in fits table format
 - (Optional) A sky absorption/emission catalog, in fits table format
+
 Details on the input files can be found further down.
 
 The outputs of **gleam** include:
