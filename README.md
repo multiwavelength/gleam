@@ -1,5 +1,5 @@
 # gleam
-Galaxy Line Emission &amp; Absorption Modelling
+Galaxy Line Emission &amp; Absorption Modeling
 
 [![DOI](https://zenodo.org/badge/230828355.svg)](https://zenodo.org/badge/latestdoi/230828355)
 
