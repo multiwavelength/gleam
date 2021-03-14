@@ -1,6 +1,8 @@
 # gleam
 Galaxy Line Emission &amp; Absorption Modeling
 
+Citation: [Andra Stroe and Victor-Nicolae Savu 2021 **AJ** 161 158](https://iopscience.iop.org/article/10.3847/1538-3881/abe12a)
+
 [![DOI](https://zenodo.org/badge/230828355.svg)](https://zenodo.org/badge/latestdoi/230828355)
 
 ## What is gleam?
@@ -363,3 +365,11 @@ pip install git+https://github.com/multiwavelength/gleam
 ```
 
 You can learn about what options are available when installing from source by reading the [official documentation](https://packaging.python.org/tutorials/installing-packages/#installing-from-vcs).
+
+## How to cite **gleam**
+
+If you use **gleam** in your published projects or as a dependency in your code, please include a citation to the companion paper in the Astronomical Journal, as well as a citation to the repository through Zenodo:
+
+Citation: [Andra Stroe and Victor-Nicolae Savu 2021 **AJ** 161 158](https://iopscience.iop.org/article/10.3847/1538-3881/abe12a)
+
+[![DOI](https://zenodo.org/badge/230828355.svg)](https://zenodo.org/badge/latestdoi/230828355)
