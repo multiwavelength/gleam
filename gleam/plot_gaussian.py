@@ -148,7 +148,7 @@ def plot_spectrum(
     title = (
         f"{target['Sample']}\t"
         + target["Pointing"].replace("_", "\_")
-        + f"\t{target['SourceNumber']}\tz={target['Redshift']:.3}"
+        + f"\t{target['SourceNumber']}\tz={float(target['Redshift']):.3}"
     )
 
     # Set the basename name of the png outfile
@@ -267,7 +267,7 @@ def overview_plot(
     title = (
         f"{target['Sample']}\t"
         + target["Pointing"].replace("_", "\_")
-        + f"\t{target['SourceNumber']}\tz={target['Redshift']:.3}"
+        + f"\t{target['SourceNumber']}\tz={float(target['Redshift']):.3}"
     )
     # Basename that will be used in the savefile name
     basename = rf.naming_convention(
