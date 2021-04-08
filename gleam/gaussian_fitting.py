@@ -1,32 +1,24 @@
 __author__ = "Andra Stroe"
 __version__ = "0.1"
 
-import os, sys
-import random
-from typing import List, Union, Iterable
+import sys
+from typing import List, Union
 from dataclasses import dataclass
-from typing import TypeVar, Generic
 import itertools
 
 import numpy as np
-import astropy
 from astropy import units as u
 from astropy import constants as const
 from astropy.table import QTable, Column, hstack
 from astropy.units.quantity import Quantity as Qty
 from colorama import Fore
-from colorama import init
 from astropy.cosmology import FlatLambdaCDM
 
-import lmfit
 from lmfit.models import GaussianModel, ConstantModel
 from lmfit.model import ModelResult
 
-import gleam.plot_gaussian as pg
 import gleam.spectra_operations as so
 from gleam.constants import Length
-
-Qty = astropy.units.quantity.Quantity
 
 
 @dataclass
@@ -571,7 +563,6 @@ def model_selection(
     for wl_subset_indices in subsets(len(wl_line)):
         wl_subset = wl_line[list(wl_subset_indices)]
         model = fit_model(
-            redshift,
             x,
             y,
             ystd,
@@ -663,7 +654,6 @@ def model_selection(
 
 
 def fit_model(
-    redshift,
     x,
     y,
     ystd,
@@ -707,13 +697,13 @@ def fit_model(
     ystd = ystd.astype(dtype=np.float64)
     # make a model that is a number of Gaussians + a constant:
     model = sum(
-        (GaussianModel(prefix=f"g{i}_") for i in range(len(wl_line.value))),
+        (GaussianModel(prefix=f"g{i}_") for i in range(len(wl_line.to(x.unit).value))),
         ConstantModel(),
     )
 
     # rescale the flux scale to get numbers comparable to the wavelength and
     # avoid numerical instabilities
-    flux_scale = 1.0 / np.std(y).value * cont_width.value
+    flux_scale = 1.0 / np.std(y).value * cont_width.to(x.unit).value
     y = y * flux_scale
     ystd = ystd * flux_scale
 
@@ -731,7 +721,7 @@ def fit_model(
     elif center_constraint == "constrained":
         for i, wl in enumerate(wl_line):
             model.set_param_hint(
-                f"g{i}_center", value=wl.value, min=(wl - w).value, max=(wl + w).value,
+                f"g{i}_center", value=wl.to(x.unit).value, min=(wl - w).to(x.unit).value, max=(wl + w).to(x.unit).value,
             )
 
     # If no fixing or constraining is done, then constrain the center to be
@@ -741,26 +731,22 @@ def fit_model(
         for i, wl in enumerate(wl_line):
             model.set_param_hint(
                 f"g{i}_center",
-                value=wl.value,
-                min=(wl - cont_width).value,
-                max=(wl + cont_width).value,
+                value=wl.to(x.unit).value,
+                min=(wl - cont_width).to(x.unit).value,
+                max=(wl + cont_width).to(x.unit).value,
             )
 
-    # Constrain the FWHM, sigma, height and amplitude to reasonable values which
-    # depend of wavelength pixel size and the continuum
-    pixel = so.dispersion(x)
-
-    for i, wl in enumerate(wl_line.value):
+    for i, wl in enumerate(wl_line.to(x.unit).value):
         # FWHM & sigma: average between minimum and maximum expected width
         model.set_param_hint(
             f"g{i}_fwhm",
-            value=rest_spectral_resolution.value,
-            min=rest_spectral_resolution.value / 4,
+            value=rest_spectral_resolution.to(x.unit).value,
+            min=rest_spectral_resolution.to(x.unit).value / 4,
         )
         model.set_param_hint(
             f"g{i}_sigma",
-            value=so.fwhm_to_sigma(rest_spectral_resolution.value),
-            min=so.fwhm_to_sigma(rest_spectral_resolution.value / 4),
+            value=so.fwhm_to_sigma(rest_spectral_resolution.to(x.unit).value),
+            min=so.fwhm_to_sigma(rest_spectral_resolution.to(x.unit).value / 4),
         )
         # Height & amplitude: maximum y value - median of continuum
         model.set_param_hint(
@@ -770,14 +756,14 @@ def fit_model(
             f"g{i}_amplitude",
             value=so.height_to_amplitude(
                 max(y.value, key=abs) - np.median(y).value,
-                so.fwhm_to_sigma(rest_spectral_resolution.value),
+                so.fwhm_to_sigma(rest_spectral_resolution.to(x.unit).value),
             ),
         )
 
     # Set the continuum to the median of the selected range
     ctr = np.median(y).value
     params = model.make_params(
-        c=ctr, **{f"g{i}_center": wl for i, wl in enumerate(wl_line.value)}
+        c=ctr, **{f"g{i}_center": wl for i, wl in enumerate(wl_line.to(x.unit).value)}
     )
 
     # perform a least squares fit with errors taken into account as i.e. 1/sigma
