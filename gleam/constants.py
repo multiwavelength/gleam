@@ -200,9 +200,8 @@ class Config:
         if self.lines == "all":
             return table
         else:
-            mask = functools.reduce(
-                operator.or_, (table["line"] == line for line in self.lines)
-            )
+            lines = {line.strip() for line in self.lines}
+            mask = [line.strip() in lines for line in table["line"]]
             return table[mask]
 
     @property
