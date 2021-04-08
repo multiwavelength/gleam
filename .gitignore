@@ -7,3 +7,4 @@ __pycache__
 gleam.egg-info/
 *tar.gz
 .venv/
+dist/
