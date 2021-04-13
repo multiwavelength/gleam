@@ -1,27 +1,20 @@
 __author__ = "Andra Stroe"
 __version__ = "0.1"
 
-import os, sys
 from contextlib import contextmanager
 from collections import namedtuple
 import gc
 
-import click
 import numpy as np
 import gleam.matplotlibparams
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-from mpl_toolkits.axes_grid1.inset_locator import mark_inset
-from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 from mpl_toolkits.axes_grid1.inset_locator import (
     TransformedBbox,
     BboxPatch,
     BboxConnector,
 )
-import astropy
-from astropy import units as u
 from astropy.visualization import quantity_support
-from astropy.table import Table
 
 import gleam.read_files as rf
 import gleam.gaussian_fitting as gf
@@ -336,7 +329,7 @@ def overview_plot(
             f"{100*zoom.x}%",
             f"{100*zoom.y}%",
             loc="lower left",
-            bbox_to_anchor=(0 + j / (No_plots - 1), 1.3, 1, 1),
+            bbox_to_anchor=(0 + (0 if No_plots < 2 else j / (No_plots - 1)), 1.3, 1, 1),
             bbox_transform=ax.transAxes,
         )
 
@@ -363,7 +356,7 @@ def overview_plot(
         [axins.axvline(x=l["wavelength"], color="gray", linestyle="-") for l in line]
         texts = [
             axins.text(
-                l["wavelength"].value,
+                l["wavelength"],
                 axins.get_ylim()[1] * 1.01,
                 f"{l['latex']}",
                 ha="center",
