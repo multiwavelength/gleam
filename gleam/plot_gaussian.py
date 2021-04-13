@@ -146,9 +146,11 @@ def plot_spectrum(
     """
     # Set the title to the plot
     title = (
-        f"{target['Sample']}\t"
+        f"{target['Sample']}\t".replace("_", "\_")
         + target["Pointing"].replace("_", "\_")
-        + f"\t{target['SourceNumber']}\tz={float(target['Redshift']):.3}"
+        + f"\t{target['SourceNumber']}\tz={float(target['Redshift']):.3}".replace(
+            "_", "\_"
+        )
     )
 
     # Set the basename name of the png outfile
@@ -265,9 +267,11 @@ def overview_plot(
 
     # Generate the title of the plot from information on the target
     title = (
-        f"{target['Sample']}\t"
+        f"{target['Sample']}\t".replace("_", "\_")
         + target["Pointing"].replace("_", "\_")
-        + f"\t{target['SourceNumber']}\tz={float(target['Redshift']):.3}"
+        + f"\t{target['SourceNumber']}\tz={float(target['Redshift']):.3}".replace(
+            "_", "\_"
+        )
     )
     # Basename that will be used in the savefile name
     basename = rf.naming_convention(
