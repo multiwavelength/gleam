@@ -57,7 +57,14 @@ wget https://github.com/multiwavelength/gleam/raw/main/example.tar.gz
 ## Input data and configuration file
 
 ### The input spectra
-The input spectra should be in fits format, ideally with units in the headers. They should contain 3 columns: the observed wavelength, the flux and the error. In order to identify source across the spectra and the metadata files, a naming convention needs to be followed:
+The input spectra should be in fits format, ideally with units in the headers. They should contain 3 columns: the observed wavelength, the flux and the error, as follow: 
+
+| wl|flux|stdev|
+|-|-|-|
+| 8972.34| 0.1| 0.01|
+|&vellip;|&vellip;|&vellip;|
+
+In order to identify source across the spectra and the metadata files, a naming convention needs to be followed:
 - `spec1d.Sample.Setup.Pointing.SourceNumber.fits`
 
 ### Metadata file
@@ -68,6 +75,7 @@ The metadata file can be in fits format or ASCII format (with commented header),
 | Setup | Pointing | SourceNumber | Sample | Redshift |
 |-------|----------|--------------|--------|----------| 
 | Keck  | P1       | 123          | Cosmos | 1.2303   |
+|&vellip;|&vellip; |&vellip;      |&vellip;|&vellip;  |
 
 Column descriptions:
 - **Setup**: the telescope, instrument or mode the source was observed with (must match with setup in the spectrum name)
@@ -261,6 +269,7 @@ name (which is only used when plotting).
 |-|-|-|
 |Ha   | 6564.614  | H$\boldsymbol{\alpha}$ |
 |NII1 | 6585.27   | [N{\sc ii}]            |
+|&vellip;|&vellip;| &vellip;               |
 
 A subset of the lines can be specified in the configuration file, otherwise
 the entire list of lines from the catalog will be used for fitting.
@@ -276,6 +285,7 @@ the following columns:
 |-|-|-|
 | Aband | 7586.0 | 7658.0 |
 | Bband | 6864.0 | 6945.0 |
+|&vellip;|&vellip;|&vellip;|
 
 ## Output
 
