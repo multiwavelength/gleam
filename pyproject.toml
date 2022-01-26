@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "astro-gleam"
-version = "1.0.0"
-description = "Galaxy Line Emission and Absorption Modelling"
+version = "1.1.0"
+description = "Galaxy Line Emission and Absorption Modeling"
 authors = ["Andra Stroe", "Victor-Nicolae Savu"]
 packages = [
     { include = "gleam" }
