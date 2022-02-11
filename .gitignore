@@ -6,5 +6,5 @@ __pycache__
 .mypy_cache
 gleam.egg-info/
 *tar.gz
-.venv/
+.venv*
 dist/
