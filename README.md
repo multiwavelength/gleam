@@ -354,10 +354,9 @@ more than 500 sources when also creating plots.
 
 ## Installation requirements
 
-- Python 3.8
+- Python ^3.8
 - pip ^20.0
 - (Optional, but recommended) Latex, when plotting.
-
 
 ## How to install
 ### From pypi
@@ -375,6 +374,27 @@ pip install git+https://github.com/multiwavelength/gleam
 ```
 
 You can learn about what options are available when installing from source by reading the [official documentation](https://packaging.python.org/tutorials/installing-packages/#installing-from-vcs).
+
+## Troubleshooting
+
+### Missing Python C headers on Linux
+
+If you get an error that contains the following message, it means that your Linux system is missing the C libraries for your version of python.
+
+```
+fatal error: Python.h: No such file or directory
+      4 | #include "Python.h"
+        |          ^~~~~~~~~~
+  compilation terminated.
+```
+
+To fix the issue, you need to install the dev package for your version of python. Different Linux distributions have slight differences in naming, but here is what the command would look like on a Debian-based distribution (e.g. Ubuntu, Mint) for python 3.10:
+
+```
+sudo apt install libpython3.10-dev
+```
+
+After this, the command to install gleam should work.
 
 ## How to cite **gleam**
 
