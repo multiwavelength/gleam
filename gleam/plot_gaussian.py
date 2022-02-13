@@ -461,10 +461,8 @@ def adjust_labels(texts, fig, ax, zoom=None):
     # Make changes only if there is overlap between text boxes
     if any(dif > 0 for dif in difs):
         if len(texts) == 2:
-            offsets = ((-difs[0] / 2, 0), (difs[0] / 2, 0))
+            offsets = ((-difs[0] / 2), (difs[0] / 2))
         if len(texts) == 3:
-            offsets = ((-max(difs[0], 0), 0), (0, 0), (max(difs[1], 0), 0))
-        [
-            text.set_position(list(np.add(text.get_position(), offset)))
-            for (text, offset) in zip(texts, offsets)
-        ]
+            offsets = ((-max(difs[0], 0)), (0), (max(difs[1], 0)))
+        for (text, offset) in zip(texts, offsets):
+            text.set_x(text.get_position()[0].value + offset)
