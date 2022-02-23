@@ -77,7 +77,7 @@ class Line:
     def ew_rest(self):
         # Equivalent width of the emission line in the restframe
         v = self.amplitude.value / self.continuum.value
-        e = v * np.sqrt(
+        e = np.abs(v) * np.sqrt(
             (self.continuum.error / self.continuum.value) ** 2
             + (self.amplitude.error / self.amplitude.value) ** 2
         )
