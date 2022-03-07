@@ -26,7 +26,7 @@ width, height and amplitude, as well as estimates for the continuum under the li
 **gleam** fits lines in 1D spectra using redshift information from a metadata file and several other parameters from a central configuration file.
 
 To run **gleam**, the following are needed:
-- A set of 1D spectra, in fits table format
+- A set of 1D spectra (optical convention, &lambda; versus F<sub>&lambda;</sub>), in fits table format
 - A set of metadata files, in fits table or ASCII format, where details of each source are listed
 - A configuration file, in YAML format, to specify line lists and fitting constraints
 - A line catalog, in fits table format
@@ -63,6 +63,8 @@ The input spectra should be in fits format, ideally with units in the headers. T
 |-|-|-|
 | 8972.34| 0.1| 0.01|
 |&vellip;|&vellip;|&vellip;|
+
+*Note*: **gleam** assumes that the spectrum in given in the optical convention, i.e. wavelength (&lambda;) versus flux density (F<sub>&lambda;</sub>). If the spectral axis is given in frequencies (&nu;), or if the y axis is given in &lambda;F<sub>&lambda;</sub>, F<sub>&nu;</sub>, or &nu;F<sub>&nu;</sub>, **gleam** will not produce the intended results. 
 
 In order to identify source across the spectra and the metadata files, a naming convention needs to be followed:
 - `spec1d.Sample.Setup.Pointing.SourceNumber.fits`
