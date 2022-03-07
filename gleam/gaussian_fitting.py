@@ -942,8 +942,8 @@ def do_gaussian(
     spectrum_fit = model_selection(
         target["Redshift"],
         spectrum_line["wl_rest"],
-        spectrum_line["flux"],
-        spectrum_line["stdev"],
+        spectrum_line["flux_rest"],
+        spectrum_line["stdev_rest"],
         selected_lines["wavelength"],
         center_constraint,
         verbose,
