@@ -202,6 +202,20 @@ def restframe_wl(x, z):
     return x / (1.0 + z)
 
 
+def restframe_flux(x, z):
+    """
+    Transform a given spectrum flux density x into the restframe, given the 
+    redshift
+    Input:
+        x: observed flux density or standard deviation of a spectrum, in 
+        erg/s/cm^2/A for example
+        z: redshift
+    Return:
+        restframe spectrum flux density 
+    """
+    return x * (1.0 + z)
+
+
 def add_restframe(spectrum, z):
     """
     Add column with restframe spectrum onto the 1d spectrum flux
@@ -212,6 +226,9 @@ def add_restframe(spectrum, z):
         spectrum with the new added restframe wavelength column
     """
     spectrum.add_column(restframe_wl(spectrum["wl"], z), name="wl_rest")
+    spectrum.add_column(restframe_flux(spectrum["flux"],z), name="flux_rest")
+    spectrum.add_column(restframe_flux(spectrum["stdev"],z), name="stdev_rest")
+    
     return spectrum
 
 
@@ -257,7 +274,7 @@ def select_lines(
     """
     z_ref = target_info["Redshift"]
     wl_rest = spectrum["wl_rest"]
-    flux = spectrum["flux"]
+    flux = spectrum["flux_rest"]
     # Restframe resolution
     res_rest = dispersion(wl_rest)
     # mask all lines, but the line we are interested in

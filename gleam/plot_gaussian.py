@@ -163,9 +163,9 @@ def plot_spectrum(
     ax = fig.add_subplot(111)
 
     # Overplot the observed spectrum
-    ax.plot(spectrum["wl_rest"], spectrum["flux"], color="gray")
+    ax.plot(spectrum["wl_rest"], spectrum["flux_rest"], color="gray")
     # Overplot the observed spectrum around the emission line in a bold colour
-    ax.plot(spectrum_line["wl_rest"], spectrum_line["flux"], color="black")
+    ax.plot(spectrum_line["wl_rest"], spectrum_line["flux_rest"], color="black")
 
     # plot zoom in on the fitted line
     sub_axes = inset_axes(
@@ -181,12 +181,12 @@ def plot_spectrum(
     select = (spectrum["wl_rest"] < (np.average(fitted_wl) + cont_width)) & (
         spectrum["wl_rest"] > (np.average(fitted_wl) - cont_width)
     )
-    sub_axes.plot(spectrum["wl_rest"][select], spectrum["flux"][select], color="gray")
+    sub_axes.plot(spectrum["wl_rest"][select], spectrum["flux_rest"][select], color="gray")
     ax.set_xlim(
         min(spectrum["wl_rest"]) - cont_width, max(spectrum["wl_rest"]) + cont_width
     )
     ylims = list(ax.get_ylim())
-    ylims[0] = max(ylims[0], -2 * np.std(spectrum["flux"].value))
+    ylims[0] = max(ylims[0], -2 * np.std(spectrum["flux_rest"].value))
     ax.set_ylim(ylims)
     sub_axes.set_xlim(sub_axes.get_xlim())
     sub_axes.set_ylim(sub_axes.get_ylim())
@@ -293,14 +293,14 @@ def overview_plot(
     ax = fig.add_subplot(311)
 
     # Plot the base restframe spectrum to the main axis
-    ax.plot(spectrum["wl_rest"], spectrum["flux"], color="k")
+    ax.plot(spectrum["wl_rest"], spectrum["flux_rest"], color="k")
 
     # Set x & y axis limits based on the spectrum
     ax.set_xlim(
         min(spectrum["wl_rest"]) - cont_width, max(spectrum["wl_rest"]) + cont_width
     )
     ylims = list(ax.get_ylim())
-    ylims[0] = max(ylims[0], -2 * np.std(spectrum["flux"].value))
+    ylims[0] = max(ylims[0], -2 * np.std(spectrum["flux_rest"].value))
     ax.set_ylim(ylims)
 
     j = 0
@@ -338,7 +338,7 @@ def overview_plot(
         if j > 0:
             axins.yaxis.label.set_visible(False)
         # Plot the observed spectrum in the zoomed-in axis
-        axins.plot(spectrum["wl_rest"][select], spectrum["flux"][select], color="k")
+        axins.plot(spectrum["wl_rest"][select], spectrum["flux_rest"][select], color="k")
 
         # Overplot the gaussian fit to the line in the zoomed-in axis
         plot_gaussian_fit(
