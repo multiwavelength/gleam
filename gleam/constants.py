@@ -6,9 +6,8 @@ __author__ = "Andra Stroe"
 __version__ = "0.1"
 
 import yaml
-from dataclasses import replace, asdict, is_dataclass, field, dataclass as dat
-from typing import Dict, Optional, List, Union, Literal, NamedTuple
-import operator
+from dataclasses import asdict, is_dataclass, field, dataclass as dat
+from typing import Dict, Optional, List, Union, Literal
 import functools
 
 
@@ -113,9 +112,9 @@ class Cosmology:
     correct types.
     """
 
-    H0: Frequency = 70 * u.km / (u.Mpc * u.s)
+    H0: Frequency = field(default_factory=lambda:70 * u.km / (u.Mpc * u.s))
     Om0: float = 0.3
-    Tcmb0: Temperature = 2.725 * u.K
+    Tcmb0: Temperature = field(default_factory=lambda:2.725 * u.K)
 
     @property
     def cosmo(self):
@@ -147,10 +146,10 @@ class FittingParameters:
     """
 
     SN_limit: float = 2
-    tolerance: Length = 26.0 * u.Angstrom
-    w: Length = 3 * u.Angstrom
-    mask_width: Length = 20 * u.Angstrom
-    cont_width: Length = 70 * u.Angstrom
+    tolerance: Length = field(default_factory=lambda:26.0 * u.Angstrom)
+    w: Length = field(default_factory=lambda:3 * u.Angstrom)
+    mask_width: Length = field(default_factory=lambda:20 * u.Angstrom)
+    cont_width: Length = field(default_factory=lambda:70 * u.Angstrom)
     center: CenterConstraint = "free"
 
 
